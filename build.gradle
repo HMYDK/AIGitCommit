@@ -1,0 +1,42 @@
+plugins {
+    id("java")
+    id("org.jetbrains.intellij") version "1.17.3"
+}
+
+group = "com.hmydk"
+version = "0.0.1"
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+// Configure Gradle IntelliJ Plugin
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
+intellij {
+    version.set("2024.1")
+    type.set("IC") // Target IDE Platform
+//    plugins.set(listOf(/* Plugin Dependencies */))
+}
+
+patchPluginXml.sinceBuild.set("231.8109.175")
+//patchPluginXml.untilBuild.set("242.*")
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+    buildSearchableOptions.enabled = false
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
+}
+
+
+runIde {
+    intellij {
+        autoReloadPlugins = true
+    }
+}
