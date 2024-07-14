@@ -5,11 +5,11 @@
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>AI CodeName Suggest</name>
+    <name>AI Git Commit</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <!--    <vendor email="paranoia_zk@yeah.net" url="https://www.yourcompany.com">YourCompany</vendor>-->
-    <vendor email="paranoia_zk@yeah.net">email</vendor>
+    <vendor email="paranoia_zk@yeah.net">HMYDK</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
