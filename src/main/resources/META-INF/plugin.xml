@@ -26,6 +26,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.vcs</depends>
+    <depends>Git4Idea</depends>
 
 
     <!-- Extension points defined by the plugin.

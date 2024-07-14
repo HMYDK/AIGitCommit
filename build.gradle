@@ -16,7 +16,7 @@ repositories {
 intellij {
     version.set("2024.1")
     type.set("IC") // Target IDE Platform
-//    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins = ["Git4Idea"]
 }
 
 patchPluginXml.sinceBuild.set("231.8109.175")
@@ -30,7 +30,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
 }
 
