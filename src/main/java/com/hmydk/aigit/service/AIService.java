@@ -6,5 +6,8 @@ package com.hmydk.aigit.service;
  * @author hmydk
  */
 public interface AIService {
+
     String generateCommitMessage(String content);
+
+    boolean checkApiKey();
 }

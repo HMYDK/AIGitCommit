@@ -18,10 +18,6 @@
     This plugin uses AI to automatically generate commit messages based on the changes in your code.
     ]]></description>
 
-    <change-notes><![CDATA[
-    Initial release of the AI Commit Message Generator plugin.
-    ]]></change-notes>
-
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.lang</depends>
@@ -32,28 +28,31 @@
     <!-- Extension points defined by the plugin.
      Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Declare the settings configuration -->
-        <applicationConfigurable instance="com.hmydk.aigit.ui.AICommitMessageSettingsConfigurable" displayName="AICommitMessageSettingsConfigurable"/>
-        <applicationService serviceImplementation="com.hmydk.aigit.config.AICommitMessageSettings"/>
+        <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
+                                 displayName="AI Git Commit"/>
+        <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
     </extensions>
-
-    <projectListeners>
-        <!-- Add your CheckinHandlerFactory -->
-        <listener class="com.hmydk.aigit.AICommitMessagePlugin"
-                  topic="com.intellij.openapi.vcs.checkin.CheckinHandlerFactory"/>
-    </projectListeners>
-
-
 
     <actions>
         <!-- Declare the action for manual commit message generation -->
         <action id="AICommitMessage.Generate"
                 class="com.hmydk.aigit.GenerateCommitMessageAction"
                 text="Generate AI Commit Message"
+                icon="/icons/git-commit-logo.svg"
                 description="Generate a commit message using AI">
             <add-to-group group-id="Vcs.MessageActionGroup" anchor="first"/>
         </action>
     </actions>
+
+
+    <change-notes>
+        <![CDATA[
+        <h3>v0.0.1</h3>
+        <ul>
+            <li>support gemini</li>
+        </ul>
+        ]]>
+    </change-notes>
 
 
 </idea-plugin>
