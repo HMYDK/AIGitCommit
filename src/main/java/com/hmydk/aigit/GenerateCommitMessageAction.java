@@ -1,19 +1,24 @@
 package com.hmydk.aigit;
 
 import com.hmydk.aigit.service.CommitMessageService;
+import com.hmydk.aigit.util.GItCommitUtil;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.vcs.CommitMessageI;
+import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.changes.ChangeListManager;
 import com.intellij.openapi.vcs.changes.LocalChangeList;
+import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.datatransfer.StringSelection;
 import java.util.Collection;
+import java.util.List;
 
 public class GenerateCommitMessageAction extends AnAction {
 
@@ -26,24 +31,33 @@ public class GenerateCommitMessageAction extends AnAction {
             return;
         }
 
+        //check api key
+        if (!commitMessageService.checkApiKey()) {
+            Messages.showWarningDialog(project, "Please set your API key first.", "No API Key Set");
+            return;
+        }
 
 
-
-
-
-
-
-
-        //-----------
-
-        Collection<Change> selectedChanges = getSelectedChanges(project);
-        if (selectedChanges.isEmpty()) {
+        var commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
+        if (commitWorkflowHandler == null) {
             Messages.showWarningDialog(project, "No changes selected. Please select files to commit.", "No Changes Selected");
             return;
         }
 
+        List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
+        if (includedChanges.isEmpty()) {
+            Messages.showWarningDialog(project, "No changes selected. Please select files to commit.", "No Changes Selected");
+            return;
+        }
+        CommitMessageI data = VcsDataKeys.COMMIT_MESSAGE_CONTROL.getData(e.getDataContext());
+
+        List<String> gitHistoryMsg = GItCommitUtil.computeGitHistoryMsg(project, 10);
+        String diff = GItCommitUtil.computeDiff(includedChanges, project);
+        String branch = GItCommitUtil.commonBranch(includedChanges, project);
+
+
         try {
-            String commitMessage = commitMessageService.generateCommitMessage(project, selectedChanges);
+            String commitMessage = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg);
             if (commitMessageService.showCommitMessageDialog(project, commitMessage)) {
                 copyToClipboard(commitMessage);
                 Messages.showInfoMessage(project, "Commit message has been copied to clipboard.", "Message Copied");
@@ -70,7 +84,7 @@ public class GenerateCommitMessageAction extends AnAction {
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.BGT;
+        return ActionUpdateThread.EDT;
     }
 
     private void copyToClipboard(String text) {
