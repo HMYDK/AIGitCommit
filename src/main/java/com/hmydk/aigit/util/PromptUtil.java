@@ -25,6 +25,12 @@ public class PromptUtil {
         return content;
     }
 
+    private static String generatePrompt5() {
+        return """
+                Write a commit message in the conventional commit convention. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message. Lines must not be longer than 74 characters. Use {locale} language to answer. End commit title with issue number if you can get it from the branch name: {branch} in parenthesis. {Use this hint to improve this commit message: $hint }{diff}
+                """;
+    }
+
     private static String generatePrompt4() {
         return """
                  Generate a commit message using the Angular Conventional Commit Convention.
