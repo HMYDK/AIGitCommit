@@ -35,7 +35,7 @@ public class GeminiService implements AIService {
             return e.getMessage();
         }
         log.info("aiResponse is  :\n{}", aiResponse);
-        return aiResponse;
+        return aiResponse.replaceAll("```", "");
     }
 
     @Override

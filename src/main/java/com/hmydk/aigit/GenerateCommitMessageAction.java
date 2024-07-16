@@ -46,7 +46,7 @@ public class GenerateCommitMessageAction extends AnAction {
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
 
         // Run the time-consuming operations in a background task
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generating Commit Message", true) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generating commit message", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {

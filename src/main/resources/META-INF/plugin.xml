@@ -23,6 +23,10 @@
     <!-- Extension points defined by the plugin.
      Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <!-- 注册欢迎通知活动 -->
+        <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
+        <!-- 声明通知组 -->
+        <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
         <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
                                  displayName="AI Git Commit"/>
         <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
@@ -42,6 +46,10 @@
 
     <change-notes>
         <![CDATA[
+        <h3>v0.0.2</h3>
+        <ul>
+            <li>support local language for generate git message</li>
+        </ul>
         <h3>v0.0.1</h3>
         <ul>
             <li>support gemini</li>
