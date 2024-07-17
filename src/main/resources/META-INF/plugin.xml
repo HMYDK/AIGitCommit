@@ -46,6 +46,11 @@
 
     <change-notes>
         <![CDATA[
+        <h3>v0.0.3</h3>
+        <ul>
+            <li>add verify config button</li>
+            <li>set http connection timeout : 10s</li>
+        </ul>
         <h3>v0.0.2</h3>
         <ul>
             <li>support local language for generate git message</li>

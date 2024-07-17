@@ -1,5 +1,6 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.service.CommitMessageService;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -14,13 +15,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 public class ApiKeyConfigurable implements Configurable {
+    private final CommitMessageService commitMessageService = new CommitMessageService();
+
     private ComboBox<String> modelComboBox;
     private JBPasswordField apiKeyField;
     private JCheckBox showPasswordCheckBox;
     private ComboBox<String> languageComboBox;
-    private JLabel hintLabel;
+    private JButton verifyButton;
 
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
@@ -35,14 +39,16 @@ public class ApiKeyConfigurable implements Configurable {
         apiKeyField = new JBPasswordField();
         showPasswordCheckBox = new JCheckBox("Show Key");
         languageComboBox = new ComboBox<>(new String[]{"English", "中文 (Chinese)", "日本語 (Japanese)", "Deutsch (German)", "Français (French)"});
-        hintLabel = createHintLabel();
+        verifyButton = new JButton("Verify Config");
+        JLabel hintLabel = createHintLabel();
 
         showPasswordCheckBox.addActionListener(e -> togglePasswordVisibility());
+        verifyButton.addActionListener(e -> verifyConfig());
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = JBUI.insets(5, 5, 5, 5);
+        gbc.insets = JBUI.insets(5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
@@ -67,9 +73,18 @@ public class ApiKeyConfigurable implements Configurable {
         gbc.gridx = 1;
         formPanel.add(createSizedComboBox(languageComboBox), gbc);
 
-        // Add hint label
+        // Add verify button (now in a separate panel)
+        JPanel verifyButtonPanel = new JPanel(new BorderLayout());
+        verifyButton.setPreferredSize(new Dimension(120, 30)); // Set a preferred size
+        verifyButtonPanel.add(verifyButton, BorderLayout.EAST);
         gbc.gridx = 0;
         gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        formPanel.add(verifyButtonPanel, gbc);
+
+        // Add hint label
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
         formPanel.add(hintLabel, gbc);
 
@@ -109,12 +124,27 @@ public class ApiKeyConfigurable implements Configurable {
         return comboBox;
     }
 
+    private void verifyConfig() {
+        String model = (String) modelComboBox.getSelectedItem();
+        String apiKey = String.valueOf(apiKeyField.getPassword());
+        String language = (String) languageComboBox.getSelectedItem();
+
+        boolean isValid = commitMessageService.validateConfig(model, apiKey, language);
+
+        if (isValid) {
+            JOptionPane.showMessageDialog(null, "Configuration is valid!", "Verification Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Configuration is invalid. Please check your settings.", "Verification Failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
     @Override
     public boolean isModified() {
         ApiKeySettings settings = ApiKeySettings.getInstance();
-        return !modelComboBox.getSelectedItem().equals(settings.getAiModel())
+        return !Objects.equals(modelComboBox.getSelectedItem(), settings.getAiModel())
                 || !String.valueOf(apiKeyField.getPassword()).equals(settings.getApiKey())
-                || !languageComboBox.getSelectedItem().equals(settings.getCommitLanguage());
+                || !Objects.equals(languageComboBox.getSelectedItem(), settings.getCommitLanguage());
     }
 
     @Override

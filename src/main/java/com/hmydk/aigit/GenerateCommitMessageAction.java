@@ -32,7 +32,7 @@ public class GenerateCommitMessageAction extends AnAction {
         }
 
         //check api key
-        if (!commitMessageService.checkApiKey()) {
+        if (!commitMessageService.checkApiKeyIsExists()) {
             Messages.showWarningDialog(project, "Please set your API key first.", "No API Key Set");
             return;
         }
