@@ -11,8 +11,10 @@ import java.util.List;
  */
 public class PromptUtil {
 
+    public static final String DEFAULT_PROMPT = generatePrompt4();
+
     public static String constructPrompt(String diff, String branch, List<String> historyMsg) {
-        String content = generatePrompt4();
+        String content = ApiKeySettings.getInstance().getCustomPrompt();
         content = content.replace("{branch}", branch);
         if (content.contains("{history}") && historyMsg != null) {
             content = content.replace("{history}", String.join("\n", historyMsg));
@@ -24,8 +26,8 @@ public class PromptUtil {
             content = content + "\n" + diff;
         }
 
-        if (content.contains("{locale}")) {
-            content = content.replace("{locale}", ApiKeySettings.getInstance().getCommitLanguage());
+        if (content.contains("{local}")) {
+            content = content.replace("{local}", ApiKeySettings.getInstance().getCommitLanguage());
         }
 
         return content;
@@ -43,14 +45,12 @@ public class PromptUtil {
                 Constraints:
                 - Summarize changes with specificity
                 - Optionally include benefits in the body
-                - Use emojis for expression
                 - Keep lines within 72 characters
-                - Use {locale} language
+                - Use {local} language
                 - Infer the scope from the context of the diff
                 Structure:
                 <type>[optional scope]: <description>
                 [optional body]
-                [optional footer]
                 Example:
                    feat(api): add endpoint for user authentication
                 Possible scopes (examples, infer from diff context):

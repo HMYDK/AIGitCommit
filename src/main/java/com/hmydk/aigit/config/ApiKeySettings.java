@@ -1,5 +1,6 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
@@ -19,6 +20,16 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
+    }
+
+    private String customPrompt = PromptUtil.DEFAULT_PROMPT;
+
+    public String getCustomPrompt() {
+        return customPrompt;
+    }
+
+    public void setCustomPrompt(String customPrompt) {
+        this.customPrompt = customPrompt;
     }
 
     @Nullable

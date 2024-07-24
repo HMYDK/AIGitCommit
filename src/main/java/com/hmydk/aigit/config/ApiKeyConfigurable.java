@@ -1,14 +1,16 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.service.CommitMessageService;
+import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.NlsContexts;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPasswordField;
+import com.intellij.ui.components.JBTextArea;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -25,12 +27,9 @@ public class ApiKeyConfigurable implements Configurable {
     private JCheckBox showPasswordCheckBox;
     private ComboBox<String> languageComboBox;
     private JButton verifyButton;
-
-    @Nls(capitalization = Nls.Capitalization.Title)
-    @Override
-    public String getDisplayName() {
-        return "AI Git Commit";
-    }
+    private JBTextArea customPromptArea;
+    private JButton resetPromptButton;
+    private JButton validatePromptButton;
 
     @Nullable
     @Override
@@ -40,10 +39,15 @@ public class ApiKeyConfigurable implements Configurable {
         showPasswordCheckBox = new JCheckBox("Show Key");
         languageComboBox = new ComboBox<>(new String[]{"English", "中文 (Chinese)", "日本語 (Japanese)", "Deutsch (German)", "Français (French)"});
         verifyButton = new JButton("Verify Config");
+        customPromptArea = new JBTextArea(5, 30);
+        resetPromptButton = new JButton("Reset Prompt");
+        validatePromptButton = new JButton("Validate Prompt");
         JLabel hintLabel = createHintLabel();
 
         showPasswordCheckBox.addActionListener(e -> togglePasswordVisibility());
         verifyButton.addActionListener(e -> verifyConfig());
+        resetPromptButton.addActionListener(e -> resetPrompt());
+        validatePromptButton.addActionListener(e -> validatePrompt());
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -52,45 +56,73 @@ public class ApiKeyConfigurable implements Configurable {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        // Add AI model selection
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formPanel.add(new JBLabel("LLM Client"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(createSizedComboBox(modelComboBox), gbc);
+        addFormComponent(formPanel, gbc, "LLM Client", createSizedComboBox(modelComboBox));
+        addFormComponent(formPanel, gbc, "API Key", createApiKeyPanel());
+        addFormComponent(formPanel, gbc, "Language", createSizedComboBox(languageComboBox));
 
-        // Add API Key section
+        // Add custom prompt area
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        formPanel.add(new JBLabel("API Key"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(createApiKeyPanel(), gbc);
-
-        // Add commit message language selection
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        formPanel.add(new JBLabel("Language"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(createSizedComboBox(languageComboBox), gbc);
-
-        // Add verify button (now in a separate panel)
-        JPanel verifyButtonPanel = new JPanel(new BorderLayout());
-        verifyButton.setPreferredSize(new Dimension(120, 30)); // Set a preferred size
-        verifyButtonPanel.add(verifyButton, BorderLayout.EAST);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy++;
         gbc.gridwidth = 2;
-        formPanel.add(verifyButtonPanel, gbc);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1.0;
+        formPanel.add(createCustomPromptPanel(), gbc);
+
+        // Add buttons panel
+        gbc.gridy++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 0.0;
+        formPanel.add(createButtonsPanel(), gbc);
 
         // Add hint label
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
+        gbc.gridy++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
         formPanel.add(hintLabel, gbc);
 
-        mainPanel.add(formPanel, BorderLayout.NORTH);
+        mainPanel.add(new JScrollPane(formPanel), BorderLayout.CENTER);
 
         return mainPanel;
+    }
+
+    private void addFormComponent(JPanel panel, GridBagConstraints gbc, String labelText, JComponent component) {
+        gbc.gridx = 0;
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        panel.add(new JBLabel(labelText), gbc);
+        gbc.gridx = 1;
+        panel.add(component, gbc);
+    }
+
+    private JPanel createCustomPromptPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Custom Prompt"));
+        customPromptArea.setLineWrap(true);
+        customPromptArea.setWrapStyleWord(true);
+        customPromptArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.add(new JScrollPane(customPromptArea), BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createButtonsPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.add(resetPromptButton);
+        panel.add(validatePromptButton);
+        panel.add(verifyButton);
+        return panel;
+    }
+
+    private void resetPrompt() {
+        customPromptArea.setText(PromptUtil.DEFAULT_PROMPT);
+    }
+
+    private void validatePrompt() {
+        String prompt = customPromptArea.getText();
+        if (prompt.contains("{diff}") && prompt.contains("{local}")) {
+            JOptionPane.showMessageDialog(null, "Prompt is valid!", "Validation Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Prompt is invalid. It must contain both {diff} and {local}.", "Validation Failed", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private JLabel createHintLabel() {
@@ -138,13 +170,13 @@ public class ApiKeyConfigurable implements Configurable {
         }
     }
 
-
     @Override
     public boolean isModified() {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         return !Objects.equals(modelComboBox.getSelectedItem(), settings.getAiModel())
                 || !String.valueOf(apiKeyField.getPassword()).equals(settings.getApiKey())
-                || !Objects.equals(languageComboBox.getSelectedItem(), settings.getCommitLanguage());
+                || !Objects.equals(languageComboBox.getSelectedItem(), settings.getCommitLanguage())
+                || !Objects.equals(customPromptArea.getText(), settings.getCustomPrompt());
     }
 
     @Override
@@ -153,6 +185,7 @@ public class ApiKeyConfigurable implements Configurable {
         settings.setAiModel((String) modelComboBox.getSelectedItem());
         settings.setApiKey(String.valueOf(apiKeyField.getPassword()));
         settings.setCommitLanguage((String) languageComboBox.getSelectedItem());
+        settings.setCustomPrompt(customPromptArea.getText());
     }
 
     @Override
@@ -163,5 +196,11 @@ public class ApiKeyConfigurable implements Configurable {
         showPasswordCheckBox.setSelected(false);
         apiKeyField.setEchoChar('•');
         languageComboBox.setSelectedItem(settings.getCommitLanguage());
+        customPromptArea.setText(settings.getCustomPrompt());
+    }
+
+    @Override
+    public @NlsContexts.ConfigurableName String getDisplayName() {
+        return "AIGit Commit";
     }
 }

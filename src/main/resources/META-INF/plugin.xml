@@ -46,16 +46,21 @@
 
     <change-notes>
         <![CDATA[
-        <h3>v0.0.3</h3>
+        <h4>v0.0.4</h4>
+        <ul>
+            <li>update welcome notification logic</li>
+            <li>support user-defined prompts for generating git messages</li>
+        </ul>
+        <h4>v0.0.3</h4>
         <ul>
             <li>add verify config button</li>
             <li>set http connection timeout : 10s</li>
         </ul>
-        <h3>v0.0.2</h3>
+        <h4>v0.0.2</h4>
         <ul>
             <li>support local language for generate git message</li>
         </ul>
-        <h3>v0.0.1</h3>
+        <h4>v0.0.1</h4>
         <ul>
             <li>support gemini</li>
         </ul>

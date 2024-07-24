@@ -1,7 +1,9 @@
 package com.hmydk.aigit;
 
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
 import com.intellij.openapi.util.Key;
@@ -17,25 +19,30 @@ public class WelcomeNotification implements ProjectActivity {
     private static final String WELCOME_TITLE = "Welcome to AI Git Commit!";
     private static final String WELCOME_CONTENT = "Thank you for installing AI Git Commit. " +
             "To get started, please configure your API key in the settings.";
-    private static final Key<Boolean> WELCOMED_KEY = Key.create("com.hmydk.aigit.welcomed");
+    private static final Key<String> PLUGIN_VERSION_KEY = Key.create("com.hmydk.aigit.version");
 
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
-        if (isFirstRun(project)) {
+        if (isNewOrUpdatedVersion(project)) {
             showWelcomeNotification(project);
-            markAsRun(project);
+            updateStoredVersion(project);
         }
         return Unit.INSTANCE;
     }
 
-    private boolean isFirstRun(@NotNull Project project) {
-        Boolean welcomed = project.getUserData(WELCOMED_KEY);
-        return welcomed == null || !welcomed;
+    private boolean isNewOrUpdatedVersion(@NotNull Project project) {
+        String storedVersion = project.getUserData(PLUGIN_VERSION_KEY);
+        String currentVersion = getCurrentPluginVersion();
+        return storedVersion == null || !storedVersion.equals(currentVersion);
     }
 
-    private void markAsRun(@NotNull Project project) {
-        project.putUserData(WELCOMED_KEY, true);
+    private void updateStoredVersion(@NotNull Project project) {
+        project.putUserData(PLUGIN_VERSION_KEY, getCurrentPluginVersion());
+    }
+
+    private String getCurrentPluginVersion() {
+        return PluginManagerCore.getPlugin(PluginId.getId("com.hmydk.aigit")).getVersion();
     }
 
     private void showWelcomeNotification(@NotNull Project project) {
