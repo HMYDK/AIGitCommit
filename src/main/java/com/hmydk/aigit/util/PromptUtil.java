@@ -1,5 +1,7 @@
 package com.hmydk.aigit.util;
 
+import com.hmydk.aigit.config.ApiKeySettings;
+
 import java.util.List;
 
 /**
@@ -9,8 +11,10 @@ import java.util.List;
  */
 public class PromptUtil {
 
+    public static final String DEFAULT_PROMPT = generatePrompt4();
+
     public static String constructPrompt(String diff, String branch, List<String> historyMsg) {
-        String content = generatePrompt3();
+        String content = ApiKeySettings.getInstance().getCustomPrompt();
         content = content.replace("{branch}", branch);
         if (content.contains("{history}") && historyMsg != null) {
             content = content.replace("{history}", String.join("\n", historyMsg));
@@ -22,42 +26,50 @@ public class PromptUtil {
             content = content + "\n" + diff;
         }
 
+        if (content.contains("{local}")) {
+            content = content.replace("{local}", ApiKeySettings.getInstance().getCommitLanguage());
+        }
+
         return content;
+    }
+
+    private static String generatePrompt5() {
+        return """
+                Write a commit message in the conventional commit convention. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message. Lines must not be longer than 74 characters. Use {locale} language to answer. End commit title with issue number if you can get it from the branch name: {branch} in parenthesis. {Use this hint to improve this commit message: $hint }{diff}
+                """;
     }
 
     private static String generatePrompt4() {
         return """
-                 Generate a commit message using the Angular Conventional Commit Convention.
-                 Constraints:
-                 - Summarize changes with specificity
-                 - Optionally include benefits in the body
-                 - Use emojis for expression
-                 - Keep lines within 72 characters
-                 - Use English language
-                 - End the commit title with issue number from {branch} if available
-                 - Infer the scope from the context of the diff
-                 Structure:
-                 <type>[optional scope]: <description>
-                 [optional body]
-                 [optional footer]
-                 Example:
-                 ✨ feat(api): add endpoint for user authentication
-                 Possible scopes (examples, infer from diff context):
-                 - api: app API-related code
-                 - ui: user interface changes
-                 - db: database-related changes
-                 - etc.
-                 Possible types:
-                 - 🐛 fix
-                 - ✨ feat
-                 - 📝 docs
-                 - 🧹 refactor
-                 - 🚀 perf
-                 - 🔒 security
-                 - 🚧 chore
-                 - 🧪 test
-                 Diff:
-                 {diff}
+                Generate a commit message using the Angular Conventional Commit Convention.
+                Constraints:
+                - Summarize changes with specificity
+                - Optionally include benefits in the body
+                - Keep lines within 72 characters
+                - Use {local} language
+                - Infer the scope from the context of the diff
+                Structure:
+                <type>[optional scope]: <description>
+                [optional body]
+                Example:
+                   feat(api): add endpoint for user authentication
+                Possible scopes (examples, infer from diff context):
+                - api: app API-related code
+                - ui: user interface changes
+                - db: database-related changes
+                - etc.
+                Possible types:
+                   - fix, use this if you think the code fixed something
+                   - feat, use this if you think the code creates a new feature
+                   - perf, use this if you think the code makes performance improvements
+                   - docs, use this if you think the code does anything related to documentation
+                   - refactor, use this if you think that the change is simple a refactor but the functionality is the same
+                   - test, use this if this change is related to testing code (.spec, .test, etc)
+                   - chore, use this for code related to maintenance tasks, build processes, or other non-user-facing changes. It typically includes tasks that don't directly impact the functionality but are necessary for the project's development and maintenance.
+                   - ci, use this if this change is for CI related stuff
+                   - revert, use this if im reverting something
+                Diff:
+                    {diff}
                 """;
     }
 

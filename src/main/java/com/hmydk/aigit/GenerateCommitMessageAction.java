@@ -5,19 +5,19 @@ import com.hmydk.aigit.util.GItCommitUtil;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ide.CopyPasteManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.vcs.CommitMessageI;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
-import com.intellij.openapi.vcs.changes.ChangeListManager;
-import com.intellij.openapi.vcs.changes.LocalChangeList;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.datatransfer.StringSelection;
-import java.util.Collection;
 import java.util.List;
 
 public class GenerateCommitMessageAction extends AnAction {
@@ -32,48 +32,63 @@ public class GenerateCommitMessageAction extends AnAction {
         }
 
         //check api key
-        if (!commitMessageService.checkApiKey()) {
+        if (!commitMessageService.checkApiKeyIsExists()) {
             Messages.showWarningDialog(project, "Please set your API key first.", "No API Key Set");
             return;
         }
 
-
-        var commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
+        AbstractCommitWorkflowHandler<?, ?> commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
         if (commitWorkflowHandler == null) {
             Messages.showWarningDialog(project, "No changes selected. Please select files to commit.", "No Changes Selected");
             return;
         }
 
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
-        if (includedChanges.isEmpty()) {
-            Messages.showWarningDialog(project, "No changes selected. Please select files to commit.", "No Changes Selected");
-            return;
-        }
-        CommitMessageI data = VcsDataKeys.COMMIT_MESSAGE_CONTROL.getData(e.getDataContext());
 
-        List<String> gitHistoryMsg = GItCommitUtil.computeGitHistoryMsg(project, 10);
-        String diff = GItCommitUtil.computeDiff(includedChanges, project);
-        String branch = GItCommitUtil.commonBranch(includedChanges, project);
+        // Run the time-consuming operations in a background task
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Generating commit message", true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    List<String> gitHistoryMsg = GItCommitUtil.computeGitHistoryMsg(project, 10);
+                    String diff = GItCommitUtil.computeDiff(includedChanges, project);
+                    String branch = GItCommitUtil.commonBranch(includedChanges, project);
 
+                    String commitMessage = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg);
 
-        try {
-            String commitMessage = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg);
-            if (commitMessageService.showCommitMessageDialog(project, commitMessage)) {
-                copyToClipboard(commitMessage);
-                Messages.showInfoMessage(project, "Commit message has been copied to clipboard.", "Message Copied");
+                    // Use invokeLater to update UI on EDT
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        if (commitMessageService.showCommitMessageDialog(project, commitMessage)) {
+                            copyToClipboard(commitMessage);
+                            Messages.showInfoMessage(project, "Commit message has been copied to clipboard.", "Message Copied");
+                        }
+                    });
+                } catch (IllegalArgumentException ex) {
+                    showWarning(project, ex.getMessage(), "AI Commit Message Warning");
+                } catch (Exception ex) {
+                    showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
+                }
             }
-        } catch (IllegalArgumentException ex) {
-            Messages.showWarningDialog(project, ex.getMessage(), "AI Commit Message Warning");
-        } catch (Exception ex) {
-            Messages.showErrorDialog(project, "Error generating commit message: " + ex.getMessage(), "Error");
-        }
+        });
     }
 
-    private Collection<Change> getSelectedChanges(Project project) {
-        ChangeListManager changeListManager = ChangeListManager.getInstance(project);
-        LocalChangeList activeChangeList = changeListManager.getDefaultChangeList();
-        return activeChangeList.getChanges();
+    private void showWarning(Project project, String message, String title) {
+        ApplicationManager.getApplication().invokeLater(() ->
+                Messages.showWarningDialog(project, message, title)
+        );
     }
+
+    private void showError(Project project, String message, String title) {
+        ApplicationManager.getApplication().invokeLater(() ->
+                Messages.showErrorDialog(project, message, title)
+        );
+    }
+
+//    private Collection<Change> getSelectedChanges(Project project) {
+//        ChangeListManager changeListManager = ChangeListManager.getInstance(project);
+//        LocalChangeList activeChangeList = changeListManager.getDefaultChangeList();
+//        return activeChangeList.getChanges();
+//    }
 
     @Override
     public void update(@NotNull AnActionEvent e) {

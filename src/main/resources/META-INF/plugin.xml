@@ -1,15 +1,10 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.hmydk.aigit</id>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>AI CodeName Suggest</name>
+    <name>AI Git Commit</name>
 
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <!--    <vendor email="paranoia_zk@yeah.net" url="https://www.yourcompany.com">YourCompany</vendor>-->
-    <vendor email="paranoia_zk@yeah.net">email</vendor>
+    <vendor email="paranoia_zk@yeah.net">HMYDK</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -28,6 +23,10 @@
     <!-- Extension points defined by the plugin.
      Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <!-- 注册欢迎通知活动 -->
+        <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
+        <!-- 声明通知组 -->
+        <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
         <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
                                  displayName="AI Git Commit"/>
         <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
@@ -47,7 +46,21 @@
 
     <change-notes>
         <![CDATA[
-        <h3>v0.0.1</h3>
+        <h4>v0.0.4</h4>
+        <ul>
+            <li>update welcome notification logic</li>
+            <li>support user-defined prompts for generating git messages</li>
+        </ul>
+        <h4>v0.0.3</h4>
+        <ul>
+            <li>add verify config button</li>
+            <li>set http connection timeout : 10s</li>
+        </ul>
+        <h4>v0.0.2</h4>
+        <ul>
+            <li>support local language for generate git message</li>
+        </ul>
+        <h4>v0.0.1</h4>
         <ul>
             <li>support gemini</li>
         </ul>

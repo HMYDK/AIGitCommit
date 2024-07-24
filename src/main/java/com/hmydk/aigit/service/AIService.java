@@ -9,5 +9,8 @@ public interface AIService {
 
     String generateCommitMessage(String content);
 
-    boolean checkApiKey();
+    boolean checkApiKeyIsExists();
+
+
+    boolean validateConfig(String model, String apiKey, String language);
 }

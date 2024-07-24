@@ -25,12 +25,18 @@ public class CommitMessageService {
         return result == Messages.YES;
     }
 
-    public boolean checkApiKey() {
-        return aiService.checkApiKey();
+    public boolean checkApiKeyIsExists() {
+        return aiService.checkApiKeyIsExists();
+    }
+
+    public boolean validateConfig(String model, String apiKey, String language) {
+        return aiService.validateConfig(model, apiKey, language);
     }
 
     public String generateCommitMessage(String branch, String diff, List<String> gitHistoryMsg) {
         String prompt = PromptUtil.constructPrompt(diff, branch, gitHistoryMsg);
         return aiService.generateCommitMessage(prompt);
     }
+
+
 }
