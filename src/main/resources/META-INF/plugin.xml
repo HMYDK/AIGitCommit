@@ -46,6 +46,10 @@
 
     <change-notes>
         <![CDATA[
+        <h4>v0.0.5</h4>
+        <ul>
+            <li>support WebStorm2024.2</li>
+        </ul>
         <h4>v0.0.4</h4>
         <ul>
             <li>update welcome notification logic</li>

@@ -84,12 +84,6 @@ public class GenerateCommitMessageAction extends AnAction {
         );
     }
 
-//    private Collection<Change> getSelectedChanges(Project project) {
-//        ChangeListManager changeListManager = ChangeListManager.getInstance(project);
-//        LocalChangeList activeChangeList = changeListManager.getDefaultChangeList();
-//        return activeChangeList.getChanges();
-//    }
-
     @Override
     public void update(@NotNull AnActionEvent e) {
         // Enable/disable the action based on whether there's an open project
