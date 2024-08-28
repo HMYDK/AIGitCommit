@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -14,18 +13,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.datatransfer.StringSelection;
 import java.util.List;
 
 public class GenerateCommitMessageAction extends AnAction {
 
     private final CommitMessageService commitMessageService = new CommitMessageService();
 
+    /**
+     * 获取CommitMessage对象
+     */
+    private CommitMessage getCommitMessage(AnActionEvent e) {
+        return (CommitMessage) e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL);
+    }
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        CommitMessage commitMessage = getCommitMessage(e);
+
         Project project = e.getProject();
         if (project == null) {
             return;
@@ -54,15 +61,14 @@ public class GenerateCommitMessageAction extends AnAction {
                     String diff = GItCommitUtil.computeDiff(includedChanges, project);
                     String branch = GItCommitUtil.commonBranch(includedChanges, project);
 
-                    String commitMessage = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg);
+                    String commitMessageFromAi = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg).trim();
 
-                    // Use invokeLater to update UI on EDT
                     ApplicationManager.getApplication().invokeLater(() -> {
-                        if (commitMessageService.showCommitMessageDialog(project, commitMessage)) {
-                            copyToClipboard(commitMessage);
-                            Messages.showInfoMessage(project, "Commit message has been copied to clipboard.", "Message Copied");
-                        }
+                        commitMessage.setCommitMessage(commitMessageFromAi);
                     });
+
+
+
                 } catch (IllegalArgumentException ex) {
                     showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
@@ -96,7 +102,4 @@ public class GenerateCommitMessageAction extends AnAction {
         return ActionUpdateThread.EDT;
     }
 
-    private void copyToClipboard(String text) {
-        CopyPasteManager.getInstance().setContents(new StringSelection(text));
-    }
 }
