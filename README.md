@@ -5,6 +5,10 @@
 
 
 ## What’s New
+- v0.0.6
+  - Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li>
+  - Optimize the display of configuration validation.</li>
+
 - v0.0.5
   - support WebStorm2024.2
 - v0.0.4

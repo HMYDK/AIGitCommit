@@ -46,6 +46,11 @@
 
     <change-notes>
         <![CDATA[
+        <h4>v0.0.6</h4>
+        <ul>
+            <li>Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li></li>
+            <li>Optimize the display of configuration validation.</li>
+        </ul>
         <h4>v0.0.5</h4>
         <ul>
             <li>support WebStorm2024.2</li>

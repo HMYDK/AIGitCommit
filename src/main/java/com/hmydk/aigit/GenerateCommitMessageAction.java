@@ -2,6 +2,7 @@ package com.hmydk.aigit;
 
 import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.GItCommitUtil;
+import com.hmydk.aigit.util.IdeaDialogUtil;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -60,39 +61,23 @@ public class GenerateCommitMessageAction extends AnAction {
                     List<String> gitHistoryMsg = GItCommitUtil.computeGitHistoryMsg(project, 10);
                     String diff = GItCommitUtil.computeDiff(includedChanges, project);
                     String branch = GItCommitUtil.commonBranch(includedChanges, project);
-
+                    
                     String commitMessageFromAi = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg).trim();
 
                     ApplicationManager.getApplication().invokeLater(() -> {
                         commitMessage.setCommitMessage(commitMessageFromAi);
                     });
-
-
-
                 } catch (IllegalArgumentException ex) {
-                    showWarning(project, ex.getMessage(), "AI Commit Message Warning");
+                    IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
-                    showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
+                    IdeaDialogUtil.showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
                 }
             }
         });
     }
 
-    private void showWarning(Project project, String message, String title) {
-        ApplicationManager.getApplication().invokeLater(() ->
-                Messages.showWarningDialog(project, message, title)
-        );
-    }
-
-    private void showError(Project project, String message, String title) {
-        ApplicationManager.getApplication().invokeLater(() ->
-                Messages.showErrorDialog(project, message, title)
-        );
-    }
-
     @Override
     public void update(@NotNull AnActionEvent e) {
-        // Enable/disable the action based on whether there's an open project
         Project project = e.getProject();
         e.getPresentation().setEnabledAndVisible(project != null);
     }
