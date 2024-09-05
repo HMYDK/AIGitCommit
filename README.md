@@ -5,6 +5,11 @@
 
 
 ## What’s New
+
+- v0.0.7
+  - Optimize the default prompt.
+  - Add a prompt message: Generating….
+
 - v0.0.6
   - Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li>
   - Optimize the display of configuration validation.</li>
