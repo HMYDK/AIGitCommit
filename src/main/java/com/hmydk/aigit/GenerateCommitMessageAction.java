@@ -54,7 +54,9 @@ public class GenerateCommitMessageAction extends AnAction {
         }
         
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
-
+        
+        commitMessage.setCommitMessage(Constants.GENERATING_COMMIT_MESSAGE);
+        
         // Run the time-consuming operations in a background task
         ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.TASK_TITLE, true) {
             @Override

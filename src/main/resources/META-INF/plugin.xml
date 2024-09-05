@@ -46,6 +46,11 @@
 
     <change-notes>
         <![CDATA[
+        <h4>v0.0.7</h4>
+        <ul>
+            <li>Optimize the default prompt.</li>
+            <li>Add a prompt message: Generating….</li>
+        </ul>
         <h4>v0.0.6</h4>
         <ul>
             <li>Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li></li>
