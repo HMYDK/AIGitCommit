@@ -22,4 +22,18 @@ public class IdeaDialogUtil {
                 Messages.showErrorDialog(project, message, title)
         );
     }
+    
+    
+    public static void handleApiKeyMissing(Project project) {
+        Messages.showWarningDialog(project, "Please set your API key first.", "No API Key Set");
+    }
+    
+    public static void handleNoChangesSelected(Project project) {
+        Messages.showWarningDialog(project, "No changes selected. Please select files to commit.", "No Changes Selected");
+    }
+    
+    public static void handleGenerationError(Project project, String errorMessage) {
+        IdeaDialogUtil.showError(project, "Error generating commit message: " + errorMessage, "Error");
+    }
+    
 }
