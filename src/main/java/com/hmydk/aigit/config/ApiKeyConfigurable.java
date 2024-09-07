@@ -64,6 +64,7 @@ public class ApiKeyConfigurable implements Configurable {
             //设置表格数据
             loadCustomPrompts();
             //设置下拉框选中项
+            loadChoosedPrompt();
         }
     }
 
@@ -73,6 +74,21 @@ public class ApiKeyConfigurable implements Configurable {
         for (PromptInfo prompt : settings.getCustomPrompts()) {
             if (prompt != null) {
                 model.addRow(new String[]{prompt.getDescription(), prompt.getPrompt()});
+            }
+        }
+    }
+
+    private void loadChoosedPrompt() {
+        if (settings.getCustomPrompt() != null) {
+            DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
+            int rowCount = model.getRowCount();
+            for (int i = 0; i < rowCount; i++) {
+                String description = (String) model.getValueAt(i, 0);
+                String prompt = (String) model.getValueAt(i, 1);
+                if (settings.getCustomPrompt().getDescription().equals(description)
+                    && settings.getCustomPrompt().getPrompt().equals(prompt)) {
+                    ui.getCustomPromptsTable().setRowSelectionInterval(i, i);
+                }
             }
         }
     }
