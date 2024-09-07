@@ -8,6 +8,14 @@ import com.intellij.ui.table.JBTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Desktop;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class ApiKeyConfigurableUI {
 
@@ -40,7 +48,7 @@ public class ApiKeyConfigurableUI {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("模型:"), gbc);
+        mainPanel.add(new JBLabel("LLM Client:"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -50,17 +58,34 @@ public class ApiKeyConfigurableUI {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("API 密钥:"), gbc);
+        JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        apiKeyPanel.add(new JBLabel("API Key:"));
+        mainPanel.add(apiKeyPanel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 1.0;
-        mainPanel.add(apiKeyField, gbc);
+        JPanel apiKeyInputPanel = new JPanel(new BorderLayout(5, 0));
+        apiKeyInputPanel.add(apiKeyField, BorderLayout.CENTER);
+        JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
+        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                } catch (IOException | URISyntaxException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        apiKeyInputPanel.add(linkLabel, BorderLayout.EAST);
+        mainPanel.add(apiKeyInputPanel, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("语言:"), gbc);
+        mainPanel.add(new JBLabel("Language:"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -120,7 +145,7 @@ public class ApiKeyConfigurableUI {
 
                     validateButton.addActionListener(e -> {
                         // 在此处添加验证提示的逻辑
-                        JOptionPane.showMessageDialog(panel, "提示验证功能待实现",
+                        JOptionPane.showMessageDialog(panel, "提示验��功能待实现",
                                 "验证结果", JOptionPane.INFORMATION_MESSAGE);
                     });
 
@@ -143,7 +168,7 @@ public class ApiKeyConfigurableUI {
                             });
                         } else {
                             JOptionPane.showMessageDialog(mainPanel, "描述和内容不能为空",
-                                    "输入错误", JOptionPane.ERROR_MESSAGE);
+                                    "输入错���", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 })
@@ -155,8 +180,24 @@ public class ApiKeyConfigurableUI {
                         customPromptsTableModel.removeRow(selectedRow);
                     }
                 })
+                .setEditAction(button -> {
+                    editCustomPrompt(customPromptsTable.getSelectedRow());
+                })
                 .createPanel();
         mainPanel.add(customPromptsPanel, gbc);
+
+        // 添加表格双击监听器
+        customPromptsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = customPromptsTable.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        editCustomPrompt(row);
+                    }
+                }
+            }
+        });
 
         // 添加表格选择监听器
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
@@ -168,6 +209,60 @@ public class ApiKeyConfigurableUI {
                 }
             }
         });
+    }
+
+    private void editCustomPrompt(int row) {
+        String description = (String) customPromptsTableModel.getValueAt(row, 0);
+        String content = (String) customPromptsTableModel.getValueAt(row, 1);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints dialogGbc = new GridBagConstraints();
+        dialogGbc.insets = new Insets(10, 10, 10, 10);
+        dialogGbc.fill = GridBagConstraints.HORIZONTAL;
+        dialogGbc.anchor = GridBagConstraints.WEST;
+
+        JTextField descriptionField = new JTextField(description, 30);
+        JTextArea contentArea = new JTextArea(content, 10, 40);
+        contentArea.setLineWrap(true);
+        contentArea.setWrapStyleWord(true);
+
+        dialogGbc.gridx = 0;
+        dialogGbc.gridy = 0;
+        dialogGbc.weightx = 0.0;
+        panel.add(new JLabel("提示描述:"), dialogGbc);
+
+        dialogGbc.gridx = 1;
+        dialogGbc.gridy = 0;
+        dialogGbc.weightx = 1.0;
+        panel.add(descriptionField, dialogGbc);
+
+        dialogGbc.gridx = 0;
+        dialogGbc.gridy = 1;
+        dialogGbc.weightx = 0.0;
+        dialogGbc.anchor = GridBagConstraints.NORTHWEST;
+        panel.add(new JLabel("提示内容:"), dialogGbc);
+
+        dialogGbc.gridx = 1;
+        dialogGbc.gridy = 1;
+        dialogGbc.weightx = 1.0;
+        dialogGbc.weighty = 1.0;
+        dialogGbc.fill = GridBagConstraints.BOTH;
+        panel.add(new JScrollPane(contentArea), dialogGbc);
+
+        int result = JOptionPane.showConfirmDialog(mainPanel, panel, "编辑自定义提示",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String newDescription = descriptionField.getText().trim();
+            String newContent = contentArea.getText().trim();
+            if (!newDescription.isEmpty() && !newContent.isEmpty()) {
+                customPromptsTableModel.setValueAt(newDescription, row, 0);
+                customPromptsTableModel.setValueAt(newContent, row, 1);
+            } else {
+                JOptionPane.showMessageDialog(mainPanel, "描述和内容不能为空",
+                        "输入错误", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     public JPanel getMainPanel() {
