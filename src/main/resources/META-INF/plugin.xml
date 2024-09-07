@@ -27,8 +27,12 @@
         <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
         <!-- 声明通知组 -->
         <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
+        <!--        <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"-->
+        <!--            displayName="AI Git Commit"/>-->
         <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
-                                 displayName="AI Git Commit"/>
+                                 id="aigit.settings"
+                                 displayName="AI Git Commit"
+                                 groupId="Tools"/>
         <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
     </extensions>
 

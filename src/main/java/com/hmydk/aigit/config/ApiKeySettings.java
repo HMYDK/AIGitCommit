@@ -1,6 +1,5 @@
 package com.hmydk.aigit.config;
 
-import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
@@ -9,27 +8,16 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@State(
-        name = "com.hmydk.aigit.config.ApiKeySettings",
-        storages = {@Storage("AIGitCommitSettings.xml")}
-)
+@State(name = "com.hmydk.aigit.config.ApiKeySettings", storages = { @Storage("AIGitCommitSettings.xml") })
 public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> {
     private String aiModel = "Gemini";
     private String apiKey = "";
     private String commitLanguage = "English";
+    private String[][] customPrompts = new String[0][];
+    private String customPrompt;
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
-    }
-
-    private String customPrompt = PromptUtil.DEFAULT_PROMPT;
-
-    public String getCustomPrompt() {
-        return customPrompt;
-    }
-
-    public void setCustomPrompt(String customPrompt) {
-        this.customPrompt = customPrompt;
     }
 
     @Nullable
@@ -66,4 +54,21 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     public void setCommitLanguage(String commitLanguage) {
         this.commitLanguage = commitLanguage;
     }
+
+    public String[][] getCustomPrompts() {
+        return customPrompts;
+    }
+
+    public void setCustomPrompts(String[][] customPrompts) {
+        this.customPrompts = customPrompts;
+    }
+
+    public String getCustomPrompt() {
+        return customPrompt;
+    }
+
+    public void setCustomPrompt(String customPrompt) {
+        this.customPrompt = customPrompt;
+    }
+
 }
