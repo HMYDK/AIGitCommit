@@ -18,7 +18,7 @@ public class ApiKeyConfigurable implements Configurable {
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
     public String getDisplayName() {
-        return "AI Git Commit 设置";
+        return "AI Git Commit";
     }
 
     @Nullable

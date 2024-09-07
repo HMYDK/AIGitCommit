@@ -1,6 +1,7 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
@@ -96,75 +97,24 @@ public class ApiKeyConfigurableUI {
         JPanel customPromptsPanel = ToolbarDecorator.createDecorator(customPromptsTable)
                 .setAddAction(button -> {
                     // 添加自定义提示的逻辑
-                    JPanel panel = new JPanel(new GridBagLayout());
-                    GridBagConstraints dialogGbc = new GridBagConstraints();
-                    dialogGbc.insets = JBUI.insets(10);
-                    dialogGbc.fill = GridBagConstraints.HORIZONTAL;
-                    dialogGbc.anchor = GridBagConstraints.WEST;
+                    PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
 
-                    JTextField descriptionField = new JTextField(30); // 增加宽度
-                    JTextArea contentArea = new JTextArea(10, 40); // 增加行数和宽度
-                    contentArea.setLineWrap(true);
-                    contentArea.setWrapStyleWord(true);
-                    JButton validateButton = new JButton("验证提示");
-
-                    dialogGbc.gridx = 0;
-                    dialogGbc.gridy = 0;
-                    dialogGbc.weightx = 0.0;
-                    panel.add(new JLabel("提示描述:"), dialogGbc);
-
-                    dialogGbc.gridx = 1;
-                    dialogGbc.gridy = 0;
-                    dialogGbc.weightx = 1.0;
-                    panel.add(descriptionField, dialogGbc);
-
-                    dialogGbc.gridx = 0;
-                    dialogGbc.gridy = 1;
-                    dialogGbc.weightx = 0.0;
-                    dialogGbc.anchor = GridBagConstraints.NORTHWEST;
-                    panel.add(new JLabel("提示内容:"), dialogGbc);
-
-                    dialogGbc.gridx = 1;
-                    dialogGbc.gridy = 1;
-                    dialogGbc.weightx = 1.0;
-                    dialogGbc.weighty = 1.0;
-                    dialogGbc.fill = GridBagConstraints.BOTH;
-                    panel.add(new JScrollPane(contentArea), dialogGbc);
-
-                    dialogGbc.gridx = 1;
-                    dialogGbc.gridy = 2;
-                    dialogGbc.weightx = 0.0;
-                    dialogGbc.weighty = 0.0;
-                    dialogGbc.fill = GridBagConstraints.NONE;
-                    dialogGbc.anchor = GridBagConstraints.EAST;
-                    panel.add(validateButton, dialogGbc);
-
-                    validateButton.addActionListener(e -> {
-                        // 在此处添加验证提示的逻辑
-                        JOptionPane.showMessageDialog(panel, "提示验��功能待实现",
-                                "验证结果", JOptionPane.INFORMATION_MESSAGE);
-                    });
-
-                    // 创建一个更大的对话框
-                    JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE,
+                    JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
                             JOptionPane.OK_CANCEL_OPTION);
-                    JDialog dialog = optionPane.createDialog(mainPanel, "添加自定义提示");
+                    JDialog dialog = optionPane.createDialog(mainPanel, "add your prompt");
                     dialog.setSize(600, 400); // 设置对话框大小
                     dialog.setVisible(true);
 
                     int result = (Integer) optionPane.getValue();
                     if (result == JOptionPane.OK_OPTION) {
                         // 将新提示添加到表格中
-                        String description = descriptionField.getText().trim();
-                        String content = contentArea.getText().trim();
+                        String description = promptDialogUI.getDescriptionField().getText().trim();
+                        String content = promptDialogUI.getContentArea().getText().trim();
                         if (!description.isEmpty() && !content.isEmpty()) {
                             customPromptsTableModel.addRow(new Object[] {
                                     description,
                                     content
                             });
-                        } else {
-                            JOptionPane.showMessageDialog(mainPanel, "描述和内容不能为空",
-                                    "输入错���", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 })
@@ -209,52 +159,17 @@ public class ApiKeyConfigurableUI {
         String description = (String) customPromptsTableModel.getValueAt(row, 0);
         String content = (String) customPromptsTableModel.getValueAt(row, 1);
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints dialogGbc = new GridBagConstraints();
-        dialogGbc.insets = new Insets(10, 10, 10, 10);
-        dialogGbc.fill = GridBagConstraints.HORIZONTAL;
-        dialogGbc.anchor = GridBagConstraints.WEST;
+        PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description, content);
 
-        JTextField descriptionField = new JTextField(description, 30);
-        JTextArea contentArea = new JTextArea(content, 10, 40);
-        contentArea.setLineWrap(true);
-        contentArea.setWrapStyleWord(true);
-
-        dialogGbc.gridx = 0;
-        dialogGbc.gridy = 0;
-        dialogGbc.weightx = 0.0;
-        panel.add(new JLabel("提示描述:"), dialogGbc);
-
-        dialogGbc.gridx = 1;
-        dialogGbc.gridy = 0;
-        dialogGbc.weightx = 1.0;
-        panel.add(descriptionField, dialogGbc);
-
-        dialogGbc.gridx = 0;
-        dialogGbc.gridy = 1;
-        dialogGbc.weightx = 0.0;
-        dialogGbc.anchor = GridBagConstraints.NORTHWEST;
-        panel.add(new JLabel("提示内容:"), dialogGbc);
-
-        dialogGbc.gridx = 1;
-        dialogGbc.gridy = 1;
-        dialogGbc.weightx = 1.0;
-        dialogGbc.weighty = 1.0;
-        dialogGbc.fill = GridBagConstraints.BOTH;
-        panel.add(new JScrollPane(contentArea), dialogGbc);
-
-        int result = JOptionPane.showConfirmDialog(mainPanel, panel, "编辑自定义提示",
+        int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "update your prompt",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            String newDescription = descriptionField.getText().trim();
-            String newContent = contentArea.getText().trim();
+            String newDescription = promptDialogUI.getDescriptionField().getText().trim();
+            String newContent = promptDialogUI.getContentArea().getText().trim();
             if (!newDescription.isEmpty() && !newContent.isEmpty()) {
                 customPromptsTableModel.setValueAt(newDescription, row, 0);
                 customPromptsTableModel.setValueAt(newContent, row, 1);
-            } else {
-                JOptionPane.showMessageDialog(mainPanel, "描述和内容不能为空",
-                        "输入错误", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

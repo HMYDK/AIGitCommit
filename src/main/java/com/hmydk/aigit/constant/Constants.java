@@ -11,6 +11,6 @@ public class Constants {
     public static final String TASK_TITLE = "Generating commit message";
     public static final int GIT_HISTORY_DEPTH = 10;
 
-    public static final String[] languages = { "English", "中文", "Deutsch", "Français" };
+    public static final String[] languages = { "English", "中文(简体)", "Deutsch", "Français" };
 
 }
