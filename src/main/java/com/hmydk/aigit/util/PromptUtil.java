@@ -14,7 +14,7 @@ public class PromptUtil {
     public static final String DEFAULT_PROMPT = generatePrompt6();
     
     public static String constructPrompt(String diff, String branch, List<String> historyMsg) {
-        String content = ApiKeySettings.getInstance().getCustomPrompt();
+        String content = ApiKeySettings.getInstance().getCustomPrompt().getPrompt();
         content = content.replace("{branch}", branch);
         if (content.contains("{history}") && historyMsg != null) {
             content = content.replace("{history}", String.join("\n", historyMsg));

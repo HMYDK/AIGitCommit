@@ -233,7 +233,7 @@ public class ApiKeyConfigurableOld implements Configurable {
         settings.setAiModel((String) modelComboBox.getSelectedItem());
         settings.setApiKey(String.valueOf(apiKeyField.getPassword()));
         settings.setCommitLanguage((String) languageComboBox.getSelectedItem());
-        settings.setCustomPrompt(customPromptArea.getText());
+//        settings.setCustomPrompt(customPromptArea.getText());
     }
     
     @Override
@@ -244,7 +244,7 @@ public class ApiKeyConfigurableOld implements Configurable {
         showPasswordCheckBox.setSelected(false);
         apiKeyField.setEchoChar('•');
         languageComboBox.setSelectedItem(settings.getCommitLanguage());
-        customPromptArea.setText(settings.getCustomPrompt());
+//        customPromptArea.setText(settings.getCustomPrompt());
     }
     
     @Override

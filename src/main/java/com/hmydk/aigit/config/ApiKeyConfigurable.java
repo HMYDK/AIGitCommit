@@ -1,16 +1,18 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.pojo.PromptInfo;
 import com.intellij.openapi.options.Configurable;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 public class ApiKeyConfigurable implements Configurable {
 
     private ApiKeyConfigurableUI ui;
-    private ApiKeySettings settings = ApiKeySettings.getInstance();
+    private final ApiKeySettings settings = ApiKeySettings.getInstance();
 
     @Nls(capitalization = Nls.Capitalization.Title)
     @Override
@@ -66,18 +68,22 @@ public class ApiKeyConfigurable implements Configurable {
     private void loadCustomPrompts() {
         DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
         model.setRowCount(0);
-        for (String[] prompt : settings.getCustomPrompts()) {
-            model.addRow(prompt);
+        for (PromptInfo prompt : settings.getCustomPrompts()) {
+            if (prompt != null) {
+                model.addRow(new String[]{prompt.getDescription(), prompt.getPrompt()});
+            }
         }
     }
 
     private void saveCustomPrompts() {
         DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
         int rowCount = model.getRowCount();
-        String[][] customPrompts = new String[rowCount][2];
+        List<PromptInfo> customPrompts = settings.getCustomPrompts();
         for (int i = 0; i < rowCount; i++) {
-            customPrompts[i][0] = (String) model.getValueAt(i, 0);
-            customPrompts[i][1] = (String) model.getValueAt(i, 1);
+            String description = (String) model.getValueAt(i, 0);
+            String prompt = (String) model.getValueAt(i, 1);
+            PromptInfo promptInfo = new PromptInfo(description, prompt);
+            customPrompts.set(i, promptInfo);
         }
         settings.setCustomPrompts(customPrompts);
     }
@@ -85,12 +91,12 @@ public class ApiKeyConfigurable implements Configurable {
     private boolean isCustomPromptsModified() {
         DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
         int rowCount = model.getRowCount();
-        if (rowCount != settings.getCustomPrompts().length) {
+        if (rowCount != settings.getCustomPrompts().size()) {
             return true;
         }
         for (int i = 0; i < rowCount; i++) {
-            if (!model.getValueAt(i, 0).equals(settings.getCustomPrompts()[i][0])
-                    || !model.getValueAt(i, 1).equals(settings.getCustomPrompts()[i][1])) {
+            if (!model.getValueAt(i, 0).equals(settings.getCustomPrompts().get(i).getDescription())
+                    || !model.getValueAt(i, 1).equals(settings.getCustomPrompts().get(i).getDescription())) {
                 return true;
             }
         }

@@ -1,10 +1,14 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.constant.Constants;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.JBTable;
+import com.intellij.util.ui.JBUI;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +38,7 @@ public class ApiKeyConfigurableUI {
     private void initComponents() {
         apiKeyField = new JBTextField();
         modelComboBox = new ComboBox<>(new String[] { "Gemini" });
-        languageComboBox = new ComboBox<>(new String[] { "English", "Chinese", "German", "French" });
+        languageComboBox = new ComboBox<>(Constants.languages);
         customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
     }
@@ -42,13 +46,13 @@ public class ApiKeyConfigurableUI {
     private void layoutComponents() {
         mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = JBUI.insets(5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("LLM Client:"), gbc);
+        mainPanel.add(new JBLabel("LLM client:"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -59,7 +63,7 @@ public class ApiKeyConfigurableUI {
         gbc.gridy = 1;
         gbc.weightx = 0.0;
         JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        apiKeyPanel.add(new JBLabel("API Key:"));
+        apiKeyPanel.add(new JBLabel("API key:"));
         mainPanel.add(apiKeyPanel, gbc);
 
         gbc.gridx = 1;
@@ -67,18 +71,7 @@ public class ApiKeyConfigurableUI {
         gbc.weightx = 1.0;
         JPanel apiKeyInputPanel = new JPanel(new BorderLayout(5, 0));
         apiKeyInputPanel.add(apiKeyField, BorderLayout.CENTER);
-        JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
-        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        linkLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
-                } catch (IOException | URISyntaxException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+        JLabel linkLabel = getjLabel();
         apiKeyInputPanel.add(linkLabel, BorderLayout.EAST);
         mainPanel.add(apiKeyInputPanel, gbc);
 
@@ -102,7 +95,7 @@ public class ApiKeyConfigurableUI {
                     // 添加自定义提示的逻辑
                     JPanel panel = new JPanel(new GridBagLayout());
                     GridBagConstraints dialogGbc = new GridBagConstraints();
-                    dialogGbc.insets = new Insets(10, 10, 10, 10);
+                    dialogGbc.insets = JBUI.insets(10);
                     dialogGbc.fill = GridBagConstraints.HORIZONTAL;
                     dialogGbc.anchor = GridBagConstraints.WEST;
 
@@ -173,10 +166,8 @@ public class ApiKeyConfigurableUI {
                     }
                 })
                 .setRemoveAction(button -> {
-                    // 移除选中的自定义提示
                     int selectedRow = customPromptsTable.getSelectedRow();
                     if (selectedRow != -1) {
-                        String removedDescription = (String) customPromptsTableModel.getValueAt(selectedRow, 0);
                         customPromptsTableModel.removeRow(selectedRow);
                     }
                 })
@@ -186,19 +177,6 @@ public class ApiKeyConfigurableUI {
                 .createPanel();
         mainPanel.add(customPromptsPanel, gbc);
 
-        // 添加表格双击监听器
-        customPromptsTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    int row = customPromptsTable.rowAtPoint(e.getPoint());
-                    if (row >= 0) {
-                        editCustomPrompt(row);
-                    }
-                }
-            }
-        });
-
         // 添加表格选择监听器
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -206,9 +184,26 @@ public class ApiKeyConfigurableUI {
                 if (selectedRow != -1) {
                     String selectedPrompt = (String) customPromptsTableModel.getValueAt(selectedRow, 1);
                     // 这里可以处理选中的提示，例如更新到其他地方或执行其他操作
+                    System.out.println("Selected Prompt: " + selectedPrompt);
                 }
             }
         });
+    }
+
+    private static @NotNull JLabel getjLabel() {
+        JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
+        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                } catch (IOException | URISyntaxException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        return linkLabel;
     }
 
     private void editCustomPrompt(int row) {
