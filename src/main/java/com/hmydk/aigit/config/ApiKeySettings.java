@@ -18,7 +18,7 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     private String apiKey = "";
     private String commitLanguage = "English";
     private List<PromptInfo> customPrompts = new ArrayList<>();
-    private PromptInfo customPrompt;
+    private PromptInfo customPrompt = new PromptInfo("", "");
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
@@ -60,6 +60,9 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     }
 
     public List<PromptInfo> getCustomPrompts() {
+        if (customPrompts == null ||  customPrompts.isEmpty()){
+            customPrompts = PromptInfo.defaultPrompts();
+        }
         return customPrompts;
     }
 

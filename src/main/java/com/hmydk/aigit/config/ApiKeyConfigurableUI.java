@@ -30,6 +30,9 @@ public class ApiKeyConfigurableUI {
     private JBTable customPromptsTable;
     private DefaultTableModel customPromptsTableModel;
 
+    // 记录当前选中的行
+    private int SELECTED_ROW = 0;
+
     public ApiKeyConfigurableUI() {
         initComponents();
         layoutComponents();
@@ -181,11 +184,7 @@ public class ApiKeyConfigurableUI {
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = customPromptsTable.getSelectedRow();
-                if (selectedRow != -1) {
-                    String selectedPrompt = (String) customPromptsTableModel.getValueAt(selectedRow, 1);
-                    // 这里可以处理选中的提示，例如更新到其他地方或执行其他操作
-                    System.out.println("Selected Prompt: " + selectedPrompt);
-                }
+                SELECTED_ROW = Math.max(selectedRow, 0);
             }
         });
     }
@@ -290,5 +289,9 @@ public class ApiKeyConfigurableUI {
             return (String) customPromptsTableModel.getValueAt(selectedRow, 1);
         }
         return null;
+    }
+
+    public int getSELECTED_ROW() {
+        return SELECTED_ROW;
     }
 }

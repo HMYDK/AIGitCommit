@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApiKeyConfigurable implements Configurable {
@@ -33,15 +34,16 @@ public class ApiKeyConfigurable implements Configurable {
         return !settings.getAiModel().equals(ui.getModelComboBox().getSelectedItem())
                 || !settings.getApiKey().equals(ui.getApiKeyField().getText())
                 || !settings.getCommitLanguage().equals(ui.getLanguageComboBox().getSelectedItem())
-                || isCustomPromptsModified();
+                || isCustomPromptsModified() || isCustomPromptModified();
     }
+
 
     @Override
     public void apply() {
         settings.setAiModel((String) ui.getModelComboBox().getSelectedItem());
         settings.setApiKey(ui.getApiKeyField().getText());
         settings.setCommitLanguage((String) ui.getLanguageComboBox().getSelectedItem());
-        saveCustomPrompts();
+        saveCustomPromptsAndChoosedPrompt();
     }
 
     @Override
@@ -75,15 +77,21 @@ public class ApiKeyConfigurable implements Configurable {
         }
     }
 
-    private void saveCustomPrompts() {
+    private void saveCustomPromptsAndChoosedPrompt() {
         DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
+        int selectedRow = ui.getSELECTED_ROW();
         int rowCount = model.getRowCount();
-        List<PromptInfo> customPrompts = settings.getCustomPrompts();
+        List<PromptInfo> customPrompts = new ArrayList<>();
         for (int i = 0; i < rowCount; i++) {
             String description = (String) model.getValueAt(i, 0);
             String prompt = (String) model.getValueAt(i, 1);
             PromptInfo promptInfo = new PromptInfo(description, prompt);
-            customPrompts.set(i, promptInfo);
+            customPrompts.add(i, promptInfo);
+
+            //处理选中的行数据作为新的prompt
+            if (selectedRow == i) {
+                settings.setCustomPrompt(promptInfo);
+            }
         }
         settings.setCustomPrompts(customPrompts);
     }
@@ -101,5 +109,18 @@ public class ApiKeyConfigurable implements Configurable {
             }
         }
         return false;
+    }
+
+    private boolean isCustomPromptModified() {
+        int selectedRow = ui.getSELECTED_ROW();
+        DefaultTableModel model = (DefaultTableModel) ui.getCustomPromptsTable().getModel();
+        int tableRowCount = model.getRowCount();
+
+        if (selectedRow >= tableRowCount) {
+            return true;
+        }
+
+        return !model.getValueAt(selectedRow, 0).equals(settings.getCustomPrompt().getDescription())
+                || !model.getValueAt(selectedRow, 1).equals(settings.getCustomPrompt().getDescription());
     }
 }
