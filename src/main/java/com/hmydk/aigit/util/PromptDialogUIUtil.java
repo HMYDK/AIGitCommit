@@ -1,5 +1,6 @@
 package com.hmydk.aigit.util;
 
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 
@@ -82,6 +83,17 @@ public class PromptDialogUIUtil {
         JBScrollPane scrollPane = new JBScrollPane(contentArea);
         scrollPane.setPreferredSize(new Dimension(800, 600)); // 增加滚动面板的首选大小
         panel.add(scrollPane, gbc);
+
+        // 添加 Inline help text
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.weightx = 1;
+        gbc.weighty = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JLabel helpTextLabel = new JLabel("Supported placeholders: {branch}, {history}, {diff}, {local}.");
+        helpTextLabel.setForeground(JBColor.GRAY);
+        helpTextLabel.setFont(helpTextLabel.getFont().deriveFont(Font.ITALIC));
+        panel.add(helpTextLabel, gbc);
 
         PromptDialogUI promptDialogUI = new PromptDialogUI();
         promptDialogUI.setPanel(panel);

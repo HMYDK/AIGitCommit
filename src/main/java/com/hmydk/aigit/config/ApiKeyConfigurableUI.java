@@ -3,6 +3,7 @@ package com.hmydk.aigit.config;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBTextField;
@@ -10,12 +11,9 @@ import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.Desktop;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -90,19 +88,27 @@ public class ApiKeyConfigurableUI {
         mainPanel.add(languageComboBox, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 3; // 将表格上移一行
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
+        gbc.weighty = 0.0; // 设置权重为0以适应新行
+        JBLabel jbLabel = new JBLabel("Click on the data in the table to use it as the prompt.");
+        jbLabel.setFont(jbLabel.getFont().deriveFont(Font.PLAIN, 12));
+        jbLabel.setForeground(JBColor.GRAY);
+        mainPanel.add(jbLabel, gbc); // 新增文本行
+
+        gbc.gridy = 4; // 表格位置下移一行
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         JPanel customPromptsPanel = ToolbarDecorator.createDecorator(customPromptsTable)
                 .setAddAction(button -> {
                     // 添加自定义提示的逻辑
-                    PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
+                    PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null,
+                            null);
 
                     JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
                             JOptionPane.OK_CANCEL_OPTION);
-                    JDialog dialog = optionPane.createDialog(mainPanel, "add your prompt");
-                    dialog.setSize(600, 400); // 设置对话框大小
+                    JDialog dialog = optionPane.createDialog(mainPanel, "add prompt");
+                    // dialog.setSize(600, 400); // 设置对话框大小
                     dialog.setVisible(true);
 
                     int result = (Integer) optionPane.getValue();
@@ -159,7 +165,8 @@ public class ApiKeyConfigurableUI {
         String description = (String) customPromptsTableModel.getValueAt(row, 0);
         String content = (String) customPromptsTableModel.getValueAt(row, 1);
 
-        PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description, content);
+        PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
+                content);
 
         int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "update your prompt",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
