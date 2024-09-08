@@ -39,9 +39,9 @@ public class ApiKeyConfigurableUI {
 
     private void initComponents() {
         apiKeyField = new JBTextField();
-        modelComboBox = new ComboBox<>(new String[] { "Gemini" });
+        modelComboBox = new ComboBox<>(new String[]{"Gemini"});
         languageComboBox = new ComboBox<>(Constants.languages);
-        customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
+        customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
     }
 
@@ -105,24 +105,25 @@ public class ApiKeyConfigurableUI {
                     PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null,
                             null);
 
-                    JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
-                            JOptionPane.OK_CANCEL_OPTION);
-                    JDialog dialog = optionPane.createDialog(mainPanel, "add prompt");
-                    // dialog.setSize(600, 400); // 设置对话框大小
-                    dialog.setVisible(true);
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
+                                JOptionPane.OK_CANCEL_OPTION);
+                        JDialog dialog = optionPane.createDialog(mainPanel, "add prompt");
+                        dialog.setVisible(true);
 
-                    int result = (Integer) optionPane.getValue();
-                    if (result == JOptionPane.OK_OPTION) {
-                        // 将新提示添加到表格中
-                        String description = promptDialogUI.getDescriptionField().getText().trim();
-                        String content = promptDialogUI.getContentArea().getText().trim();
-                        if (!description.isEmpty() && !content.isEmpty()) {
-                            customPromptsTableModel.addRow(new Object[] {
-                                    description,
-                                    content
-                            });
+                        int result = (Integer) optionPane.getValue();
+                        if (result == JOptionPane.OK_OPTION) {
+                            // 将新提示添加到表格中
+                            String description = promptDialogUI.getDescriptionField().getText().trim();
+                            String content = promptDialogUI.getContentArea().getText().trim();
+                            if (!description.isEmpty() && !content.isEmpty()) {
+                                customPromptsTableModel.addRow(new Object[]{
+                                        description,
+                                        content
+                                });
+                            }
                         }
-                    }
+                    });
                 })
                 .setRemoveAction(button -> {
                     int selectedRow = customPromptsTable.getSelectedRow();

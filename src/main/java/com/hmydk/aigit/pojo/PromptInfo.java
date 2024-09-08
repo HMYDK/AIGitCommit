@@ -2,6 +2,8 @@ package com.hmydk.aigit.pojo;
 
 import com.hmydk.aigit.util.PromptUtil;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,9 +12,17 @@ import java.util.List;
  *
  * @author hmydk
  */
-public class PromptInfo {
+public class PromptInfo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String description = "";
     private String prompt = "";
+
+
+    public PromptInfo() {
+    }
 
     public PromptInfo(String description, String prompt) {
         this.description = description;
