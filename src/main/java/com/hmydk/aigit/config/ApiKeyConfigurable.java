@@ -48,6 +48,7 @@ public class ApiKeyConfigurable implements Configurable {
 
     @Override
     public void reset() {
+        settings.setCustomPrompts(new ArrayList<>());
         loadSettings();
     }
 

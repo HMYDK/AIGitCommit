@@ -48,7 +48,8 @@ public class PromptInfo implements Serializable {
 
     public static List<PromptInfo> defaultPrompts() {
         List<PromptInfo> prompts = new ArrayList<>();
-        prompts.add(new PromptInfo("Default", PromptUtil.DEFAULT_PROMPT));
+        prompts.add(new PromptInfo("Default", PromptUtil.DEFAULT_PROMPT_1));
+        prompts.add(new PromptInfo("Detailed", PromptUtil.DEFAULT_PROMPT_2));
         return prompts;
     }
 }

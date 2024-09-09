@@ -2,11 +2,11 @@ package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.JBTextField;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 public class ApiKeyConfigurableUI {
 
     private JPanel mainPanel;
-    private JBTextField apiKeyField;
+    private JPasswordField apiKeyField; // 替换为JPasswordField
     private ComboBox<String> modelComboBox;
     private ComboBox<String> languageComboBox;
     private JBTable customPromptsTable;
@@ -38,7 +38,7 @@ public class ApiKeyConfigurableUI {
     }
 
     private void initComponents() {
-        apiKeyField = new JBTextField();
+        apiKeyField = new JPasswordField(); // 替换为JPasswordField
         modelComboBox = new ComboBox<>(new String[]{"Gemini"});
         languageComboBox = new ComboBox<>(Constants.languages);
         customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
@@ -108,7 +108,7 @@ public class ApiKeyConfigurableUI {
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
                                 JOptionPane.OK_CANCEL_OPTION);
-                        JDialog dialog = optionPane.createDialog(mainPanel, "add prompt");
+                        JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
                         dialog.setVisible(true);
 
                         int result = (Integer) optionPane.getValue();
@@ -117,10 +117,7 @@ public class ApiKeyConfigurableUI {
                             String description = promptDialogUI.getDescriptionField().getText().trim();
                             String content = promptDialogUI.getContentArea().getText().trim();
                             if (!description.isEmpty() && !content.isEmpty()) {
-                                customPromptsTableModel.addRow(new Object[]{
-                                        description,
-                                        content
-                                });
+                                customPromptsTableModel.addRow(new Object[]{description, content});
                             }
                         }
                     });
@@ -163,30 +160,32 @@ public class ApiKeyConfigurableUI {
     }
 
     private void editCustomPrompt(int row) {
-        String description = (String) customPromptsTableModel.getValueAt(row, 0);
-        String content = (String) customPromptsTableModel.getValueAt(row, 1);
+        ApplicationManager.getApplication().invokeLater(() -> {
+            String description = (String) customPromptsTableModel.getValueAt(row, 0);
+            String content = (String) customPromptsTableModel.getValueAt(row, 1);
 
-        PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
-                content);
+            PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
+                    content);
 
-        int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "update your prompt",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "Update Your Prompt",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (result == JOptionPane.OK_OPTION) {
-            String newDescription = promptDialogUI.getDescriptionField().getText().trim();
-            String newContent = promptDialogUI.getContentArea().getText().trim();
-            if (!newDescription.isEmpty() && !newContent.isEmpty()) {
-                customPromptsTableModel.setValueAt(newDescription, row, 0);
-                customPromptsTableModel.setValueAt(newContent, row, 1);
+            if (result == JOptionPane.OK_OPTION) {
+                String newDescription = promptDialogUI.getDescriptionField().getText().trim();
+                String newContent = promptDialogUI.getContentArea().getText().trim();
+                if (!newDescription.isEmpty() && !newContent.isEmpty()) {
+                    customPromptsTableModel.setValueAt(newDescription, row, 0);
+                    customPromptsTableModel.setValueAt(newContent, row, 1);
+                }
             }
-        }
+        });
     }
 
     public JPanel getMainPanel() {
         return mainPanel;
     }
 
-    public JBTextField getApiKeyField() {
+    public JPasswordField getApiKeyField() {
         return apiKeyField;
     }
 
