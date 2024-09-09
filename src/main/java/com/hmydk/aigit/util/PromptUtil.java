@@ -2,66 +2,56 @@ package com.hmydk.aigit.util;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 
-import java.util.List;
-
 /**
  * PromptUtil
  *
  * @author hmydk
  */
 public class PromptUtil {
-    
-    public static final String DEFAULT_PROMPT = generatePrompt6();
-    
-    public static String constructPrompt(String diff, String branch, List<String> historyMsg) {
-        String content = ApiKeySettings.getInstance().getCustomPrompt();
-        content = content.replace("{branch}", branch);
-        if (content.contains("{history}") && historyMsg != null) {
-            content = content.replace("{history}", String.join("\n", historyMsg));
-        }
-        
+
+    public static final String DEFAULT_PROMPT_1 = getDefaultPrompt();
+    public static final String DEFAULT_PROMPT_2 = getPrompt3();
+
+    public static String constructPrompt(String diff) {
+        String content = ApiKeySettings.getInstance().getCustomPrompt().getPrompt();
+
         if (content.contains("{diff}")) {
             content = content.replace("{diff}", diff);
         } else {
             content = content + "\n" + diff;
         }
-        
-        if (content.contains("{local}")) {
-            content = content.replace("{local}", ApiKeySettings.getInstance().getCommitLanguage());
+
+        if (content.contains("{language}")) {
+            content = content.replace("{language}", ApiKeySettings.getInstance().getCommitLanguage());
         }
-        
+
         return content;
     }
-    
-    private static String generatePrompt6() {
+
+    private static String getDefaultPrompt() {
         return """
                 You are an AI assistant tasked with generating a Git commit message based on the provided code changes. Your goal is to create a clear, concise, and informative commit message that follows best practices.
                 
                 Input:
-                - Branch name: {branch}
                 - Code diff:
                 ```
                 {diff}
                 ```
-                - Recent commit history (for context):
-                {history}
                 
                 Instructions:
                 1. Analyze the provided code diff and branch name.
-                2. Consider the context from the recent commit history.
-                3. Generate a commit message following this format:
+                2. Generate a commit message following this format:
                    - First line: A short, imperative summary (50 characters or less)
                    - Blank line
                    - Detailed explanation (if necessary), wrapped at 72 characters
-                4. The commit message should:
+                3. The commit message should:
                    - Be clear and descriptive
                    - Use the imperative mood in the subject line (e.g., "Add feature" not "Added feature")
                    - Explain what and why, not how
                    - Reference relevant issue numbers if applicable
-                5. Avoid:
+                4. Avoid:
                    - Generic messages like "Bug fix" or "Update file.txt"
                    - Mentioning obvious details that can be seen in the diff
-                6.- Generate in {local}
                 
                 Output:
                 - Provide only the commit message, without any additional explanation or commentary.
@@ -86,112 +76,67 @@ public class PromptUtil {
                    - chore, use this for code related to maintenance tasks, build processes, or other non-user-facing changes. It typically includes tasks that don't directly impact the functionality but are necessary for the project's development and maintenance.
                    - ci, use this if this change is for CI related stuff
                    - revert, use this if im reverting something
+                
+                Note: The final result should be given in {language}
                 """;
     }
-    
-    private static String generatePrompt5() {
+
+    private static String getPrompt3() {
         return """
-                Write a commit message in the conventional commit convention. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message. Lines must not be longer than 74 characters. Use {locale} language to answer. End commit title with issue number if you can get it from the branch name: {branch} in parenthesis. {Use this hint to improve this commit message: $hint }{diff}
-                """;
-    }
-    
-    private static String generatePrompt4() {
-        return """
-                Generate a commit message using the Angular Conventional Commit Convention.
-                Constraints:
-                - Summarize changes with specificity
-                - Optionally include benefits in the body
-                - Keep lines within 72 characters
-                - Use {local} language
-                - Infer the scope from the context of the diff
-                Structure:
-                <type>[optional scope]: <description>
-                [optional body]
-                Example:
-                   feat(api): add endpoint for user authentication
-                Possible scopes (examples, infer from diff context):
-                - api: app API-related code
-                - ui: user interface changes
-                - db: database-related changes
-                - etc.
-                Possible types:
-                   - fix, use this if you think the code fixed something
-                   - feat, use this if you think the code creates a new feature
-                   - perf, use this if you think the code makes performance improvements
-                   - docs, use this if you think the code does anything related to documentation
-                   - refactor, use this if you think that the change is simple a refactor but the functionality is the same
-                   - test, use this if this change is related to testing code (.spec, .test, etc)
-                   - chore, use this for code related to maintenance tasks, build processes, or other non-user-facing changes. It typically includes tasks that don't directly impact the functionality but are necessary for the project's development and maintenance.
-                   - ci, use this if this change is for CI related stuff
-                   - revert, use this if im reverting something
-                Diff:
-                    {diff}
-                """;
-    }
-    
-    private static String generatePrompt3() {
-        return """
-                Write a meaningful commit message in the Angular Conventional Commit Convention by summing up, thus being specific, to what changed. If you can figure out the benefits of the code, you may add add this to the commit body. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message. Lines must not be longer than 74 characters. Use {locale} language to answer. End commit title with issue number if only and only if you can get it from the branch name: {branch} in parenthesis, else don't do this. Do not use any emojis!
-                             
-                Your commit message should follow the following style, example:\s
-                              
-                refactor(api): a description here
-                              
-                1:An optional body text here
-                              
-                2:An optional footer text here
-                              
-                The commit description (which comes right after the "type(scope):" must not be sentence-case, start-case, pascal-case, upper-case [subject-case] and not end with a period (.) and must not be over 74 characters in length.
-                              
-                "refactor" is the type, I'll list all possible types.                              
-                          
-                Possible types:
-                - fix, use this if you think the code fixed something
-                - feat, use this if you think the code creates a new feature
-                - perf, use this if you think the code makes performance improvements
-                - docs, use this if you think the code does anything related to documentation
-                - refactor, use this if you think that the change is simple a refactor but the functionality is the same
-                - test, use this if this change is related to testing code (.spec, .test, etc)
-                - chore, use this for code related to maintenance tasks, build processes, or other non-user-facing changes. It typically includes tasks that don't directly impact the functionality but are necessary for the project's development and maintenance.
-                - ci, use this if this change is for CI related stuff
-                - revert, use this if im reverting something
-                              
-                This is the diff:
-                {diff}
-                  """;
-    }
-    
-    private static String generatePrompt2() {
-        return """
-                 Given the diff below, create a concise commit message following the Conventional Commits format (e.g., fix: correct minor typos in code). The primary change description should be prioritized. Avoid verbosity:
+                 Generate a concise yet detailed git commit message using the following format and information:
+                
+                 ```
+                 <type>(<scope>): <subject>
+                
+                 <body>
+                
+                 <footer>
+                 ```
+               
+                 Use the following placeholders in your analysis:
+                 - diff begin ：
                  {diff}
-                """;
-    }
-    
-    private static String generatePrompt() {
-        return """
-                I'll send you an output of 'git diff --staged' command, and you convert it into a commit message.
-                remember these：
-                - now branch is {branch}
-                - Determine the language to be used based on the given historical commit msg
-                - Based on the given historical commit msg, summarize the format, specifications, tone and intonation of the msg
-                - Imitate the language and style of historical git msg to write new git msg
-                - Lines must not be longer than 74 characters.
-                - Generate the appropriate git commit msg directly for me without any other unnecessary explanations
-                            
-                            
-                historical git msg is below
-                ------------------------
-                {history}
-                            
-                            
-                git diff detail is below
-                ------------------------
-                {diff}
-                            
-                            
-                so, git msg content is
-                -----------------------
+                 - diff end.
+                
+                 Guidelines:
+                
+                 1. <type>: Commit type (required)
+                    - Use standard types: feat, fix, docs, style, refactor, perf, test, chore
+                
+                 2. <scope>: Area of impact (required)
+                    - Briefly mention the specific component or module affected
+                
+                 3. <subject>: Short description (required)
+                    - Summarize the main change in one sentence (max 50 characters)
+                    - Use the imperative mood, e.g., "add" not "added" or "adds"
+                    - Don't capitalize the first letter
+                    - No period at the end
+                
+                 4. <body>: Detailed description (required)
+                    - Explain the motivation for the change
+                    - Describe the key modifications (max 3 bullet points)
+                    - Mention any important technical details
+                    - Use the imperative mood
+                
+                 5. <footer>: (optional)
+                    - Note any breaking changes
+                    - Reference related issues or PRs
+                
+                 Example:
+                 ```
+                 feat(user-auth): implement two-factor authentication
+                
+                 • Add QR code generation for 2FA setup
+                 • Integrate Google Authenticator API
+                 • Update user settings for 2FA options
+                 ```
+                
+                 Notes:
+                 - Keep the entire message under 300 characters
+                 - Focus on what and why, not how
+                 - Summarize diff to highlight key changes; don't include raw diff output
+                
+                Note: The final result should be given in {language}
                 """;
     }
 }

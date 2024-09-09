@@ -6,8 +6,6 @@ import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 
-import java.util.List;
-
 public class CommitMessageService {
     private final GeminiService aiService;
 
@@ -33,8 +31,8 @@ public class CommitMessageService {
         return aiService.validateConfig(model, apiKey, language);
     }
 
-    public String generateCommitMessage(String branch, String diff, List<String> gitHistoryMsg) {
-        String prompt = PromptUtil.constructPrompt(diff, branch, gitHistoryMsg);
+    public String generateCommitMessage(String diff) {
+        String prompt = PromptUtil.constructPrompt(diff);
         return aiService.generateCommitMessage(prompt);
     }
 

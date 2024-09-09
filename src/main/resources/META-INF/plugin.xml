@@ -27,8 +27,12 @@
         <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
         <!-- 声明通知组 -->
         <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
+        <!--        <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"-->
+        <!--            displayName="AI Git Commit"/>-->
         <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
-                                 displayName="AI Git Commit"/>
+                                 id="aigit.settings"
+                                 displayName="AI Git Commit"
+                                 groupId="Tools"/>
         <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
     </extensions>
 
@@ -46,37 +50,10 @@
 
     <change-notes>
         <![CDATA[
-        <h4>v0.0.7</h4>
+        <h4>What's new</h4>
         <ul>
-            <li>Optimize the default prompt.</li>
-            <li>Add a prompt message: Generating….</li>
-        </ul>
-        <h4>v0.0.6</h4>
-        <ul>
-            <li>Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li></li>
-            <li>Optimize the display of configuration validation.</li>
-        </ul>
-        <h4>v0.0.5</h4>
-        <ul>
-            <li>support WebStorm2024.2</li>
-        </ul>
-        <h4>v0.0.4</h4>
-        <ul>
-            <li>update welcome notification logic</li>
-            <li>support user-defined prompts for generating git messages</li>
-        </ul>
-        <h4>v0.0.3</h4>
-        <ul>
-            <li>add verify config button</li>
-            <li>set http connection timeout : 10s</li>
-        </ul>
-        <h4>v0.0.2</h4>
-        <ul>
-            <li>support local language for generate git message</li>
-        </ul>
-        <h4>v0.0.1</h4>
-        <ul>
-            <li>support gemini</li>
+            <li>Support configuring multiple 'prompts'.</li>
+            <li>Improve the quality of the generated results.</li>
         </ul>
         ]]>
     </change-notes>

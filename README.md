@@ -5,6 +5,9 @@
 
 
 ## What’s New
+- v1.0.0
+  - Support configuring multiple 'prompts'.
+  - Improve the quality of the generated results.
 
 - v0.0.7
   - Optimize the default prompt.
