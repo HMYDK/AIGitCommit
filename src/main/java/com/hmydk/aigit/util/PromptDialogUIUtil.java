@@ -90,7 +90,7 @@ public class PromptDialogUIUtil {
         gbc.weightx = 1;
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JLabel helpTextLabel = new JLabel("Supported placeholders: {branch}, {history}, {diff}, {local}.");
+        JLabel helpTextLabel = new JLabel("Supported placeholders: {diff}, {language}.");
         helpTextLabel.setForeground(JBColor.GRAY);
         helpTextLabel.setFont(helpTextLabel.getFont().deriveFont(Font.ITALIC));
         panel.add(helpTextLabel, gbc);

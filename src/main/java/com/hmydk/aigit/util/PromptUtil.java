@@ -2,8 +2,6 @@ package com.hmydk.aigit.util;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 
-import java.util.List;
-
 /**
  * PromptUtil
  *
@@ -14,12 +12,8 @@ public class PromptUtil {
     public static final String DEFAULT_PROMPT_1 = getDefaultPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
 
-    public static String constructPrompt(String diff, String branch, List<String> historyMsg) {
+    public static String constructPrompt(String diff) {
         String content = ApiKeySettings.getInstance().getCustomPrompt().getPrompt();
-        content = content.replace("{branch}", branch);
-        if (content.contains("{history}") && historyMsg != null) {
-            content = content.replace("{history}", String.join("\n", historyMsg));
-        }
 
         if (content.contains("{diff}")) {
             content = content.replace("{diff}", diff);
@@ -27,8 +21,8 @@ public class PromptUtil {
             content = content + "\n" + diff;
         }
 
-        if (content.contains("{local}")) {
-            content = content.replace("{local}", ApiKeySettings.getInstance().getCommitLanguage());
+        if (content.contains("{language}")) {
+            content = content.replace("{language}", ApiKeySettings.getInstance().getCommitLanguage());
         }
 
         return content;
@@ -39,27 +33,23 @@ public class PromptUtil {
                 You are an AI assistant tasked with generating a Git commit message based on the provided code changes. Your goal is to create a clear, concise, and informative commit message that follows best practices.
                 
                 Input:
-                - Branch name: {branch}
                 - Code diff:
                 ```
                 {diff}
                 ```
-                - Recent commit history (for context):
-                {history}
                 
                 Instructions:
                 1. Analyze the provided code diff and branch name.
-                2. Consider the context from the recent commit history.
-                3. Generate a commit message following this format:
+                2. Generate a commit message following this format:
                    - First line: A short, imperative summary (50 characters or less)
                    - Blank line
                    - Detailed explanation (if necessary), wrapped at 72 characters
-                4. The commit message should:
+                3. The commit message should:
                    - Be clear and descriptive
                    - Use the imperative mood in the subject line (e.g., "Add feature" not "Added feature")
                    - Explain what and why, not how
                    - Reference relevant issue numbers if applicable
-                5. Avoid:
+                4. Avoid:
                    - Generic messages like "Bug fix" or "Update file.txt"
                    - Mentioning obvious details that can be seen in the diff
                 
@@ -87,14 +77,7 @@ public class PromptUtil {
                    - ci, use this if this change is for CI related stuff
                    - revert, use this if im reverting something
                 
-                Note: The final result should be given in {local}
-                """;
-    }
-
-
-    private static String getPrompt2() {
-        return """
-                You are an AI assistant tasked with generating a Git commit message based on the provided code changes. Your goal is to create a clear, concise, and informative commit message that follows best practices.
+                Note: The final result should be given in {language}
                 """;
     }
 
@@ -111,9 +94,9 @@ public class PromptUtil {
                  ```
                
                  Use the following placeholders in your analysis:
-                 - {branch}: The current git branch
-                 - {history}: Recent commit history
-                 - {diff}: Changes in this commit
+                 - diff begin ：
+                 {diff}
+                 - diff end.
                 
                  Guidelines:
                 
@@ -146,17 +129,14 @@ public class PromptUtil {
                  • Add QR code generation for 2FA setup
                  • Integrate Google Authenticator API
                  • Update user settings for 2FA options
-                
-                 Closes #123
                  ```
                 
                  Notes:
                  - Keep the entire message under 300 characters
                  - Focus on what and why, not how
-                 - Summarize {diff} to highlight key changes; don't include raw diff output
-                 - Use {history} to provide context if relevant
+                 - Summarize diff to highlight key changes; don't include raw diff output
                 
-                Note: The final result should be given in {local}
+                Note: The final result should be given in {language}
                 """;
     }
 }

@@ -54,6 +54,11 @@ public class GenerateCommitMessageAction extends AnAction {
         }
         
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
+
+        if (includedChanges.isEmpty()){
+            commitMessage.setCommitMessage(Constants.NO_FILE_SELECTED);
+            return;
+        }
         
         commitMessage.setCommitMessage(Constants.GENERATING_COMMIT_MESSAGE);
         
@@ -62,12 +67,8 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    List<String> gitHistoryMsg = GItCommitUtil.computeGitHistoryMsg(project, Constants.GIT_HISTORY_DEPTH);
                     String diff = GItCommitUtil.computeDiff(includedChanges, project);
-                    String branch = GItCommitUtil.commonBranch(includedChanges, project);
-                    
-                    String commitMessageFromAi = commitMessageService.generateCommitMessage(branch, diff, gitHistoryMsg).trim();
-
+                    String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
                     ApplicationManager.getApplication().invokeLater(() -> {
                         commitMessage.setCommitMessage(commitMessageFromAi);
                     });
