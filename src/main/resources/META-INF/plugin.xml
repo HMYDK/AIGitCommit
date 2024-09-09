@@ -53,6 +53,7 @@
         <h4>What's new</h4>
         <ul>
             <li>Support configuring multiple 'prompts'.</li>
+            <li>Improve the quality of the generated results.</li>
         </ul>
         ]]>
     </change-notes>
