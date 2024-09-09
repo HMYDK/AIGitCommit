@@ -32,7 +32,7 @@ public class ApiKeyConfigurable implements Configurable {
     @Override
     public boolean isModified() {
         return !settings.getAiModel().equals(ui.getModelComboBox().getSelectedItem())
-                || !settings.getApiKey().equals(ui.getApiKeyField().getText())
+                || !settings.getApiKey().equals(new String(ui.getApiKeyField().getPassword()))
                 || !settings.getCommitLanguage().equals(ui.getLanguageComboBox().getSelectedItem())
                 || isCustomPromptsModified() || isCustomPromptModified();
     }
@@ -41,7 +41,7 @@ public class ApiKeyConfigurable implements Configurable {
     @Override
     public void apply() {
         settings.setAiModel((String) ui.getModelComboBox().getSelectedItem());
-        settings.setApiKey(ui.getApiKeyField().getText());
+        settings.setApiKey(new String(ui.getApiKeyField().getPassword()));
         settings.setCommitLanguage((String) ui.getLanguageComboBox().getSelectedItem());
         saveCustomPromptsAndChoosedPrompt();
     }
