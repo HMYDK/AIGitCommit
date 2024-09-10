@@ -50,9 +50,13 @@
 
     <change-notes>
         <![CDATA[
-        <h4>Features:</h4>
+        <h4>Feature:</h4>
         <ul>
             <li>Support project-level personalized configuration.</li>
+        </ul>
+        <h4>Fix:</h4>
+        <ul>
+            <li>Plugin can be enabled without IDE restart.</li>
         </ul>
         ]]>
     </change-notes>
