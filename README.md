@@ -1,38 +1,30 @@
+<div align="center">
+    <a href="https://plugins.jetbrains.com/plugin/24851-ai-git-commit">
+        <img src="./src/main/resources/META-INF/pluginIcon.svg" width="200" height="200" alt="logo"/>
+    </a>
+</div>
+<h1 align="center">AI Commits</h1>
 
+<p align="center">
+<a href="https://plugins.jetbrains.com/plugin/24851-ai-git-commit"><img src="https://img.shields.io/jetbrains/plugin/d/24851-ai-git-commit.svg?style=flat-square"></a>
+<a href="https://plugins.jetbrains.com/plugin/24851-ai-git-commit"><img src="https://img.shields.io/jetbrains/plugin/v/24851-ai-git-commit.svg?style=flat-square"></a>
+</p>
+<br>
 
+## Description
 
-#### This plugin uses AI to automatically generate commit messages based on the changes in your code.
+This plugin uses AI to automatically generate commit messages based on the changes in your code.
 
+## Features
+- Support configuring multiple 'prompts'.
 
-## What’s New
-- v1.0.0
-  - Support configuring multiple 'prompts'.
-  - Improve the quality of the generated results.
+## Supported models
 
-- v0.0.7
-  - Optimize the default prompt.
-  - Add a prompt message: Generating….
+- Gemini
 
-- v0.0.6
-  - Refactor commit message generation logic (by <a href="https://github.com/AnkioTomas">@AnkioTomas</a>)</li>
-  - Optimize the display of configuration validation.</li>
+## Install
 
-- v0.0.5
-  - support WebStorm2024.2
-- v0.0.4
-  - update welcome notification logic
-  - support user-defined prompts for generating git messages
-- v0.0.3
-  - add verify config button
-  - set http connection timeout : 10s
-- v0.0.2
-  - support local language for generate git message
-- v0.0.1
-  - support gemini
+<a href="https://plugins.jetbrains.com/plugin/24851-ai-git-commit">
+<img src="https://user-images.githubusercontent.com/12044174/123105697-94066100-d46a-11eb-9832-338cdf4e0612.png" width="300"/>
+</a>
 
-## Getting Started 
-
-To get started, install the plugin and set Gemini private token in plugin's settings: <br>
-Settings  &gt; AI Git Commit<br>
-
-<li><a href="https://aistudio.google.com/app/apikey">Visit AI Studio API Key Page to get <strong>gemini</strong> api key</a></li>
