@@ -17,6 +17,8 @@ This plugin uses AI to automatically generate commit messages based on the chang
 
 ## Features
 - Support configuring multiple 'prompts'.
+- Support project-level personalized configuration.
+  - Use the 'prompt' from the 'commit-prompt.txt' file located in the project’s root directory.
 
 ## Supported models
 

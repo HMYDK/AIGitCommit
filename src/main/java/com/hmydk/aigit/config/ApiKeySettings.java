@@ -1,5 +1,6 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.PromptInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -17,7 +18,13 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     private String aiModel = "Gemini";
     private String apiKey = "";
     private String commitLanguage = "English";
+
+    private String promptType = Constants.CUSTOM_PROMPT;
+
+    //prompt from table
     private List<PromptInfo> customPrompts = new ArrayList<>();
+
+    //current prompt by user choose
     private PromptInfo customPrompt = new PromptInfo("", "");
 
     public static ApiKeySettings getInstance() {
@@ -79,5 +86,11 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     }
 
 
+    public String getPromptType() {
+        return promptType;
+    }
 
+    public void setPromptType(String promptType) {
+        this.promptType = promptType;
+    }
 }
