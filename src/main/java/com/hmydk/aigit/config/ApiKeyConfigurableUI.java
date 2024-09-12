@@ -23,11 +23,16 @@ import java.net.URISyntaxException;
 public class ApiKeyConfigurableUI {
 
     private JPanel mainPanel;
-    private JPasswordField apiKeyField; // 替换为JPasswordField
+    private JPasswordField apiKeyField;
     private ComboBox<String> modelComboBox;
     private ComboBox<String> languageComboBox;
+
+    private ComboBox<String> promptTypeComboBox;
     private JBTable customPromptsTable;
     private DefaultTableModel customPromptsTableModel;
+    private JPanel customPromptPanel;
+    private JPanel projectPromptPanel;
+
 
     // 记录当前选中的行
     private int SELECTED_ROW = 0;
@@ -38,12 +43,16 @@ public class ApiKeyConfigurableUI {
     }
 
     private void initComponents() {
-        apiKeyField = new JPasswordField(); // 替换为JPasswordField
+        apiKeyField = new JPasswordField();
         modelComboBox = new ComboBox<>(new String[]{"Gemini"});
         languageComboBox = new ComboBox<>(Constants.languages);
+        promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
+        customPromptPanel = createCustomPromptPanel();
+        projectPromptPanel = createProjectPromptPanel();
     }
+
 
     private void layoutComponents() {
         mainPanel = new JPanel(new GridBagLayout());
@@ -51,97 +60,103 @@ public class ApiKeyConfigurableUI {
         gbc.insets = JBUI.insets(5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("LLM client:"), gbc);
+        addComponent(new JBLabel("LLM client:"), gbc, 0, 0, 0.0);
+        addComponent(modelComboBox, gbc, 1, 0, 1.0);
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        mainPanel.add(modelComboBox, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0.0;
         JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         apiKeyPanel.add(new JBLabel("API key:"));
-        mainPanel.add(apiKeyPanel, gbc);
+        addComponent(apiKeyPanel, gbc, 0, 1, 0.0);
 
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.weightx = 1.0;
         JPanel apiKeyInputPanel = new JPanel(new BorderLayout(5, 0));
         apiKeyInputPanel.add(apiKeyField, BorderLayout.CENTER);
         JLabel linkLabel = getjLabel();
         apiKeyInputPanel.add(linkLabel, BorderLayout.EAST);
-        mainPanel.add(apiKeyInputPanel, gbc);
+        addComponent(apiKeyInputPanel, gbc, 1, 1, 1.0);
+
+        addComponent(new JBLabel("Language:"), gbc, 0, 2, 0.0);
+        addComponent(languageComboBox, gbc, 1, 2, 1.0);
+
+        addComponent(new JBLabel("Prompt type:"), gbc, 0, 3, 0.0);
+        addComponent(promptTypeComboBox, gbc, 1, 3, 1.0);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weightx = 0.0;
-        mainPanel.add(new JBLabel("Language:"), gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.weightx = 1.0;
-        mainPanel.add(languageComboBox, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
-        gbc.weighty = 0.0; // 设置权重为0以适应新行
-        JBLabel jbLabel = new JBLabel("Click on the data in the table to use it as the prompt.");
-        jbLabel.setFont(jbLabel.getFont().deriveFont(Font.PLAIN, 12));
-        jbLabel.setForeground(JBColor.GRAY);
-        mainPanel.add(jbLabel, gbc); // 新增文本行
-
-        gbc.gridy = 4; // 表格位置下移一行
+        gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
+        mainPanel.add(customPromptPanel, gbc);
+
+        promptTypeComboBox.addActionListener(e -> updatePromptPanelVisibility());
+    }
+
+    private void addComponent(Component component, GridBagConstraints gbc, int gridx, int gridy, double weightx) {
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
+        gbc.weightx = weightx;
+        mainPanel.add(component, gbc);
+    }
+
+    private JPanel createCustomPromptPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JBLabel infoLabel = new JBLabel("Click on the data in the table to use it as the prompt.");
+        infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
+        infoLabel.setForeground(JBColor.GRAY);
+        panel.add(infoLabel, BorderLayout.NORTH);
+
         JPanel customPromptsPanel = ToolbarDecorator.createDecorator(customPromptsTable)
-                .setAddAction(button -> {
-                    // 添加自定义提示的逻辑
-                    PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null,
-                            null);
-
-                    SwingUtilities.invokeLater(() -> {
-                        JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
-                                JOptionPane.OK_CANCEL_OPTION);
-                        JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
-                        dialog.setVisible(true);
-
-                        int result = (Integer) optionPane.getValue();
-                        if (result == JOptionPane.OK_OPTION) {
-                            // 将新提示添加到表格中
-                            String description = promptDialogUI.getDescriptionField().getText().trim();
-                            String content = promptDialogUI.getContentArea().getText().trim();
-                            if (!description.isEmpty() && !content.isEmpty()) {
-                                customPromptsTableModel.addRow(new Object[]{description, content});
-                            }
-                        }
-                    });
-                })
-                .setRemoveAction(button -> {
-                    int selectedRow = customPromptsTable.getSelectedRow();
-                    if (selectedRow != -1) {
-                        customPromptsTableModel.removeRow(selectedRow);
-                    }
-                })
-                .setEditAction(button -> {
-                    editCustomPrompt(customPromptsTable.getSelectedRow());
-                })
+                .setAddAction(button -> addCustomPrompt())
+                .setRemoveAction(button -> removeCustomPrompt())
+                .setEditAction(button -> editCustomPrompt(customPromptsTable.getSelectedRow()))
                 .createPanel();
-        mainPanel.add(customPromptsPanel, gbc);
+        panel.add(customPromptsPanel, BorderLayout.CENTER);
 
-        // 添加表格选择监听器
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                int selectedRow = customPromptsTable.getSelectedRow();
-                SELECTED_ROW = Math.max(selectedRow, 0);
+                SELECTED_ROW = Math.max(customPromptsTable.getSelectedRow(), 0);
             }
         });
+
+        return panel;
     }
+
+    private JPanel createProjectPromptPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JLabel infoLabel = new JLabel("Using project-specific prompt from '" + Constants.PROJECT_PROMPT_FILE_NAME + "' in the project root.");
+        infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
+        infoLabel.setForeground(JBColor.GRAY);
+        panel.add(infoLabel, BorderLayout.CENTER);
+        return panel;
+    }
+
+
+    private void updatePromptPanelVisibility() {
+        String selectedPromptType = (String) promptTypeComboBox.getSelectedItem();
+        if (Constants.CUSTOM_PROMPT.equals(selectedPromptType)) {
+            mainPanel.remove(projectPromptPanel);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            gbc.gridwidth = 2;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gbc.fill = GridBagConstraints.BOTH;
+            mainPanel.add(customPromptPanel, gbc);
+        } else {
+            mainPanel.remove(customPromptPanel);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            gbc.gridwidth = 2;
+            gbc.weightx = 1.0;
+            gbc.weighty = 0.0;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            mainPanel.add(projectPromptPanel, gbc);
+        }
+        mainPanel.revalidate();
+        mainPanel.repaint();
+    }
+
 
     private static @NotNull JLabel getjLabel() {
         JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
@@ -157,6 +172,49 @@ public class ApiKeyConfigurableUI {
             }
         });
         return linkLabel;
+    }
+
+    private void addCustomPrompt() {
+        PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
+
+        SwingUtilities.invokeLater(() -> {
+            JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+            JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
+            dialog.setVisible(true);
+
+            int result = (Integer) optionPane.getValue();
+            if (result == JOptionPane.OK_OPTION) {
+                String description = promptDialogUI.getDescriptionField().getText().trim();
+                String content = promptDialogUI.getContentArea().getText().trim();
+                if (!description.isEmpty() && !content.isEmpty()) {
+                    customPromptsTableModel.addRow(new Object[]{description, content});
+                }
+            }
+        });
+    }
+
+    private void removeCustomPrompt() {
+        int selectedRow = customPromptsTable.getSelectedRow();
+        if (selectedRow != -1) {
+            int confirm = JOptionPane.showConfirmDialog(
+                    mainPanel,
+                    "Are you sure you want to remove this prompt?",
+                    "Confirm Removal",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                customPromptsTableModel.removeRow(selectedRow);
+                if (customPromptsTableModel.getRowCount() > 0) {
+                    int newSelectedRow = Math.min(selectedRow, customPromptsTableModel.getRowCount() - 1);
+                    customPromptsTable.setRowSelectionInterval(newSelectedRow, newSelectedRow);
+                    SELECTED_ROW = newSelectedRow;
+                } else {
+                    SELECTED_ROW = -1;
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(mainPanel, "Please select a prompt to remove.", "No Selection", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void editCustomPrompt(int row) {
@@ -205,15 +263,15 @@ public class ApiKeyConfigurableUI {
         return customPromptsTableModel;
     }
 
-    public String getSelectedPrompt() {
-        int selectedRow = customPromptsTable.getSelectedRow();
-        if (selectedRow != -1) {
-            return (String) customPromptsTableModel.getValueAt(selectedRow, 1);
-        }
-        return null;
-    }
-
     public int getSELECTED_ROW() {
         return SELECTED_ROW;
+    }
+
+    public ComboBox<String> getPromptTypeComboBox() {
+        return promptTypeComboBox;
+    }
+
+    public void setPromptTypeComboBox(ComboBox<String> promptTypeComboBox) {
+        this.promptTypeComboBox = promptTypeComboBox;
     }
 }

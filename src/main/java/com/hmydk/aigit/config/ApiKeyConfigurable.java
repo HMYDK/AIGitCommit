@@ -1,6 +1,8 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.PromptInfo;
+import com.hmydk.aigit.util.FileUtil;
 import com.intellij.openapi.options.Configurable;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +36,7 @@ public class ApiKeyConfigurable implements Configurable {
         return !settings.getAiModel().equals(ui.getModelComboBox().getSelectedItem())
                 || !settings.getApiKey().equals(new String(ui.getApiKeyField().getPassword()))
                 || !settings.getCommitLanguage().equals(ui.getLanguageComboBox().getSelectedItem())
-                || isCustomPromptsModified() || isCustomPromptModified();
+                || isCustomPromptsModified() || isCustomPromptModified() || isPromptTypeModified();
     }
 
 
@@ -43,12 +45,17 @@ public class ApiKeyConfigurable implements Configurable {
         settings.setAiModel((String) ui.getModelComboBox().getSelectedItem());
         settings.setApiKey(new String(ui.getApiKeyField().getPassword()));
         settings.setCommitLanguage((String) ui.getLanguageComboBox().getSelectedItem());
-        saveCustomPromptsAndChoosedPrompt();
+
+        Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
+        if (Constants.CUSTOM_PROMPT.equals((String) selectedPromptType)) {
+            saveCustomPromptsAndChoosedPrompt();
+        }
+        settings.setPromptType((String) selectedPromptType);
+
     }
 
     @Override
     public void reset() {
-        settings.setCustomPrompts(new ArrayList<>());
         loadSettings();
     }
 
@@ -62,10 +69,14 @@ public class ApiKeyConfigurable implements Configurable {
             ui.getModelComboBox().setSelectedItem(settings.getAiModel());
             ui.getApiKeyField().setText(settings.getApiKey());
             ui.getLanguageComboBox().setSelectedItem(settings.getCommitLanguage());
+
             //设置表格数据
             loadCustomPrompts();
             //设置下拉框选中项
             loadChoosedPrompt();
+
+            //设置提示类型
+            ui.getPromptTypeComboBox().setSelectedItem(settings.getPromptType());
         }
     }
 
@@ -87,7 +98,7 @@ public class ApiKeyConfigurable implements Configurable {
                 String description = (String) model.getValueAt(i, 0);
                 String prompt = (String) model.getValueAt(i, 1);
                 if (settings.getCustomPrompt().getDescription().equals(description)
-                    && settings.getCustomPrompt().getPrompt().equals(prompt)) {
+                        && settings.getCustomPrompt().getPrompt().equals(prompt)) {
                     ui.getCustomPromptsTable().setRowSelectionInterval(i, i);
                 }
             }
@@ -111,6 +122,12 @@ public class ApiKeyConfigurable implements Configurable {
             }
         }
         settings.setCustomPrompts(customPrompts);
+    }
+
+
+    private boolean isPromptTypeModified() {
+        Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
+        return !settings.getPromptType().equals(selectedPromptType);
     }
 
     private boolean isCustomPromptsModified() {
