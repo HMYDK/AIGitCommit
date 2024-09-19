@@ -1,16 +1,16 @@
 package com.hmydk.aigit.service;
 
 
-import com.hmydk.aigit.service.impl.GeminiService;
+import com.hmydk.aigit.service.impl.OllamaService;
 import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 
 public class CommitMessageService {
-    private final GeminiService aiService;
+    private final AIService aiService;
 
     public CommitMessageService() {
-        this.aiService = new GeminiService();
+        this.aiService = new OllamaService();
     }
 
     public boolean showCommitMessageDialog(Project project, String commitMessage) {

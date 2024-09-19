@@ -33,7 +33,6 @@ public class GeminiService implements AIService {
         try {
             aiResponse = getAIResponse(ApiKeySettings.getInstance().getApiKey(), content);
         } catch (Exception e) {
-            e.printStackTrace();
             return e.getMessage();
         }
         log.info("aiResponse is  :\n{}", aiResponse);
