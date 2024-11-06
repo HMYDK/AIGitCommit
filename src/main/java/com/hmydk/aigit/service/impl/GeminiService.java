@@ -29,9 +29,10 @@ public class GeminiService implements AIService {
 
     @Override
     public String generateCommitMessage(String content) {
+        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get("Gemini").getApiKey();
         String aiResponse;
         try {
-            aiResponse = getAIResponse(ApiKeySettings.getInstance().getApiKey(), content);
+            aiResponse = getAIResponse(apiKey, content);
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -41,7 +42,8 @@ public class GeminiService implements AIService {
 
     @Override
     public boolean checkApiKeyIsExists() {
-        return !ApiKeySettings.getInstance().getApiKey().isEmpty();
+        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get("Gemini").getApiKey();
+        return !apiKey.isEmpty();
     }
 
     @Override
