@@ -1,5 +1,7 @@
 package com.hmydk.aigit.constant;
 
+import com.hmydk.aigit.config.ApiKeySettings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,14 +27,28 @@ public class Constants {
         return new String[]{PROJECT_PROMPT, CUSTOM_PROMPT};
     }
 
-    public static final String[] LLM_CLIENTS = {"Gemini", "Ollama"};
+
+
+
+
+    private static final String Gemini = "Gemini";
+    private static final String Ollama = "Ollama";
+
+
+    public static final String[] LLM_CLIENTS = {Gemini, Ollama};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
-            put("Gemini", new String[]{"gemini-1.5-flash-latest", "gemini-1.5-flash"});
+            put(Gemini, new String[]{"gemini-1.5-flash-latest", "gemini-1.5-flash"});
 //            put("OpenAI", new String[] { "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo" });
-            put("Ollama", new String[]{"llama2", "mistral", "qwen2.5:14b"});
+            put(Ollama, new String[]{"llama2", "mistral", "qwen2.5:14b"});
         }
     };
+
+
+    public static Map<String, ApiKeySettings.ModuleConfig> moduleConfigs = new HashMap<>(){{
+        put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models",""));
+        put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate",""));
+    }};
 
 }

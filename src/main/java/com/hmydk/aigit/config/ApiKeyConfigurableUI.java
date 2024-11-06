@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -61,12 +60,6 @@ public class ApiKeyConfigurableUI {
 
         // 初始化模块下拉框
         updateModuleComboBox((String) clientComboBox.getSelectedItem());
-
-        clientComboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                loadModuleConfig();
-            }
-        });
     }
 
     private void layoutComponents() {
@@ -279,19 +272,6 @@ public class ApiKeyConfigurableUI {
                 selectedClient,
                 selectedModule);
         dialog.show();
-    }
-
-    // 抽取配置加载逻辑到单独方法
-    private void loadModuleConfig() {
-        String client = (String) clientComboBox.getSelectedItem();
-        String module = (String) moduleComboBox.getSelectedItem();
-        if (client == null || module == null) {
-            return;
-        }
-
-        ApiKeySettings settings = ApiKeySettings.getInstance();
-        String configKey = client;
-        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(configKey);
     }
 
     public JPanel getMainPanel() {

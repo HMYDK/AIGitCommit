@@ -18,7 +18,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         super(parent, true);
         this.client = client;
         this.module = module;
-        setTitle("Configure " + client + " : " + module);
+        setTitle(client + " : " + module);
         init();
     }
 
