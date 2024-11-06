@@ -2,6 +2,8 @@ package com.hmydk.aigit.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,7 +26,7 @@ public class OllamaService implements AIService {
     public String generateCommitMessage(String content) {
         String aiResponse;
         try {
-            aiResponse = getAIResponse("qwen2.5:14b",content);
+            aiResponse = getAIResponse(content);
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -42,8 +44,8 @@ public class OllamaService implements AIService {
         return true;
     }
 
-    private static String getAIResponse(String model, String textContent) throws Exception {
-        HttpURLConnection connection = getHttpURLConnection(model, textContent);
+    private static String getAIResponse(String textContent) throws Exception {
+        HttpURLConnection connection = getHttpURLConnection(textContent);
 
         StringBuilder response = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -58,12 +60,16 @@ public class OllamaService implements AIService {
         return jsonResponse.path("response").asText();
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String apiKey, String textContent) throws IOException {
-        GenerateRequest request = new GenerateRequest("qwen2.5:14b", textContent, false);
+    private static @NotNull HttpURLConnection getHttpURLConnection(String textContent) throws IOException {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+
+        GenerateRequest request = new GenerateRequest(selectedModule, textContent, false);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
-        URI uri = URI.create("http://localhost:11434/api/generate");
+        URI uri = URI.create(moduleConfig.getUrl());
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");

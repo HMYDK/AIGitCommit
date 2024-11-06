@@ -31,8 +31,8 @@ public class Constants {
 
 
 
-    private static final String Gemini = "Gemini";
-    private static final String Ollama = "Ollama";
+    public static final String Gemini = "Gemini";
+    public static final String Ollama = "Ollama";
 
 
     public static final String[] LLM_CLIENTS = {Gemini, Ollama};
@@ -54,8 +54,8 @@ public class Constants {
 
     public static String getHelpText(String client){
         return switch (client) {
-            case "Gemini" -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
-            case "Ollama" -> "Make sure Ollama is running locally on the specified URL";
+            case Gemini -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
+            case Ollama -> "Make sure Ollama is running locally on the specified URL";
             default -> "";
         };
     }

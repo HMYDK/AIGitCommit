@@ -1,26 +1,29 @@
 package com.hmydk.aigit.service;
 
 
+import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.impl.GeminiService;
 import com.hmydk.aigit.service.impl.OllamaService;
 import com.hmydk.aigit.util.PromptUtil;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 
 public class CommitMessageService {
     private final AIService aiService;
 
-    public CommitMessageService() {
-        this.aiService = new OllamaService();
-    }
+    ApiKeySettings settings = ApiKeySettings.getInstance();
 
-    public boolean showCommitMessageDialog(Project project, String commitMessage) {
-        int result = Messages.showYesNoDialog(
-                project,
-                "Use the following AI-generated commit message?\n\n" + commitMessage,
-                "AI Commit Message",
-                Messages.getQuestionIcon()
-        );
-        return result == Messages.YES;
+    public CommitMessageService() {
+        String selectedClient = settings.getSelectedClient();
+        switch (selectedClient) {
+            case Constants.Ollama:
+                this.aiService = new OllamaService();
+                break;
+            case Constants.Gemini:
+                this.aiService = new GeminiService();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
+        }
     }
 
     public boolean checkApiKeyIsExists() {

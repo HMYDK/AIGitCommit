@@ -3,6 +3,7 @@ package com.hmydk.aigit.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
 import org.jetbrains.annotations.NotNull;
@@ -29,10 +30,9 @@ public class GeminiService implements AIService {
 
     @Override
     public String generateCommitMessage(String content) {
-        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get("Gemini").getApiKey();
         String aiResponse;
         try {
-            aiResponse = getAIResponse(apiKey, content);
+            aiResponse = getAIResponse(content);
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -42,7 +42,7 @@ public class GeminiService implements AIService {
 
     @Override
     public boolean checkApiKeyIsExists() {
-        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get("Gemini").getApiKey();
+        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.Gemini).getApiKey();
         return !apiKey.isEmpty();
     }
 
@@ -50,7 +50,7 @@ public class GeminiService implements AIService {
     public boolean validateConfig(String model, String apiKey, String language) {
         int statusCode;
         try {
-            HttpURLConnection connection = getHttpURLConnection(apiKey, "hi");
+            HttpURLConnection connection = getHttpURLConnection("hi");
             statusCode = connection.getResponseCode();
         } catch (IOException e) {
             return false;
@@ -60,8 +60,8 @@ public class GeminiService implements AIService {
         return statusCode == 200;
     }
 
-    public static String getAIResponse(String apiKey, String textContent) throws Exception {
-        HttpURLConnection connection = getHttpURLConnection(apiKey, textContent);
+    public static String getAIResponse(String textContent) throws Exception {
+        HttpURLConnection connection = getHttpURLConnection(textContent);
 
         StringBuilder response = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -86,8 +86,12 @@ public class GeminiService implements AIService {
         return "sth error when request ai api";
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String apiKey, String textContent) throws IOException {
-        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+    private static @NotNull HttpURLConnection getHttpURLConnection(String textContent) throws IOException {
+//        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
+        String apiUrl = moduleConfig.getUrl() + "/" + selectedModule + ":generateContent?key=" + moduleConfig.getApiKey();
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
         geminiRequestBO.setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
         ObjectMapper objectMapper1 = new ObjectMapper();
