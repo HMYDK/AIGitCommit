@@ -10,16 +10,10 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class ApiKeyConfigurableUI {
 
@@ -160,22 +154,6 @@ public class ApiKeyConfigurableUI {
         }
         mainPanel.revalidate();
         mainPanel.repaint();
-    }
-
-    private static @NotNull JLabel getjLabel() {
-        JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
-        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        linkLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
-                } catch (IOException | URISyntaxException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        return linkLabel;
     }
 
     private void addCustomPrompt() {

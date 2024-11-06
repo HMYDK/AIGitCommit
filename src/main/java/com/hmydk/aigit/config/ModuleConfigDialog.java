@@ -1,6 +1,8 @@
 package com.hmydk.aigit.config;
 
+import com.hmydk.aigit.constant.Constants;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +15,8 @@ public class ModuleConfigDialog extends DialogWrapper {
     private JBPasswordField apiKeyField;
     private final String client;
     private final String module;
+    //文字提示
+    private JLabel helpLabel;
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -24,45 +28,60 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
+        // 创建主面板
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setPreferredSize(new Dimension(450, 200));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = JBUI.insets(5);
+        gbc.insets = JBUI.insets(5, 10, 5, 10); // 增加左右间距
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
 
+        // 初始化组件
         urlField = new JTextField();
         apiKeyField = new JBPasswordField();
+        helpLabel = new JLabel();
+        helpLabel.setForeground(JBColor.GRAY);
 
+        // URL 标签和输入框
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.weightx = 0;
         panel.add(new JLabel("URL:"), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         panel.add(urlField, gbc);
 
+        // API Key 标签和输入框
         gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.weightx = 0.0;
+        gbc.weightx = 0;
         panel.add(new JLabel("API Key:"), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         panel.add(apiKeyField, gbc);
 
+        // 帮助文本
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.insets = JBUI.insets(15, 10, 5, 10);
+        updateHelpText();
+        panel.add(helpLabel, gbc);
+
         return panel;
     }
 
-    /**
-     * 弹窗每次打开时，都会调用这个初始化方法
-     */
+    private void updateHelpText() {
+        helpLabel.setText(Constants.getHelpText(client));
+    }
+
+    // 保留原有的 init() 和 doOKAction() 方法
     @Override
     protected void init() {
-        //先让上层组件初始化，以便获取到默认值
         super.init();
-
-        // 获取当前配置实例
         ApiKeySettings settings = ApiKeySettings.getInstance();
-        // 获取或创建模块配置
         String configKey = client;
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs()
                 .computeIfAbsent(configKey, k -> new ApiKeySettings.ModuleConfig());
@@ -72,21 +91,12 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        // 获取当前配置实例
         ApiKeySettings settings = ApiKeySettings.getInstance();
-
-        // 获取或创建模块配置
         String configKey = client;
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs()
                 .computeIfAbsent(configKey, k -> new ApiKeySettings.ModuleConfig());
-
-        // 保存配置
         moduleConfig.setUrl(urlField.getText());
         moduleConfig.setApiKey(new String(apiKeyField.getPassword()));
-
-        // 调用父类方法关闭对话框
         super.doOKAction();
     }
-
-
 }

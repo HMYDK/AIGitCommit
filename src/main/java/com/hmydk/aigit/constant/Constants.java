@@ -51,4 +51,12 @@ public class Constants {
         put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate",""));
     }};
 
+
+    public static String getHelpText(String client){
+        return switch (client) {
+            case "Gemini" -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
+            case "Ollama" -> "Make sure Ollama is running locally on the specified URL";
+            default -> "";
+        };
+    }
 }
