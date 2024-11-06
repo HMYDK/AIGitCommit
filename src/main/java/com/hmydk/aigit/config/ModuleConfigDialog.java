@@ -1,6 +1,7 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBPasswordField;
@@ -21,6 +22,8 @@ public class ModuleConfigDialog extends DialogWrapper {
     private JLabel helpLabel;
     private JButton resetButton; // 新增重置按钮
     private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
+    private boolean isPasswordVisible = false;
+
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -62,9 +65,22 @@ public class ModuleConfigDialog extends DialogWrapper {
         gbc.weightx = 0;
         panel.add(new JLabel("API Key:"), gbc);
 
+        // 创建一个面板来容纳密码框和显示按钮
+        JPanel apiKeyPanel = new JPanel(new BorderLayout());
+        apiKeyPanel.add(apiKeyField, BorderLayout.CENTER);
+
+        // 创建显示/隐藏密码的按钮
+        JButton toggleButton = new JButton();
+        toggleButton.setIcon(AllIcons.Actions.Show); // 使用IDEA内置图标
+        toggleButton.setPreferredSize(new Dimension(28, 28));
+        toggleButton.setBorder(BorderFactory.createEmptyBorder());
+        toggleButton.setFocusable(false);
+        toggleButton.addActionListener(e -> togglePasswordVisibility(apiKeyField, toggleButton));
+        apiKeyPanel.add(toggleButton, BorderLayout.EAST);
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        panel.add(apiKeyField, gbc);
+        panel.add(apiKeyPanel, gbc);
 
         // 帮助文本
         gbc.gridx = 0;
@@ -127,5 +143,21 @@ public class ModuleConfigDialog extends DialogWrapper {
             urlField.setText(defaultConfig.getUrl());
             apiKeyField.setText(defaultConfig.getApiKey());
         }
+    }
+
+    private void togglePasswordVisibility(JBPasswordField passwordField, JButton toggleButton) {
+        isPasswordVisible = !isPasswordVisible;
+        if (isPasswordVisible) {
+            // 显示密码
+            String password = new String(passwordField.getPassword());
+            passwordField.setEchoChar((char) 0); // 设置为不隐藏字符
+            toggleButton.setIcon(AllIcons.Actions.ToggleVisibility); // 切换到"隐藏"图标
+        } else {
+            // 隐藏密码
+            passwordField.setEchoChar('•'); // 恢复为密码字符
+            toggleButton.setIcon(AllIcons.Actions.Show); // 切换到"显示"图标
+        }
+        passwordField.revalidate();
+        passwordField.repaint();
     }
 }
