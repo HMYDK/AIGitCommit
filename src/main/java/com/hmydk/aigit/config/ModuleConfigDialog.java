@@ -5,18 +5,22 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.util.ui.JBUI;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class ModuleConfigDialog extends DialogWrapper {
     private JTextField urlField;
     private JBPasswordField apiKeyField;
     private final String client;
     private final String module;
-    //文字提示
+    // 文字提示
     private JLabel helpLabel;
+    private JButton resetButton; // 新增重置按钮
+    private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -77,7 +81,23 @@ public class ModuleConfigDialog extends DialogWrapper {
         helpLabel.setText(Constants.getHelpText(client));
     }
 
-    // 保留原有的 init() 和 doOKAction() 方法
+    @Override
+    protected Action @NotNull [] createActions() {
+        resetButton = new JButton("Reset");
+        resetButton.addActionListener(e -> resetFields());
+
+        return new Action[] {
+                getOKAction(),
+                getCancelAction(),
+                new DialogWrapperAction("Reset") {
+                    @Override
+                    protected void doAction(ActionEvent e) {
+                        resetFields();
+                    }
+                }
+        };
+    }
+
     @Override
     protected void init() {
         super.init();
@@ -98,5 +118,14 @@ public class ModuleConfigDialog extends DialogWrapper {
         moduleConfig.setUrl(urlField.getText());
         moduleConfig.setApiKey(new String(apiKeyField.getPassword()));
         super.doOKAction();
+    }
+
+    private void resetFields() {
+        // 重置为默认配置
+        ApiKeySettings.ModuleConfig defaultConfig = Constants.moduleConfigs.get(client);
+        if (defaultConfig != null) {
+            urlField.setText(defaultConfig.getUrl());
+            apiKeyField.setText(defaultConfig.getApiKey());
+        }
     }
 }
