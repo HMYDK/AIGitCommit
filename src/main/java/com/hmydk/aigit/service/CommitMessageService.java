@@ -14,24 +14,11 @@ public class CommitMessageService {
 
     public CommitMessageService() {
         String selectedClient = settings.getSelectedClient();
-        switch (selectedClient) {
-            case Constants.Ollama:
-                this.aiService = new OllamaService();
-                break;
-            case Constants.Gemini:
-                this.aiService = new GeminiService();
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
-        }
+        this.aiService = getAIService(selectedClient);
     }
 
     public boolean checkApiKeyIsExists() {
         return aiService.checkApiKeyIsExists();
-    }
-
-    public boolean validateConfig(String model, String apiKey, String language) {
-        return aiService.validateConfig(model, apiKey, language);
     }
 
     public String generateCommitMessage(String diff) {
@@ -39,5 +26,13 @@ public class CommitMessageService {
         return aiService.generateCommitMessage(prompt);
     }
 
+
+    public static AIService getAIService(String selectedClient) {
+        return switch (selectedClient) {
+            case Constants.Ollama -> new OllamaService();
+            case Constants.Gemini -> new GeminiService();
+            default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
+        };
+    }
 
 }

@@ -1,7 +1,13 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.AIService;
+import com.hmydk.aigit.service.CommitMessageService;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
@@ -14,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Map;
 
 public class ModuleConfigDialog extends DialogWrapper {
     private JTextField urlField;
@@ -23,6 +30,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     // 文字提示
     private JLabel helpLabel;
     private JButton resetButton; // 新增重置按钮
+    private JButton checkConfigButton; // 校验当前配置是否正确
     private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
     private boolean isPasswordVisible = false;
 
@@ -103,6 +111,9 @@ public class ModuleConfigDialog extends DialogWrapper {
         resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> resetFields());
 
+        checkConfigButton = new JButton("Check Config");
+        checkConfigButton.addActionListener(e -> checkConfig());
+
         return new Action[]{
                 getOKAction(),
                 getCancelAction(),
@@ -111,8 +122,54 @@ public class ModuleConfigDialog extends DialogWrapper {
                     protected void doAction(ActionEvent e) {
                         resetFields();
                     }
+                },
+                new DialogWrapperAction("Check Config") {
+                    @Override
+                    protected void doAction(ActionEvent e) {
+                        checkConfig();
+                    }
                 }
         };
+    }
+
+    private void checkConfig() {
+        ProgressManager.getInstance().run(new Task.Modal(null, "Validating Configuration", false) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                try {
+                    indicator.setIndeterminate(true);
+                    indicator.setText("Validating configuration...");
+
+                    AIService aiService = CommitMessageService.getAIService(client);
+                    Map<String, String> checkConfig = Map.of(
+                            "url", urlField.getText(),
+                            "module", module,
+                            "apiKey", new String(apiKeyField.getPassword())
+                    );
+
+                    boolean isValid = aiService.validateConfig(checkConfig);
+
+                    // Use invokeLater to ensure dialogs are shown in EDT thread
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        if (isValid) {
+                            Messages.showInfoMessage("Configuration validation successful", "Success");
+                        } else {
+                            Messages.showErrorDialog(
+                                    "Configuration validation failed. You can click the reset button to restore default values.",
+                                    "Error"
+                            );
+                        }
+                    });
+                } catch (Exception e) {
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        Messages.showErrorDialog(
+                                "Validation error occurred: " + e.getMessage(),
+                                "Error"
+                        );
+                    });
+                }
+            }
+        });
     }
 
     @Override

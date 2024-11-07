@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * OllamaService
@@ -21,12 +22,15 @@ import java.nio.charset.StandardCharsets;
  * @author hmydk
  */
 public class OllamaService implements AIService {
-//    private static final Logger log = LoggerFactory.getLogger(OllamaService.class);
+    //    private static final Logger log = LoggerFactory.getLogger(OllamaService.class);
     @Override
     public String generateCommitMessage(String content) {
         String aiResponse;
         try {
-            aiResponse = getAIResponse(content);
+            ApiKeySettings settings = ApiKeySettings.getInstance();
+            String selectedModule = settings.getSelectedModule();
+            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+            aiResponse = getAIResponse(selectedModule, moduleConfig.getUrl(), content);
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -40,12 +44,21 @@ public class OllamaService implements AIService {
     }
 
     @Override
-    public boolean validateConfig(String model, String apiKey, String language) {
-        return true;
+    public boolean validateConfig(Map<String, String> config) {
+        int statusCode;
+        try {
+            HttpURLConnection connection = getHttpURLConnection(config.get("module"), config.get("url"), "hi");
+            statusCode = connection.getResponseCode();
+        } catch (IOException e) {
+            return false;
+        }
+        // 打印状态码
+        System.out.println("HTTP Status Code: " + statusCode);
+        return statusCode == 200;
     }
 
-    private static String getAIResponse(String textContent) throws Exception {
-        HttpURLConnection connection = getHttpURLConnection(textContent);
+    private static String getAIResponse(String module, String url, String textContent) throws Exception {
+        HttpURLConnection connection = getHttpURLConnection(module, url, textContent);
 
         StringBuilder response = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -60,16 +73,13 @@ public class OllamaService implements AIService {
         return jsonResponse.path("response").asText();
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String textContent) throws IOException {
-        ApiKeySettings settings = ApiKeySettings.getInstance();
-        String selectedModule = settings.getSelectedModule();
-        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+    private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent) throws IOException {
 
-        GenerateRequest request = new GenerateRequest(selectedModule, textContent, false);
+        GenerateRequest request = new GenerateRequest(module, textContent, false);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
-        URI uri = URI.create(moduleConfig.getUrl());
+        URI uri = URI.create(url);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
