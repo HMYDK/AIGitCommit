@@ -3,9 +3,11 @@ package com.hmydk.aigit.config;
 import com.hmydk.aigit.constant.Constants;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.util.ui.JBUI;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +25,6 @@ public class ModuleConfigDialog extends DialogWrapper {
     private JButton resetButton; // 新增重置按钮
     private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
     private boolean isPasswordVisible = false;
-
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -102,7 +103,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         resetButton = new JButton("Reset");
         resetButton.addActionListener(e -> resetFields());
 
-        return new Action[] {
+        return new Action[]{
                 getOKAction(),
                 getCancelAction(),
                 new DialogWrapperAction("Reset") {
@@ -131,8 +132,16 @@ public class ModuleConfigDialog extends DialogWrapper {
         String configKey = client;
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs()
                 .computeIfAbsent(configKey, k -> new ApiKeySettings.ModuleConfig());
-        moduleConfig.setUrl(urlField.getText());
+
+        String url = urlField.getText().trim();
+        if (StringUtils.isEmpty(url)) {
+            Messages.showErrorDialog("URL cannot be empty", "Error");
+            return;
+        }
+
         moduleConfig.setApiKey(new String(apiKeyField.getPassword()));
+        moduleConfig.setUrl(urlField.getText());
+
         super.doOKAction();
     }
 
