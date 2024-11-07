@@ -1,5 +1,7 @@
 package com.hmydk.aigit.service;
 
+import java.util.Map;
+
 /**
  * AIService
  *
@@ -11,6 +13,5 @@ public interface AIService {
 
     boolean checkApiKeyIsExists();
 
-
-    boolean validateConfig(String model, String apiKey, String language);
+    boolean validateConfig(Map<String,String> config);
 }

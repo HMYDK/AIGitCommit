@@ -21,9 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class GenerateCommitMessageAction extends AnAction {
-    
-    private final CommitMessageService commitMessageService = new CommitMessageService();
-    
+
     /**
      * 获取CommitMessage对象
      */
@@ -33,6 +31,9 @@ public class GenerateCommitMessageAction extends AnAction {
     
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        //根据配置，创建对应的服务
+        CommitMessageService commitMessageService = new CommitMessageService();
+
         CommitMessage commitMessage = getCommitMessage(e);
         
         Project project = e.getProject();

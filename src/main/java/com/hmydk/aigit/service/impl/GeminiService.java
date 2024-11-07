@@ -3,6 +3,7 @@ package com.hmydk.aigit.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 /**
  * OpenAIService
@@ -31,9 +33,11 @@ public class GeminiService implements AIService {
     public String generateCommitMessage(String content) {
         String aiResponse;
         try {
-            aiResponse = getAIResponse(ApiKeySettings.getInstance().getApiKey(), content);
+            ApiKeySettings settings = ApiKeySettings.getInstance();
+            String selectedModule = settings.getSelectedModule();
+            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
+            aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
         } catch (Exception e) {
-            e.printStackTrace();
             return e.getMessage();
         }
         log.info("aiResponse is  :\n{}", aiResponse);
@@ -42,14 +46,15 @@ public class GeminiService implements AIService {
 
     @Override
     public boolean checkApiKeyIsExists() {
-        return !ApiKeySettings.getInstance().getApiKey().isEmpty();
+        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.Gemini).getApiKey();
+        return !apiKey.isEmpty();
     }
 
     @Override
-    public boolean validateConfig(String model, String apiKey, String language) {
+    public boolean validateConfig(Map<String, String> config) {
         int statusCode;
         try {
-            HttpURLConnection connection = getHttpURLConnection(apiKey, "hi");
+            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
             statusCode = connection.getResponseCode();
         } catch (IOException e) {
             return false;
@@ -59,8 +64,8 @@ public class GeminiService implements AIService {
         return statusCode == 200;
     }
 
-    public static String getAIResponse(String apiKey, String textContent) throws Exception {
-        HttpURLConnection connection = getHttpURLConnection(apiKey, textContent);
+    public static String getAIResponse(String url, String module, String apiKey, String textContent) throws Exception {
+        HttpURLConnection connection = getHttpURLConnection(url, module, apiKey, textContent);
 
         StringBuilder response = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -85,8 +90,9 @@ public class GeminiService implements AIService {
         return "sth error when request ai api";
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String apiKey, String textContent) throws IOException {
-        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+    private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
+//        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+        String apiUrl = url + "/" + module + ":generateContent?key=" + apiKey;
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
         geminiRequestBO.setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
         ObjectMapper objectMapper1 = new ObjectMapper();

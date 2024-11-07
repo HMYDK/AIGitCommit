@@ -2,6 +2,7 @@ package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.JBColor;
@@ -9,22 +10,16 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class ApiKeyConfigurableUI {
 
     private JPanel mainPanel;
-    private JPasswordField apiKeyField;
-    private ComboBox<String> modelComboBox;
+    private ComboBox<String> clientComboBox;
+    private ComboBox<String> moduleComboBox;
     private ComboBox<String> languageComboBox;
 
     private ComboBox<String> promptTypeComboBox;
@@ -33,6 +28,7 @@ public class ApiKeyConfigurableUI {
     private JPanel customPromptPanel;
     private JPanel projectPromptPanel;
 
+    private JButton configButton;
 
     // 记录当前选中的行
     private int SELECTED_ROW = 0;
@@ -40,19 +36,26 @@ public class ApiKeyConfigurableUI {
     public ApiKeyConfigurableUI() {
         initComponents();
         layoutComponents();
+        setupListeners();
     }
 
     private void initComponents() {
-        apiKeyField = new JPasswordField();
-        modelComboBox = new ComboBox<>(new String[]{"Gemini"});
+        clientComboBox = new ComboBox<>(Constants.LLM_CLIENTS);
+        moduleComboBox = new ComboBox<>();
+        moduleComboBox.setEditable(true);
         languageComboBox = new ComboBox<>(Constants.languages);
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
-        customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
+        customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
         customPromptPanel = createCustomPromptPanel();
         projectPromptPanel = createProjectPromptPanel();
-    }
 
+        configButton = new JButton(AllIcons.General.Settings);
+        configButton.setToolTipText("Configure Module Settings");
+
+        // 初始化模块下拉框
+        updateModuleComboBox((String) clientComboBox.getSelectedItem());
+    }
 
     private void layoutComponents() {
         mainPanel = new JPanel(new GridBagLayout());
@@ -61,26 +64,23 @@ public class ApiKeyConfigurableUI {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         addComponent(new JBLabel("LLM client:"), gbc, 0, 0, 0.0);
-        addComponent(modelComboBox, gbc, 1, 0, 1.0);
+        addComponent(clientComboBox, gbc, 1, 0, 1.0);
 
-        JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        apiKeyPanel.add(new JBLabel("API key:"));
-        addComponent(apiKeyPanel, gbc, 0, 1, 0.0);
+        JPanel modulePanel = new JPanel(new BorderLayout(5, 0));
+        modulePanel.add(moduleComboBox, BorderLayout.CENTER);
+        modulePanel.add(configButton, BorderLayout.EAST);
 
-        JPanel apiKeyInputPanel = new JPanel(new BorderLayout(5, 0));
-        apiKeyInputPanel.add(apiKeyField, BorderLayout.CENTER);
-        JLabel linkLabel = getjLabel();
-        apiKeyInputPanel.add(linkLabel, BorderLayout.EAST);
-        addComponent(apiKeyInputPanel, gbc, 1, 1, 1.0);
+        addComponent(new JBLabel("Module:"), gbc, 0, 1, 0.0);
+        addComponent(modulePanel, gbc, 1, 1, 1.0);
 
-        addComponent(new JBLabel("Language:"), gbc, 0, 2, 0.0);
-        addComponent(languageComboBox, gbc, 1, 2, 1.0);
+        addComponent(new JBLabel("Language:"), gbc, 0, 3, 0.0);
+        addComponent(languageComboBox, gbc, 1, 3, 1.0);
 
-        addComponent(new JBLabel("Prompt type:"), gbc, 0, 3, 0.0);
-        addComponent(promptTypeComboBox, gbc, 1, 3, 1.0);
+        addComponent(new JBLabel("Prompt type:"), gbc, 0, 4, 0.0);
+        addComponent(promptTypeComboBox, gbc, 1, 4, 1.0);
 
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
@@ -122,13 +122,13 @@ public class ApiKeyConfigurableUI {
 
     private JPanel createProjectPromptPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        JLabel infoLabel = new JLabel("Using project-specific prompt from '" + Constants.PROJECT_PROMPT_FILE_NAME + "' in the project root.");
+        JLabel infoLabel = new JLabel(
+                "Using project-specific prompt from '" + Constants.PROJECT_PROMPT_FILE_NAME + "' in the project root.");
         infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
         infoLabel.setForeground(JBColor.GRAY);
         panel.add(infoLabel, BorderLayout.CENTER);
         return panel;
     }
-
 
     private void updatePromptPanelVisibility() {
         String selectedPromptType = (String) promptTypeComboBox.getSelectedItem();
@@ -136,7 +136,7 @@ public class ApiKeyConfigurableUI {
             mainPanel.remove(projectPromptPanel);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
-            gbc.gridy = 4;
+            gbc.gridy = 5;
             gbc.gridwidth = 2;
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
@@ -146,7 +146,7 @@ public class ApiKeyConfigurableUI {
             mainPanel.remove(customPromptPanel);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
-            gbc.gridy = 4;
+            gbc.gridy = 5;
             gbc.gridwidth = 2;
             gbc.weightx = 1.0;
             gbc.weighty = 0.0;
@@ -157,28 +157,12 @@ public class ApiKeyConfigurableUI {
         mainPanel.repaint();
     }
 
-
-    private static @NotNull JLabel getjLabel() {
-        JLabel linkLabel = new JLabel("<html><a href=''>Get Gemini Api Key</a></html>");
-        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        linkLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                try {
-                    Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
-                } catch (IOException | URISyntaxException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        return linkLabel;
-    }
-
     private void addCustomPrompt() {
         PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
 
         SwingUtilities.invokeLater(() -> {
-            JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+            JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
             JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
             dialog.setVisible(true);
 
@@ -187,7 +171,7 @@ public class ApiKeyConfigurableUI {
                 String description = promptDialogUI.getDescriptionField().getText().trim();
                 String content = promptDialogUI.getContentArea().getText().trim();
                 if (!description.isEmpty() && !content.isEmpty()) {
-                    customPromptsTableModel.addRow(new Object[]{description, content});
+                    customPromptsTableModel.addRow(new Object[] { description, content });
                 }
             }
         });
@@ -200,8 +184,7 @@ public class ApiKeyConfigurableUI {
                     mainPanel,
                     "Are you sure you want to remove this prompt?",
                     "Confirm Removal",
-                    JOptionPane.YES_NO_OPTION
-            );
+                    JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 customPromptsTableModel.removeRow(selectedRow);
                 if (customPromptsTableModel.getRowCount() > 0) {
@@ -213,7 +196,8 @@ public class ApiKeyConfigurableUI {
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(mainPanel, "Please select a prompt to remove.", "No Selection", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(mainPanel, "Please select a prompt to remove.", "No Selection",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -239,16 +223,38 @@ public class ApiKeyConfigurableUI {
         });
     }
 
+    private void setupListeners() {
+        clientComboBox.addActionListener(e -> {
+            String selectedClient = (String) clientComboBox.getSelectedItem();
+            updateModuleComboBox(selectedClient);
+        });
+
+        configButton.addActionListener(e -> showModuleConfigDialog());
+    }
+
+    private void updateModuleComboBox(String selectedClient) {
+        moduleComboBox.removeAllItems();
+        String[] modules = Constants.CLIENT_MODULES.get(selectedClient);
+        if (modules != null) {
+            for (String module : modules) {
+                moduleComboBox.addItem(module);
+            }
+        }
+    }
+
+    private void showModuleConfigDialog() {
+        String selectedClient = (String) clientComboBox.getSelectedItem();
+        String selectedModule = (String) moduleComboBox.getSelectedItem();
+
+        ModuleConfigDialog dialog = new ModuleConfigDialog(
+                mainPanel,
+                selectedClient,
+                selectedModule);
+        dialog.show();
+    }
+
     public JPanel getMainPanel() {
         return mainPanel;
-    }
-
-    public JPasswordField getApiKeyField() {
-        return apiKeyField;
-    }
-
-    public ComboBox<String> getModelComboBox() {
-        return modelComboBox;
     }
 
     public ComboBox<String> getLanguageComboBox() {
@@ -273,5 +279,17 @@ public class ApiKeyConfigurableUI {
 
     public void setPromptTypeComboBox(ComboBox<String> promptTypeComboBox) {
         this.promptTypeComboBox = promptTypeComboBox;
+    }
+
+    public ComboBox<String> getModuleComboBox() {
+        return moduleComboBox;
+    }
+
+    public void setModuleComboBox(ComboBox<String> moduleComboBox) {
+        this.moduleComboBox = moduleComboBox;
+    }
+
+    public JComboBox<String> getClientComboBox() {
+        return clientComboBox;
     }
 }
