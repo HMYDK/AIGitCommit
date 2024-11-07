@@ -23,6 +23,7 @@ This plugin uses AI to automatically generate commit messages based on the chang
 ## Supported models
 
 - Gemini
+- Ollama
 
 ## Install
 
