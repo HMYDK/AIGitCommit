@@ -42,6 +42,7 @@ public class ApiKeyConfigurableUI {
     private void initComponents() {
         clientComboBox = new ComboBox<>(Constants.LLM_CLIENTS);
         moduleComboBox = new ComboBox<>();
+        moduleComboBox.setEditable(true);
         languageComboBox = new ComboBox<>(Constants.languages);
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);

@@ -28,9 +28,6 @@ public class Constants {
     }
 
 
-
-
-
     public static final String Gemini = "Gemini";
     public static final String Ollama = "Ollama";
 
@@ -39,20 +36,20 @@ public class Constants {
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
-            put(Gemini, new String[]{"gemini-1.5-flash-latest", "gemini-1.5-flash"});
+            put(Gemini, new String[]{"gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
 //            put("OpenAI", new String[] { "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo" });
-            put(Ollama, new String[]{"llama2", "mistral", "qwen2.5:14b"});
+            put(Ollama, new String[]{"qwen2.5:14b", "llama3.2:3b"});
         }
     };
 
 
-    public static Map<String, ApiKeySettings.ModuleConfig> moduleConfigs = new HashMap<>(){{
-        put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models",""));
-        put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate",""));
+    public static Map<String, ApiKeySettings.ModuleConfig> moduleConfigs = new HashMap<>() {{
+        put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models", ""));
+        put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate", ""));
     }};
 
 
-    public static String getHelpText(String client){
+    public static String getHelpText(String client) {
         return switch (client) {
             case Gemini -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
             case Ollama -> "Make sure Ollama is running locally on the specified URL";
