@@ -20,6 +20,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.Map;
 
 public class ModuleConfigDialog extends DialogWrapper {
@@ -104,6 +107,19 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     private void updateHelpText() {
         helpLabel.setText(Constants.getHelpText(client));
+        if (client.equals(Constants.Gemini)){
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -178,7 +194,13 @@ public class ModuleConfigDialog extends DialogWrapper {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String configKey = client;
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs()
-                .computeIfAbsent(configKey, k -> new ApiKeySettings.ModuleConfig());
+                .computeIfAbsent(configKey, k -> {
+                    ApiKeySettings.ModuleConfig defaultConfig = Constants.moduleConfigs.get(configKey);
+                    ApiKeySettings.ModuleConfig config = new ApiKeySettings.ModuleConfig();
+                    config.setUrl(defaultConfig.getUrl());
+                    config.setApiKey(defaultConfig.getApiKey());
+                    return config;
+                });
         urlField.setText(moduleConfig.getUrl());
         apiKeyField.setText(moduleConfig.getApiKey());
     }
