@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -121,53 +120,5 @@ public class OpenAIService implements AIService {
             os.write(input, 0, input.length);
         }
         return connection;
-    }
-
-    public static String getChatCompletion(String urlStr, String module, String apiKey) throws Exception {
-        // Set up the URL connection
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
-        connection.setDoOutput(true);
-
-        // Create JSON request body
-        String jsonInputString = """
-                {
-                    "model": "gpt-4o-mini",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are a helpful assistant."
-                        },
-                        {
-                            "role": "user",
-                            "content": "Write a haiku that explains the concept of recursion."
-                        }
-                    ]
-                }
-                """;
-
-        // Send request
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-        }
-
-        // Get the response
-        int status = connection.getResponseCode();
-        if (status == HttpURLConnection.HTTP_OK) {
-            try (var reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = reader.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                return response.toString();
-            }
-        } else {
-            throw new RuntimeException("Request failed with status code: " + status);
-        }
     }
 }
