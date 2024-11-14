@@ -95,10 +95,10 @@ public class ModuleConfigDialog extends DialogWrapper {
         panel.add(apiKeyPanel, gbc);
 
         // 帮助文本
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        gbc.insets = JBUI.insets(15, 10, 5, 10);
+        gbc.insets = new Insets(0, 10, 5, 10);
         updateHelpText();
         panel.add(helpLabel, gbc);
 
@@ -125,7 +125,8 @@ public class ModuleConfigDialog extends DialogWrapper {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     try {
-                        Desktop.getDesktop().browse(new URI("https://developers.cloudflare.com/workers-ai/get-started/rest-api"));
+                        Desktop.getDesktop()
+                                .browse(new URI("https://developers.cloudflare.com/workers-ai/get-started/rest-api"));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -142,7 +143,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         checkConfigButton = new JButton("Check Config");
         checkConfigButton.addActionListener(e -> checkConfig());
 
-        return new Action[]{
+        return new Action[] {
                 getOKAction(),
                 getCancelAction(),
                 new DialogWrapperAction("Reset") {
@@ -172,8 +173,7 @@ public class ModuleConfigDialog extends DialogWrapper {
                     Map<String, String> checkConfig = Map.of(
                             "url", urlField.getText(),
                             "module", module,
-                            "apiKey", new String(apiKeyField.getPassword())
-                    );
+                            "apiKey", new String(apiKeyField.getPassword()));
 
                     boolean isValid = aiService.validateConfig(checkConfig);
 
@@ -184,16 +184,14 @@ public class ModuleConfigDialog extends DialogWrapper {
                         } else {
                             Messages.showErrorDialog(
                                     "Configuration validation failed. You can click the reset button to restore default values.",
-                                    "Error"
-                            );
+                                    "Error");
                         }
                     });
                 } catch (Exception e) {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         Messages.showErrorDialog(
                                 "Validation error occurred: " + e.getMessage(),
-                                "Error"
-                        );
+                                "Error");
                     });
                 }
             }

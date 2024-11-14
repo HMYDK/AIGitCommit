@@ -50,13 +50,14 @@
 
     <change-notes>
         <![CDATA[
-        <h3>Fixed:</h3>
-        <ul>
-            <li>Fix the issue that the configured apiKey is lost.</li>
-        </ul>
         <h3>Added:</h3>
         <ul>
             <li>Support Cloudflare Workers AI.</li>
+        </ul>
+        <h3>Changed:</h3>
+        <ul>
+            <li>Change the help text to a more detailed one.</li>
+            <li>Change the layout of the configuration dialog.</li>
         </ul>
         ]]>
     </change-notes>
