@@ -130,9 +130,9 @@ public class OllamaService implements AIService {
         }
     }
 
-    public static void main(String[] args) {
-        OllamaService ollamaService = new OllamaService();
-        String s = ollamaService.generateCommitMessage("你如何看待节假日调休这件事情？");
-        System.out.println(s);
-    }
+//    public static void main(String[] args) {
+//        OllamaService ollamaService = new OllamaService();
+//        String s = ollamaService.generateCommitMessage("你如何看待节假日调休这件事情？");
+//        System.out.println(s);
+//    }
 }
