@@ -50,9 +50,13 @@
 
     <change-notes>
         <![CDATA[
-        <h4>Feature:</h4>
+        <h3>Fixed:</h3>
         <ul>
-            <li>Support Ollama as LLM client.</li>
+            <li>Fix the issue that the configured apiKey is lost.</li>
+        </ul>
+        <h3>Added:</h3>
+        <ul>
+            <li>Add a link to get the Gemini API key.</li>
         </ul>
         ]]>
     </change-notes>

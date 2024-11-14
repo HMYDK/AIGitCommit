@@ -29,9 +29,7 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     // current prompt by user choose
     private PromptInfo customPrompt = new PromptInfo("", "");
 
-    private Map<String, ModuleConfig> moduleConfigs = new HashMap<>(){{
-        putAll(Constants.moduleConfigs);
-    }};
+    private Map<String, ModuleConfig> moduleConfigs = new HashMap<>();
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);

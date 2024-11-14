@@ -56,7 +56,8 @@ public class Constants {
 
     public static String getHelpText(String client) {
         return switch (client) {
-            case Gemini -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
+//            case Gemini -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
+            case Gemini -> "<html>Get your API key from <a href='https://aistudio.google.com/app/apikey'>Google AI Studio</a></html>";
             case Ollama -> "Make sure Ollama is running locally on the specified URL";
             case OpenAI -> "https://platform.openai.com/api-keys";
             case CloudflareWorkersAI ->
