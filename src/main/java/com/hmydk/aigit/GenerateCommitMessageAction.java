@@ -20,6 +20,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * Action 类，用于生成 Git commit 消息
+ * 继承自 AnAction 以集成到 IDEA 的操作系统中
+ */
 public class GenerateCommitMessageAction extends AnAction {
 
     /**
@@ -28,47 +32,48 @@ public class GenerateCommitMessageAction extends AnAction {
     private CommitMessage getCommitMessage(AnActionEvent e) {
         return (CommitMessage) e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL);
     }
-    
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        //根据配置，创建对应的服务
-        CommitMessageService commitMessageService = new CommitMessageService();
-
-        CommitMessage commitMessage = getCommitMessage(e);
-        
         Project project = e.getProject();
         if (project == null) {
             return;
         }
-        
-        //check api key
+        // 根据配置，创建对应的服务
+        CommitMessageService commitMessageService = new CommitMessageService();
+
         if (!commitMessageService.checkNecessaryModuleConfigIsRight()) {
             IdeaDialogUtil.handleModuleNecessaryConfigIsWrong(project);
             return;
         }
-        
+
         AbstractCommitWorkflowHandler<?, ?> commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(
                 VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
         if (commitWorkflowHandler == null) {
             IdeaDialogUtil.handleNoChangesSelected(project);
             return;
         }
-        
+
+        CommitMessage commitMessage = getCommitMessage(e);
+
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
 
-        if (includedChanges.isEmpty()){
+        if (includedChanges.isEmpty()) {
             commitMessage.setCommitMessage(Constants.NO_FILE_SELECTED);
             return;
         }
-        
+
         commitMessage.setCommitMessage(Constants.GENERATING_COMMIT_MESSAGE);
-        
+
         // Run the time-consuming operations in a background task
         ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.TASK_TITLE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
                     String diff = GItCommitUtil.computeDiff(includedChanges, project);
+
+                    System.out.println("diff: " + diff);
+
                     String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
                     ApplicationManager.getApplication().invokeLater(() -> {
                         commitMessage.setCommitMessage(commitMessageFromAi);
@@ -81,16 +86,18 @@ public class GenerateCommitMessageAction extends AnAction {
             }
         });
     }
-    
+
     @Override
     public void update(@NotNull AnActionEvent e) {
+        // 控制 Action 的启用/禁用状态
         Project project = e.getProject();
         e.getPresentation().setEnabledAndVisible(project != null);
     }
-    
+
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
+        // 指定在后台线程更新 Action 状态，提高性能
         return ActionUpdateThread.BGT;
     }
-    
+
 }
