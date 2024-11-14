@@ -72,7 +72,7 @@ public class GenerateCommitMessageAction extends AnAction {
                 try {
                     String diff = GItCommitUtil.computeDiff(includedChanges, project);
 
-                    System.out.println("diff: " + diff);
+//                    System.out.println("diff: " + diff);
 
                     String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
                     ApplicationManager.getApplication().invokeLater(() -> {
