@@ -16,6 +16,7 @@
 This plugin uses AI to automatically generate commit messages based on the changes in your code.
 
 ## Features
+
 - Support configuring multiple 'prompts'.
 - Support project-level personalized configuration.
   - Use the 'prompt' from the 'commit-prompt.txt' file located in the project’s root directory.
@@ -24,10 +25,10 @@ This plugin uses AI to automatically generate commit messages based on the chang
 
 - Gemini
 - Ollama
+- Cloudflare Workers AI
 
 ## Install
 
 <a href="https://plugins.jetbrains.com/plugin/24851-ai-git-commit">
 <img src="https://user-images.githubusercontent.com/12044174/123105697-94066100-d46a-11eb-9832-338cdf4e0612.png" width="300"/>
 </a>
-

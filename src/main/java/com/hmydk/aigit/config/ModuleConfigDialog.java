@@ -49,7 +49,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     protected @Nullable JComponent createCenterPanel() {
         // 创建主面板
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(450, 200));
+        panel.setPreferredSize(new Dimension(700, 200));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(5, 10, 5, 10); // 增加左右间距
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -107,13 +107,25 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     private void updateHelpText() {
         helpLabel.setText(Constants.getHelpText(client));
-        if (client.equals(Constants.Gemini)){
+        if (client.equals(Constants.Gemini)) {
             helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             helpLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     try {
                         Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        } else if (client.equals(Constants.CloudflareWorkersAI)) {
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop().browse(new URI("https://developers.cloudflare.com/workers-ai/get-started/rest-api"));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

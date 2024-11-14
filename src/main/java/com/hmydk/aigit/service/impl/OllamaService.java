@@ -39,7 +39,7 @@ public class OllamaService implements AIService {
     }
 
     @Override
-    public boolean checkApiKeyIsExists() {
+    public boolean checkNecessaryModuleConfigIsRight() {
         return true;
     }
 

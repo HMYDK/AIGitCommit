@@ -45,7 +45,7 @@ public class GeminiService implements AIService {
     }
 
     @Override
-    public boolean checkApiKeyIsExists() {
+    public boolean checkNecessaryModuleConfigIsRight() {
         String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.Gemini).getApiKey();
         return !apiKey.isEmpty();
     }

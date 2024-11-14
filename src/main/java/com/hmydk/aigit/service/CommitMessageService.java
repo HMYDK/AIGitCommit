@@ -19,8 +19,8 @@ public class CommitMessageService {
         this.aiService = getAIService(selectedClient);
     }
 
-    public boolean checkApiKeyIsExists() {
-        return aiService.checkApiKeyIsExists();
+    public boolean checkNecessaryModuleConfigIsRight() {
+        return aiService.checkNecessaryModuleConfigIsRight();
     }
 
     public String generateCommitMessage(String diff) {

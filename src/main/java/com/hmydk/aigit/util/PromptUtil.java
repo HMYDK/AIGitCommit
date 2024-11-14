@@ -26,10 +26,10 @@ public class PromptUtil {
 
         //check prompt content
         if (!promptContent.contains("{diff}")) {
-            throw new IllegalArgumentException("The project prompt file must contain the placeholder {diff}.");
+            throw new IllegalArgumentException("The prompt file must contain the placeholder {diff}.");
         }
         if (!promptContent.contains("{language}")) {
-            throw new IllegalArgumentException("The project prompt file must contain the placeholder {language}.");
+            throw new IllegalArgumentException("The prompt file must contain the placeholder {language}.");
         }
 
         //replace placeholder

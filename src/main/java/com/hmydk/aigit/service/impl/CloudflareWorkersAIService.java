@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -41,14 +40,13 @@ public class CloudflareWorkersAIService implements AIService {
         } catch (Exception e) {
             return e.getMessage();
         }
-        log.info("aiResponse is  :\n{}", aiResponse);
         return aiResponse;
     }
 
     @Override
-    public boolean checkApiKeyIsExists() {
-        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.CloudflareWorkersAI).getApiKey();
-        return !apiKey.isEmpty();
+    public boolean checkNecessaryModuleConfigIsRight() {
+        ApiKeySettings.ModuleConfig moduleConfig = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.CloudflareWorkersAI);
+        return !moduleConfig.getApiKey().isEmpty() && !moduleConfig.getUrl().isEmpty();
     }
 
     @Override
@@ -62,8 +60,6 @@ public class CloudflareWorkersAIService implements AIService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        // 打印状态码
-        System.out.println("HTTP Status Code: " + statusCode);
         return statusCode == 200;
     }
 
@@ -77,9 +73,6 @@ public class CloudflareWorkersAIService implements AIService {
                 response.append(responseLine.trim());
             }
         }
-
-        System.out.println("CloudflareWorkersAI ai Response: " + response);
-
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonResponse = objectMapper.readTree(response.toString());
         JsonNode choices = jsonResponse.path("choices");
@@ -93,9 +86,6 @@ public class CloudflareWorkersAIService implements AIService {
     }
 
     private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
-
-        url = url.replace("{account_id}","9b2b9c2251b54d03ecbfe63ac82795c2");
-
         OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
         openAIRequestBO.setModel(module);
         openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
@@ -103,69 +93,19 @@ public class CloudflareWorkersAIService implements AIService {
         ObjectMapper objectMapper1 = new ObjectMapper();
         String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
 
-        System.out.println("jsonInputString: " + jsonInputString);
-
         URI uri = URI.create(url);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Authorization", "Bearer "+apiKey);
         connection.setDoOutput(true);
-        connection.setConnectTimeout(20000); // 连接超时：10秒
-        connection.setReadTimeout(20000); // 读取超时：10秒
+        connection.setConnectTimeout(20000);
+        connection.setReadTimeout(20000);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);
         }
         return connection;
-    }
-
-    public static String getChatCompletion(String urlStr, String module, String apiKey) throws Exception {
-        // Set up the URL connection
-        URL url = new URL(urlStr);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
-        connection.setDoOutput(true);
-
-        // Create JSON request body
-        String jsonInputString = """
-                {
-                    "model": "gpt-4o-mini",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are a helpful assistant."
-                        },
-                        {
-                            "role": "user",
-                            "content": "Write a haiku that explains the concept of recursion."
-                        }
-                    ]
-                }
-                """;
-
-        // Send request
-        try (OutputStream os = connection.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-        }
-
-        // Get the response
-        int status = connection.getResponseCode();
-        if (status == HttpURLConnection.HTTP_OK) {
-            try (var reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = reader.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                return response.toString();
-            }
-        } else {
-            throw new RuntimeException("Request failed with status code: " + status);
-        }
     }
 }

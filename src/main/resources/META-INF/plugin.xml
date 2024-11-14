@@ -56,7 +56,7 @@
         </ul>
         <h3>Added:</h3>
         <ul>
-            <li>Add a link to get the Gemini API key.</li>
+            <li>Support Cloudflare Workers AI.</li>
         </ul>
         ]]>
     </change-notes>

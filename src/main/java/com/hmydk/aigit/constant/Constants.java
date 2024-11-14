@@ -56,12 +56,16 @@ public class Constants {
 
     public static String getHelpText(String client) {
         return switch (client) {
-//            case Gemini -> "Get your API key from Google AI Studio (https://aistudio.google.com/app/apikey)";
-            case Gemini -> "<html>Get your API key from <a href='https://aistudio.google.com/app/apikey'>Google AI Studio</a></html>";
-            case Ollama -> "Make sure Ollama is running locally on the specified URL";
+            case Gemini ->
+                "<html>Get your API key from <a href='https://aistudio.google.com/app/apikey'>Google AI Studio</a></html>";
+            case Ollama ->
+                "<html><li>Make sure Ollama is running locally on the specified URL</li><li>API Key is not required</li></html>";
             case OpenAI -> "https://platform.openai.com/api-keys";
-            case CloudflareWorkersAI ->
-                "Please refer to the official documentation for details: https://developers.cloudflare.com/workers-ai/get-started/rest-api/";
+            case CloudflareWorkersAI -> "<html>" +
+                    "<li>Please refer to the <a href='https://developers.cloudflare.com/workers-ai/get-started/rest-api'>official documentation</a> for details</li>"
+                    +
+                    "<li>Replace {account_id} with your Cloudflare account ID</li>" +
+                    "</html>";
             default -> "";
         };
     }

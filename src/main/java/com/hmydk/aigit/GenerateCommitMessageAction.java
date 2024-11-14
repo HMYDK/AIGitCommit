@@ -42,8 +42,8 @@ public class GenerateCommitMessageAction extends AnAction {
         }
         
         //check api key
-        if (!commitMessageService.checkApiKeyIsExists()) {
-            IdeaDialogUtil.handleApiKeyMissing(project);
+        if (!commitMessageService.checkNecessaryModuleConfigIsRight()) {
+            IdeaDialogUtil.handleModuleNecessaryConfigIsWrong(project);
             return;
         }
         

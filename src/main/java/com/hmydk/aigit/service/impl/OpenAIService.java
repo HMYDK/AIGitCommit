@@ -46,7 +46,7 @@ public class OpenAIService implements AIService {
     }
 
     @Override
-    public boolean checkApiKeyIsExists() {
+    public boolean checkNecessaryModuleConfigIsRight() {
         String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.OpenAI).getApiKey();
         return !apiKey.isEmpty();
     }
