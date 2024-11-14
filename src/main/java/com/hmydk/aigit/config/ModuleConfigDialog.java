@@ -49,7 +49,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     protected @Nullable JComponent createCenterPanel() {
         // 创建主面板
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(450, 200));
+        panel.setPreferredSize(new Dimension(700, 200));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(5, 10, 5, 10); // 增加左右间距
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -95,10 +95,10 @@ public class ModuleConfigDialog extends DialogWrapper {
         panel.add(apiKeyPanel, gbc);
 
         // 帮助文本
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        gbc.insets = JBUI.insets(15, 10, 5, 10);
+        gbc.insets = new Insets(0, 10, 5, 10);
         updateHelpText();
         panel.add(helpLabel, gbc);
 
@@ -107,13 +107,26 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     private void updateHelpText() {
         helpLabel.setText(Constants.getHelpText(client));
-        if (client.equals(Constants.Gemini)){
+        if (client.equals(Constants.Gemini)) {
             helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             helpLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     try {
                         Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        } else if (client.equals(Constants.CloudflareWorkersAI)) {
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop()
+                                .browse(new URI("https://developers.cloudflare.com/workers-ai/get-started/rest-api"));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -130,7 +143,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         checkConfigButton = new JButton("Check Config");
         checkConfigButton.addActionListener(e -> checkConfig());
 
-        return new Action[]{
+        return new Action[] {
                 getOKAction(),
                 getCancelAction(),
                 new DialogWrapperAction("Reset") {
@@ -160,8 +173,7 @@ public class ModuleConfigDialog extends DialogWrapper {
                     Map<String, String> checkConfig = Map.of(
                             "url", urlField.getText(),
                             "module", module,
-                            "apiKey", new String(apiKeyField.getPassword())
-                    );
+                            "apiKey", new String(apiKeyField.getPassword()));
 
                     boolean isValid = aiService.validateConfig(checkConfig);
 
@@ -172,16 +184,14 @@ public class ModuleConfigDialog extends DialogWrapper {
                         } else {
                             Messages.showErrorDialog(
                                     "Configuration validation failed. You can click the reset button to restore default values.",
-                                    "Error"
-                            );
+                                    "Error");
                         }
                     });
                 } catch (Exception e) {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         Messages.showErrorDialog(
                                 "Validation error occurred: " + e.getMessage(),
-                                "Error"
-                        );
+                                "Error");
                     });
                 }
             }

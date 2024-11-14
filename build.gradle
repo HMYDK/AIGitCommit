@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.hmydk"
-version = "1.2.1"
+version = "1.3.0"
 
 repositories {
     mavenCentral()
@@ -20,7 +20,7 @@ intellij {
 }
 
 patchPluginXml.sinceBuild.set("231.8109.175")
-patchPluginXml.untilBuild.set("242.*")
+patchPluginXml.untilBuild.set("243.*")
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

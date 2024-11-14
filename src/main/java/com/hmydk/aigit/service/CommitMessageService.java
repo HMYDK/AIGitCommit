@@ -3,8 +3,10 @@ package com.hmydk.aigit.service;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.impl.CloudflareWorkersAIService;
 import com.hmydk.aigit.service.impl.GeminiService;
 import com.hmydk.aigit.service.impl.OllamaService;
+import com.hmydk.aigit.service.impl.OpenAIService;
 import com.hmydk.aigit.util.PromptUtil;
 
 public class CommitMessageService {
@@ -17,8 +19,8 @@ public class CommitMessageService {
         this.aiService = getAIService(selectedClient);
     }
 
-    public boolean checkApiKeyIsExists() {
-        return aiService.checkApiKeyIsExists();
+    public boolean checkNecessaryModuleConfigIsRight() {
+        return aiService.checkNecessaryModuleConfigIsRight();
     }
 
     public String generateCommitMessage(String diff) {
@@ -31,6 +33,8 @@ public class CommitMessageService {
         return switch (selectedClient) {
             case Constants.Ollama -> new OllamaService();
             case Constants.Gemini -> new GeminiService();
+            case Constants.OpenAI -> new OpenAIService();
+            case Constants.CloudflareWorkersAI -> new CloudflareWorkersAIService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };
     }

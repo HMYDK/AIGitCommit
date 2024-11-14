@@ -11,7 +11,7 @@ public interface AIService {
 
     String generateCommitMessage(String content);
 
-    boolean checkApiKeyIsExists();
+    boolean checkNecessaryModuleConfigIsRight();
 
     boolean validateConfig(Map<String,String> config);
 }

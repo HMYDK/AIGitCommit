@@ -18,7 +18,7 @@ public class WelcomeNotification implements ProjectActivity {
     private static final String PLUGIN_NAME = "AI Git Commit";
     private static final String WELCOME_TITLE = "Welcome to AI Git Commit!";
     private static final String WELCOME_CONTENT = "Thank you for installing AI Git Commit. " +
-            "To get started, please configure your API key in the settings.";
+            "To get started, please configure the plugin in the settings.";
     private static final String PLUGIN_VERSION_PROPERTY = "com.hmydk.aigit.version";
 
     @Nullable
@@ -49,7 +49,7 @@ public class WelcomeNotification implements ProjectActivity {
         NotificationGroupManager.getInstance()
                 .getNotificationGroup(NOTIFICATION_GROUP_ID)
                 .createNotification(WELCOME_TITLE, WELCOME_CONTENT, NotificationType.INFORMATION)
-                .setIcon(null)  // You can set a custom icon here if you have one
+                .setIcon(null) // You can set a custom icon here if you have one
                 .addAction(new ConfigureAction())
                 .notify(project);
     }
