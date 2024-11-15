@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -24,23 +25,26 @@ import java.util.Map;
 public class OllamaService implements AIService {
     //    private static final Logger log = LoggerFactory.getLogger(OllamaService.class);
     @Override
-    public String generateCommitMessage(String content) {
-        String aiResponse;
-        try {
-            ApiKeySettings settings = ApiKeySettings.getInstance();
-            String selectedModule = settings.getSelectedModule();
-            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
-            aiResponse = getAIResponse(selectedModule, moduleConfig.getUrl(), content);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-//        log.info("aiResponse is  :\n{}", aiResponse);
+    public String generateCommitMessage(String content) throws Exception {
+
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+        String aiResponse = getAIResponse(selectedModule, moduleConfig.getUrl(), content);
+
         return aiResponse.replaceAll("```", "");
     }
 
     @Override
     public boolean checkNecessaryModuleConfigIsRight() {
-        return true;
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+        if (moduleConfig == null) {
+            return false;
+        }
+        String selectedModule = settings.getSelectedModule();
+        String url = moduleConfig.getUrl();
+        return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url);
     }
 
     @Override

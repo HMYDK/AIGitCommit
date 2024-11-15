@@ -6,6 +6,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,24 +31,26 @@ public class GeminiService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
 
     @Override
-    public String generateCommitMessage(String content) {
-        String aiResponse;
-        try {
-            ApiKeySettings settings = ApiKeySettings.getInstance();
-            String selectedModule = settings.getSelectedModule();
-            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
-            aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+    public String generateCommitMessage(String content) throws Exception {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
+        String aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
         log.info("aiResponse is  :\n{}", aiResponse);
         return aiResponse.replaceAll("```", "");
     }
 
     @Override
     public boolean checkNecessaryModuleConfigIsRight() {
-        String apiKey = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.Gemini).getApiKey();
-        return !apiKey.isEmpty();
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
+        if (moduleConfig == null) {
+            return false;
+        }
+        String selectedModule = settings.getSelectedModule();
+        String url = moduleConfig.getUrl();
+        String apiKey = moduleConfig.getApiKey();
+        return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey);
     }
 
     @Override

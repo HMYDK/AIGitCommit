@@ -79,7 +79,7 @@ public class GenerateCommitMessageAction extends AnAction {
                         commitMessage.setCommitMessage(commitMessageFromAi);
                     });
                 } catch (IllegalArgumentException ex) {
-                    IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
+                    IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.", "AI Commit Message Warning");
                 } catch (Exception ex) {
                     IdeaDialogUtil.showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
                 }

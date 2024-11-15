@@ -6,6 +6,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
 import com.hmydk.aigit.service.AIService;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,23 +31,24 @@ public class CloudflareWorkersAIService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(CloudflareWorkersAIService.class);
 
     @Override
-    public String generateCommitMessage(String content) {
-        String aiResponse;
-        try {
-            ApiKeySettings settings = ApiKeySettings.getInstance();
-            String selectedModule = settings.getSelectedModule();
-            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.CloudflareWorkersAI);
-            aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-        return aiResponse;
+    public String generateCommitMessage(String content) throws Exception {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.CloudflareWorkersAI);
+        return getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
     }
 
     @Override
     public boolean checkNecessaryModuleConfigIsRight() {
-        ApiKeySettings.ModuleConfig moduleConfig = ApiKeySettings.getInstance().getModuleConfigs().get(Constants.CloudflareWorkersAI);
-        return !moduleConfig.getApiKey().isEmpty() && !moduleConfig.getUrl().isEmpty();
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.CloudflareWorkersAI);
+        if (moduleConfig == null) {
+            return false;
+        }
+        String selectedModule = settings.getSelectedModule();
+        String url = moduleConfig.getUrl();
+        String apiKey = moduleConfig.getApiKey();
+        return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class CloudflareWorkersAIService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer "+apiKey);
+        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setDoOutput(true);
         connection.setConnectTimeout(20000);
         connection.setReadTimeout(20000);

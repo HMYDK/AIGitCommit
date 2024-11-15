@@ -23,7 +23,7 @@ public class CommitMessageService {
         return aiService.checkNecessaryModuleConfigIsRight();
     }
 
-    public String generateCommitMessage(String diff) {
+    public String generateCommitMessage(String diff) throws Exception{
         String prompt = PromptUtil.constructPrompt(diff);
         return aiService.generateCommitMessage(prompt);
     }

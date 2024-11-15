@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public interface AIService {
 
-    String generateCommitMessage(String content);
+    String generateCommitMessage(String content) throws Exception;
 
     boolean checkNecessaryModuleConfigIsRight();
 
