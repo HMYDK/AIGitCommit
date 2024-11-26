@@ -4,6 +4,7 @@ import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.Change;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
@@ -11,7 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +29,41 @@ import java.util.stream.Collectors;
  */
 public class GItCommitUtil {
     private static final Logger log = LoggerFactory.getLogger(GItCommitUtil.class);
+
+
+    public static String computeDiff(@NotNull List<Change> includedChanges,
+                                     @NotNull List<FilePath> unversionedFiles,
+                                     @NotNull Project project) {
+        StringBuilder diffBuilder = new StringBuilder();
+
+        // 处理已版本控制的变更
+        String existingDiff = computeDiff(includedChanges, project);
+        diffBuilder.append(existingDiff);
+
+        // 处理未版本控制的文件
+        for (FilePath unversionedFile : unversionedFiles) {
+            diffBuilder.append("[ADD]: ")
+                    .append(unversionedFile.getPath())
+                    .append("\n");
+
+            try {
+                // 读取新文件的内容
+                String content = new String(Files.readAllBytes(Paths.get(unversionedFile.getPath())));
+                diffBuilder.append("+++ ")
+                        .append(unversionedFile.getPath())
+                        .append("\n");
+                // 将整个文件内容作为新增的内容
+                for (String line : content.split("\n")) {
+                    diffBuilder.append("+ ").append(line).append("\n");
+                }
+                diffBuilder.append("\n");
+            } catch (IOException e) {
+                log.error("Error reading unversioned file: {}", unversionedFile.getPath(), e);
+            }
+        }
+
+        return diffBuilder.toString();
+    }
 
     public static String computeDiff(@NotNull List<Change> includedChanges, @NotNull Project project) {
         GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);

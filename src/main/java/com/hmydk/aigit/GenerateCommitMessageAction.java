@@ -12,6 +12,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.ui.CommitMessage;
@@ -57,8 +58,9 @@ public class GenerateCommitMessageAction extends AnAction {
         CommitMessage commitMessage = getCommitMessage(e);
 
         List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
+        List<FilePath> includedUnversionedFiles = commitWorkflowHandler.getUi().getIncludedUnversionedFiles();
 
-        if (includedChanges.isEmpty()) {
+        if (includedChanges.isEmpty() && includedUnversionedFiles.isEmpty()) {
             commitMessage.setCommitMessage(Constants.NO_FILE_SELECTED);
             return;
         }
@@ -70,16 +72,17 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    String diff = GItCommitUtil.computeDiff(includedChanges, project);
+                    String diff = GItCommitUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
 
-//                    System.out.println("diff: " + diff);
+                    System.out.println("diff: " + diff);
 
                     String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
                     ApplicationManager.getApplication().invokeLater(() -> {
                         commitMessage.setCommitMessage(commitMessageFromAi);
                     });
                 } catch (IllegalArgumentException ex) {
-                    IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.", "AI Commit Message Warning");
+                    IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.",
+                            "AI Commit Message Warning");
                 } catch (Exception ex) {
                     IdeaDialogUtil.showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
                 }
