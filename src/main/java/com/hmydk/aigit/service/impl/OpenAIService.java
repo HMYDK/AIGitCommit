@@ -19,6 +19,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * OpenAIService
@@ -30,6 +31,11 @@ public class OpenAIService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(OpenAIService.class);
 
     @Override
+    public boolean generateByStream() {
+        return false;
+    }
+
+    @Override
     public String generateCommitMessage(String content) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
@@ -38,6 +44,11 @@ public class OpenAIService implements AIService {
 
         log.info("aiResponse is  :\n{}", aiResponse);
         return aiResponse.replaceAll("```", "");
+    }
+
+    @Override
+    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+
     }
 
     @Override

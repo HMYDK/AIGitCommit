@@ -73,13 +73,30 @@ public class GenerateCommitMessageAction extends AnAction {
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
                     String diff = GItCommitUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
-
-                    System.out.println("diff: " + diff);
-
-                    String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
-                    ApplicationManager.getApplication().invokeLater(() -> {
-                        commitMessage.setCommitMessage(commitMessageFromAi);
-                    });
+//                    System.out.println("diff: " + diff);
+                    if (commitMessageService.generateByStream()) {
+                        commitMessageService.generateCommitMessageStream(
+                                diff,
+                                // onNext 处理每个token
+                                token -> ApplicationManager.getApplication().invokeLater(() -> {
+                                    String currentMessage = commitMessage.getText();
+                                    if (currentMessage.equals(Constants.GENERATING_COMMIT_MESSAGE)) {
+                                        commitMessage.setCommitMessage(token);
+                                    } else {
+                                        commitMessage.setCommitMessage(currentMessage + token);
+                                    }
+                                }),
+                                // onError 处理错误
+                                error -> ApplicationManager.getApplication().invokeLater(() -> {
+                                    IdeaDialogUtil.showError(project, "Error generating commit message: " + error.getMessage(), "Error");
+                                })
+                        );
+                    } else {
+                        String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
+                        ApplicationManager.getApplication().invokeLater(() -> {
+                            commitMessage.setCommitMessage(commitMessageFromAi);
+                        });
+                    }
                 } catch (IllegalArgumentException ex) {
                     IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.",
                             "AI Commit Message Warning");

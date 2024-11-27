@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * OllamaService
@@ -23,7 +24,13 @@ import java.util.Map;
  * @author hmydk
  */
 public class OllamaService implements AIService {
-    //    private static final Logger log = LoggerFactory.getLogger(OllamaService.class);
+    @Override
+    public boolean generateByStream() {
+        return true;
+    }
+
+    // private static final Logger log =
+    // LoggerFactory.getLogger(OllamaService.class);
     @Override
     public String generateCommitMessage(String content) throws Exception {
 
@@ -33,6 +40,11 @@ public class OllamaService implements AIService {
         String aiResponse = getAIResponse(selectedModule, moduleConfig.getUrl(), content);
 
         return aiResponse.replaceAll("```", "");
+    }
+
+    @Override
+    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+        getAIResponseStream(content, onNext);
     }
 
     @Override
@@ -65,7 +77,8 @@ public class OllamaService implements AIService {
         HttpURLConnection connection = getHttpURLConnection(module, url, textContent);
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
@@ -77,7 +90,8 @@ public class OllamaService implements AIService {
         return jsonResponse.path("response").asText();
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent) throws IOException {
+    private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent)
+            throws IOException {
 
         GenerateRequest request = new GenerateRequest(module, textContent, false);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -96,7 +110,6 @@ public class OllamaService implements AIService {
 
         return connection;
     }
-
 
     private static class GenerateRequest {
         private String model;
@@ -134,9 +147,42 @@ public class OllamaService implements AIService {
         }
     }
 
-//    public static void main(String[] args) {
-//        OllamaService ollamaService = new OllamaService();
-//        String s = ollamaService.generateCommitMessage("你如何看待节假日调休这件事情？");
-//        System.out.println(s);
-//    }
+    private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
+
+        GenerateRequest request = new GenerateRequest(selectedModule, textContent, true);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonInputString = objectMapper.writeValueAsString(request);
+
+        URI uri = URI.create(moduleConfig.getUrl());
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                JsonNode jsonResponse = objectMapper.readTree(line);
+                String response = jsonResponse.path("response").asText();
+                if (!response.isEmpty()) {
+                    onNext.accept(response);
+                }
+            }
+        }
+    }
+
+    // public static void main(String[] args) {
+    // OllamaService ollamaService = new OllamaService();
+    // String s = ollamaService.generateCommitMessage("你如何看待节假日调休这件事情？");
+    // System.out.println(s);
+    // }
 }

@@ -20,6 +20,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * OpenAIService
@@ -31,11 +32,21 @@ public class CloudflareWorkersAIService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(CloudflareWorkersAIService.class);
 
     @Override
+    public boolean generateByStream() {
+        return false;
+    }
+
+    @Override
     public String generateCommitMessage(String content) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.CloudflareWorkersAI);
         return getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
+    }
+
+    @Override
+    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+
     }
 
     @Override

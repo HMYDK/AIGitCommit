@@ -20,6 +20,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * OpenAIService
@@ -31,6 +32,11 @@ public class GeminiService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
 
     @Override
+    public boolean generateByStream() {
+        return true;
+    }
+
+    @Override
     public String generateCommitMessage(String content) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
@@ -38,6 +44,12 @@ public class GeminiService implements AIService {
         String aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
         log.info("aiResponse is  :\n{}", aiResponse);
         return aiResponse.replaceAll("```", "");
+    }
+
+    @Override
+    public void generateCommitMessageStream(String content, Consumer<String> onNext)
+            throws Exception {
+        getAIResponseStream(content, onNext);
     }
 
     @Override
@@ -57,7 +69,8 @@ public class GeminiService implements AIService {
     public boolean validateConfig(Map<String, String> config) {
         int statusCode;
         try {
-            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
+            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"),
+                    config.get("apiKey"), "hi");
             statusCode = connection.getResponseCode();
         } catch (IOException e) {
             return false;
@@ -68,10 +81,11 @@ public class GeminiService implements AIService {
     }
 
     public static String getAIResponse(String url, String module, String apiKey, String textContent) throws Exception {
-        HttpURLConnection connection = getHttpURLConnection(url, module, apiKey, textContent);
+        HttpURLConnection connection = getStreamHttpURLConnection(url, module, apiKey, textContent);
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
@@ -93,11 +107,15 @@ public class GeminiService implements AIService {
         return "sth error when request ai api";
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
-//        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + apiKey;
+    private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
+                                                                   String textContent) throws IOException {
+        // String apiUrl =
+        // "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
+        // + apiKey;
         String apiUrl = url + "/" + module + ":generateContent?key=" + apiKey;
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
-        geminiRequestBO.setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
+        geminiRequestBO
+                .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
         ObjectMapper objectMapper1 = new ObjectMapper();
         String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
 
@@ -114,5 +132,61 @@ public class GeminiService implements AIService {
             os.write(input, 0, input.length);
         }
         return connection;
+    }
+
+    private static @NotNull HttpURLConnection getStreamHttpURLConnection(String url, String module, String apiKey,
+                                                                         String textContent) throws IOException {
+        // String apiUrl =
+        // "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
+        // + apiKey;
+        String apiUrl = url + "/" + module + ":streamGenerateContent?alt=sse&key=" + apiKey;
+        GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
+        geminiRequestBO
+                .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
+        ObjectMapper objectMapper1 = new ObjectMapper();
+        String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
+
+        URI uri = URI.create(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+        connection.setConnectTimeout(10000); // 连接超时：10秒
+        connection.setReadTimeout(10000); // 读取超时：10秒
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+        return connection;
+    }
+
+    private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception{
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
+
+        HttpURLConnection connection = getStreamHttpURLConnection(moduleConfig.getUrl(), selectedModule,
+                moduleConfig.getApiKey(), textContent);
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("data: ")) {
+                    String jsonData = line.substring(6);
+                    if (!"[DONE]".equals(jsonData)) {
+                        ObjectMapper mapper = new ObjectMapper();
+                        JsonNode root = mapper.readTree(jsonData);
+                        JsonNode candidates = root.path("candidates");
+                        if (candidates.isArray() && !candidates.isEmpty()) {
+                            String text = candidates.get(0).path("content").path("parts").get(0).path("text")
+                                    .asText();
+                            onNext.accept(text);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }
