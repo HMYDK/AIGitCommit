@@ -125,15 +125,19 @@ public class ApiKeyConfigurableUI {
 
     private JPanel createCustomPromptPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        JBLabel infoLabel = new JBLabel("Click on the data in the table to use it as the prompt.");
-        infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
-        infoLabel.setForeground(JBColor.GRAY);
 
         // 创建一个包含原有 infoLabel 和新超链接的面板
         JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.setBorder(JBUI.Borders.empty(0, 0, 5, 0)); // 添加底部间距
+
+        JBLabel infoLabel = new JBLabel(
+                "Select a prompt from the table below to use it as your commit message template.");
+        infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
+        infoLabel.setForeground(JBColor.GRAY);
         labelPanel.add(infoLabel, BorderLayout.WEST);
 
-        JLabel linkLabel = new JLabel("<html><a href='https://github.com/HMYDK/AIGitCommit/discussions/23'>More Prompts</a></html>");
+        JLabel linkLabel = new JLabel(
+                "<html><a href='https://github.com/HMYDK/AIGitCommit/discussions/23'>More Prompts ↗</a></html>");
         linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         linkLabel.addMouseListener(new MouseAdapter() {
             @Override
@@ -149,6 +153,7 @@ public class ApiKeyConfigurableUI {
 
         panel.add(labelPanel, BorderLayout.NORTH);
 
+        // 创建表格面板
         JPanel customPromptsPanel = ToolbarDecorator.createDecorator(customPromptsTable)
                 .setAddAction(button -> addCustomPrompt())
                 .setRemoveAction(button -> removeCustomPrompt())
@@ -156,6 +161,7 @@ public class ApiKeyConfigurableUI {
                 .createPanel();
         panel.add(customPromptsPanel, BorderLayout.CENTER);
 
+        // 添加表格选择监听器
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 SELECTED_ROW = Math.max(customPromptsTable.getSelectedRow(), 0);
