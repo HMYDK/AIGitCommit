@@ -54,6 +54,14 @@ public class ApiKeyConfigurableUI {
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
+
+        // 设置 Description 列的首选宽度和最大宽度
+        customPromptsTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+        customPromptsTable.getColumnModel().getColumn(0).setMaxWidth(200);
+
+        // 设置 Prompt 列可以自由伸展
+        customPromptsTable.getColumnModel().getColumn(1).setPreferredWidth(400);
+
         customPromptPanel = createCustomPromptPanel();
         projectPromptPanel = createProjectPromptPanel();
 

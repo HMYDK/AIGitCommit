@@ -119,7 +119,7 @@ Please output only the commit message, without any additional explanations.
                    - ci, use this if this change is for CI related stuff
                    - revert, use this if im reverting something
 
-                Note: The final result should be given in {language}
+                Note: The whole result should be given in {language} and the final result must not contain ‘```’
                 """;
     }
 
@@ -127,13 +127,11 @@ Please output only the commit message, without any additional explanations.
         return """
                  Generate a concise yet detailed git commit message using the following format and information:
 
-                 ```
                  <type>(<scope>): <subject>
 
                  <body>
 
                  <footer>
-                 ```
 
                  Use the following placeholders in your analysis:
                  - diff begin ：
@@ -165,20 +163,19 @@ Please output only the commit message, without any additional explanations.
                     - Reference related issues or PRs
 
                  Example:
-                 ```
+
                  feat(user-auth): implement two-factor authentication
 
                  • Add QR code generation for 2FA setup
                  • Integrate Google Authenticator API
                  • Update user settings for 2FA options
-                 ```
 
                  Notes:
                  - Keep the entire message under 300 characters
                  - Focus on what and why, not how
                  - Summarize diff to highlight key changes; don't include raw diff output
 
-                Note: The final result should be given in {language}
+                Note: The whole result should be given in {language} and the final result must not contain ‘```’
                 """;
     }
 }
