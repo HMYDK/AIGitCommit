@@ -19,6 +19,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * OpenAIService
@@ -30,18 +31,24 @@ public class OpenAIService implements AIService {
     private static final Logger log = LoggerFactory.getLogger(OpenAIService.class);
 
     @Override
-    public String generateCommitMessage(String content) {
-        String aiResponse;
-        try {
-            ApiKeySettings settings = ApiKeySettings.getInstance();
-            String selectedModule = settings.getSelectedModule();
-            ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.OpenAI);
-            aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+    public boolean generateByStream() {
+        return false;
+    }
+
+    @Override
+    public String generateCommitMessage(String content) throws Exception {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.OpenAI);
+        String aiResponse = getAIResponse(moduleConfig.getUrl(), selectedModule, moduleConfig.getApiKey(), content);
+
         log.info("aiResponse is  :\n{}", aiResponse);
         return aiResponse.replaceAll("```", "");
+    }
+
+    @Override
+    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+
     }
 
     @Override
@@ -110,7 +117,7 @@ public class OpenAIService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Bearer "+apiKey);
+        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000); // 连接超时：10秒
         connection.setReadTimeout(10000); // 读取超时：10秒

@@ -20,7 +20,6 @@ public class PromptInfo implements Serializable {
     private String description = "";
     private String prompt = "";
 
-
     public PromptInfo() {
     }
 
@@ -45,11 +44,11 @@ public class PromptInfo implements Serializable {
         this.prompt = prompt;
     }
 
-
     public static List<PromptInfo> defaultPrompts() {
         List<PromptInfo> prompts = new ArrayList<>();
         prompts.add(new PromptInfo("Default", PromptUtil.DEFAULT_PROMPT_1));
         prompts.add(new PromptInfo("Detailed", PromptUtil.DEFAULT_PROMPT_2));
+        prompts.add(new PromptInfo("Perfect", PromptUtil.DEFAULT_PROMPT_3));
         return prompts;
     }
 }

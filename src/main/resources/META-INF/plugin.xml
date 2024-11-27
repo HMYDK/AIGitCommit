@@ -52,12 +52,16 @@
         <![CDATA[
         <h3>Added:</h3>
         <ul>
-            <li>Support Cloudflare Workers AI.</li>
+            <li>Added support for generating commit messages for files not under version control.</li>
+            <li>Added support for generating commit messages in stream mode.</li>
         </ul>
         <h3>Changed:</h3>
         <ul>
-            <li>Change the help text to a more detailed one.</li>
-            <li>Change the layout of the configuration dialog.</li>
+            <li>Optimize the configuration validation logic.</li>
+        </ul>
+        <h3>Fixed:</h3>
+        <ul>
+            <li>Fix the issue that the plugin is not working when the configuration is missing.</li>
         </ul>
         ]]>
     </change-notes>

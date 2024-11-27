@@ -1,6 +1,8 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.AIService;
+import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -14,6 +16,9 @@ import com.intellij.util.ui.JBUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 
 public class ApiKeyConfigurableUI {
 
@@ -33,6 +38,8 @@ public class ApiKeyConfigurableUI {
     // 记录当前选中的行
     private int SELECTED_ROW = 0;
 
+    private JPanel clientPanel;
+
     public ApiKeyConfigurableUI() {
         initComponents();
         layoutComponents();
@@ -47,11 +54,38 @@ public class ApiKeyConfigurableUI {
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
+
+        // 设置 Description 列的首选宽度和最大宽度
+        customPromptsTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+        customPromptsTable.getColumnModel().getColumn(0).setMaxWidth(200);
+
+        // 设置 Prompt 列可以自由伸展
+        customPromptsTable.getColumnModel().getColumn(1).setPreferredWidth(400);
+
         customPromptPanel = createCustomPromptPanel();
         projectPromptPanel = createProjectPromptPanel();
 
         configButton = new JButton(AllIcons.General.Settings);
         configButton.setToolTipText("Configure Module Settings");
+
+        // 创建包含Stream支持状态的面板
+        clientPanel = new JPanel(new BorderLayout(5, 0));
+        clientPanel.add(clientComboBox, BorderLayout.CENTER);
+
+        // 添加Stream状态标签
+        JLabel streamLabel = new JLabel();
+        streamLabel.setForeground(JBColor.GRAY);
+        clientPanel.add(streamLabel, BorderLayout.EAST);
+
+        // 更新Stream状态显示
+        updateStreamStatus(streamLabel, (String) clientComboBox.getSelectedItem());
+
+        // 添加客户端选择监听器
+        clientComboBox.addActionListener(e -> {
+            String selectedClient = (String) clientComboBox.getSelectedItem();
+            updateModuleComboBox(selectedClient);
+            updateStreamStatus(streamLabel, selectedClient);
+        });
 
         // 初始化模块下拉框
         updateModuleComboBox((String) clientComboBox.getSelectedItem());
@@ -64,7 +98,7 @@ public class ApiKeyConfigurableUI {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         addComponent(new JBLabel("LLM client:"), gbc, 0, 0, 0.0);
-        addComponent(clientComboBox, gbc, 1, 0, 1.0);
+        addComponent(clientPanel, gbc, 1, 0, 1.0);
 
         JPanel modulePanel = new JPanel(new BorderLayout(5, 0));
         modulePanel.add(moduleComboBox, BorderLayout.CENTER);
@@ -99,11 +133,35 @@ public class ApiKeyConfigurableUI {
 
     private JPanel createCustomPromptPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        JBLabel infoLabel = new JBLabel("Click on the data in the table to use it as the prompt.");
+
+        // 创建一个包含原有 infoLabel 和新超链接的面板
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.setBorder(JBUI.Borders.empty(0, 0, 5, 0)); // 添加底部间距
+
+        JBLabel infoLabel = new JBLabel(
+                "Select a prompt from the table below to use it as your commit message template.");
         infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
         infoLabel.setForeground(JBColor.GRAY);
-        panel.add(infoLabel, BorderLayout.NORTH);
+        labelPanel.add(infoLabel, BorderLayout.WEST);
 
+        JLabel linkLabel = new JLabel(
+                "<html><a href='https://github.com/HMYDK/AIGitCommit/discussions/23'>More Prompts ↗</a></html>");
+        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/HMYDK/AIGitCommit/discussions/23"));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        labelPanel.add(linkLabel, BorderLayout.EAST);
+
+        panel.add(labelPanel, BorderLayout.NORTH);
+
+        // 创建表格面板
         JPanel customPromptsPanel = ToolbarDecorator.createDecorator(customPromptsTable)
                 .setAddAction(button -> addCustomPrompt())
                 .setRemoveAction(button -> removeCustomPrompt())
@@ -111,6 +169,7 @@ public class ApiKeyConfigurableUI {
                 .createPanel();
         panel.add(customPromptsPanel, BorderLayout.CENTER);
 
+        // 添加表格选择监听器
         customPromptsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 SELECTED_ROW = Math.max(customPromptsTable.getSelectedRow(), 0);
@@ -291,5 +350,13 @@ public class ApiKeyConfigurableUI {
 
     public JComboBox<String> getClientComboBox() {
         return clientComboBox;
+    }
+
+    private void updateStreamStatus(JLabel streamLabel, String selectedClient) {
+        AIService aiService = CommitMessageService.getAIService(selectedClient);
+        boolean supportsStream = aiService.generateByStream();
+        streamLabel.setText(supportsStream ? "(Supports Stream)" : "(No Stream)");
+        streamLabel.setForeground(supportsStream ? new JBColor(new Color(0, 128, 0), new Color(0, 128, 0))
+                : JBColor.GRAY);
     }
 }

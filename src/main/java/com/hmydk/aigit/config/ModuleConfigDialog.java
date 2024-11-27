@@ -36,6 +36,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     private JButton checkConfigButton; // 校验当前配置是否正确
     private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
     private boolean isPasswordVisible = false;
+    private boolean checkIsPassed = false;
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -143,7 +144,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         checkConfigButton = new JButton("Check Config");
         checkConfigButton.addActionListener(e -> checkConfig());
 
-        return new Action[] {
+        return new Action[]{
                 getOKAction(),
                 getCancelAction(),
                 new DialogWrapperAction("Reset") {
@@ -223,13 +224,21 @@ public class ModuleConfigDialog extends DialogWrapper {
                 .computeIfAbsent(configKey, k -> new ApiKeySettings.ModuleConfig());
 
         String url = urlField.getText().trim();
+        String apiKey = new String(apiKeyField.getPassword());
         if (StringUtils.isEmpty(url)) {
             Messages.showErrorDialog("URL cannot be empty", "Error");
             return;
         }
 
-        moduleConfig.setApiKey(new String(apiKeyField.getPassword()));
-        moduleConfig.setUrl(urlField.getText());
+        if (client.equals(Constants.Gemini) || client.equals(Constants.CloudflareWorkersAI)) {
+            if (StringUtils.isEmpty(apiKey)) {
+                Messages.showErrorDialog("API Key cannot be empty", "Error");
+                return;
+            }
+        }
+
+        moduleConfig.setApiKey(apiKey);
+        moduleConfig.setUrl(url);
 
         super.doOKAction();
     }
