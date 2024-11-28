@@ -60,6 +60,16 @@ public class Constants {
         }
     };
 
+    public static final Map<String, String> CLIENT_HELP_URLS = new HashMap<>() {
+        {
+            put(Constants.Gemini, "https://aistudio.google.com/app/apikey");
+            put(Constants.CloudflareWorkersAI, "https://developers.cloudflare.com/workers-ai/get-started/rest-api");
+            put(Constants.阿里云百炼, "https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7");
+            put(Constants.SiliconFlow, "https://cloud.siliconflow.cn/i/lszKPlCW");
+            put(Constants.OpenAI_API, "https://platform.openai.com/docs/overview");
+        }
+    };
+
     public static String getHelpText(String client) {
         return switch (client) {
             case Gemini ->
