@@ -1,17 +1,35 @@
 package com.hmydk.aigit.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class OpenAIUtil {
+
+    public static boolean checkNecessaryModuleConfigIsRight(String client) {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(client);
+        if (moduleConfig == null) {
+            return false;
+        }
+        String selectedModule = settings.getSelectedModule();
+        String url = moduleConfig.getUrl();
+        String apiKey = moduleConfig.getApiKey();
+        return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey);
+    }
 
     public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
 
@@ -22,8 +40,6 @@ public class OpenAIUtil {
 
         ObjectMapper objectMapper1 = new ObjectMapper();
         String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
-
-        System.out.println("jsonInputString: " + jsonInputString);
 
         URI uri = URI.create(url);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
@@ -39,5 +55,32 @@ public class OpenAIUtil {
             os.write(input, 0, input.length);
         }
         return connection;
+    }
+
+    public static void getAIResponseStream(String client, String textContent, Consumer<String> onNext) throws Exception {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        String selectedModule = settings.getSelectedModule();
+        ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(client);
+
+        HttpURLConnection connection = OpenAIUtil.getHttpURLConnection(moduleConfig.getUrl(), selectedModule,
+                moduleConfig.getApiKey(), textContent);
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith("data: ")) {
+                    String jsonData = line.substring(6);
+                    if (!"[DONE]".equals(jsonData)) {
+                        ObjectMapper mapper = new ObjectMapper();
+                        JsonNode root = mapper.readTree(jsonData);
+                        JsonNode choices = root.path("choices");
+                        if (choices.isArray() && !choices.isEmpty()) {
+                            String text = choices.get(0).path("delta").path("content").asText();
+                            onNext.accept(text);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

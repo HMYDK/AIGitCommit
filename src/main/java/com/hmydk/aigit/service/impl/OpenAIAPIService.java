@@ -9,13 +9,13 @@ import org.slf4j.LoggerFactory;
 import java.util.function.Consumer;
 
 /**
- * AliYunBaiLianService
+ * OpenAIAPIService
  *
  * @author hmydk
  */
-public class AliYunBaiLianService implements AIService {
+public class OpenAIAPIService implements AIService {
 
-    private static final Logger log = LoggerFactory.getLogger(AliYunBaiLianService.class);
+    private static final Logger log = LoggerFactory.getLogger(OpenAIAPIService.class);
 
     @Override
     public boolean generateByStream() {
@@ -28,13 +28,12 @@ public class AliYunBaiLianService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext)
-            throws Exception {
-        OpenAIUtil.getAIResponseStream(Constants.阿里云百炼, content, onNext);
+    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+        OpenAIUtil.getAIResponseStream(Constants.OpenAI_API, content, onNext);
     }
 
     @Override
     public boolean checkNecessaryModuleConfigIsRight() {
-        return OpenAIUtil.checkNecessaryModuleConfigIsRight(Constants.阿里云百炼);
+        return OpenAIUtil.checkNecessaryModuleConfigIsRight(Constants.OpenAI_API);
     }
 }

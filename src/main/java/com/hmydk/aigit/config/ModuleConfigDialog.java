@@ -146,6 +146,32 @@ public class ModuleConfigDialog extends DialogWrapper {
                     }
                 }
             });
+        } else if (client.equals(Constants.SiliconFlow)) {
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop()
+                                .browse(new URI("https://cloud.siliconflow.cn/i/lszKPlCW"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        } else if (client.equals(Constants.OpenAI_API)) {
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop()
+                                .browse(new URI("https://platform.openai.com/docs/overview"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
         }
     }
 
