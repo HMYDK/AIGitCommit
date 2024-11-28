@@ -52,16 +52,7 @@
         <![CDATA[
         <h3>Added:</h3>
         <ul>
-            <li>Added support for generating commit messages for files not under version control.</li>
-            <li>Added support for generating commit messages in stream mode.</li>
-        </ul>
-        <h3>Changed:</h3>
-        <ul>
-            <li>Optimize the configuration validation logic.</li>
-        </ul>
-        <h3>Fixed:</h3>
-        <ul>
-            <li>Fix the issue that the plugin is not working when the configuration is missing.</li>
+            <li>Added support for 阿里云百炼.</li>
         </ul>
         ]]>
     </change-notes>

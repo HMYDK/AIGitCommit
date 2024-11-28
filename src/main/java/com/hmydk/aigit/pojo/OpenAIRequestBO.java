@@ -8,6 +8,8 @@ public class OpenAIRequestBO {
 
     private List<OpenAIRequestMessage> messages;
 
+    private boolean stream;
+
     public static class OpenAIRequestMessage {
 
         private String role;
@@ -49,5 +51,13 @@ public class OpenAIRequestBO {
 
     public void setMessages(List<OpenAIRequestMessage> messages) {
         this.messages = messages;
+    }
+
+    public boolean isStream() {
+        return stream;
+    }
+
+    public void setStream(boolean stream) {
+        this.stream = stream;
     }
 }

@@ -133,6 +133,19 @@ public class ModuleConfigDialog extends DialogWrapper {
                     }
                 }
             });
+        } else if (client.equals(Constants.阿里云百炼)) {
+            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            helpLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        Desktop.getDesktop()
+                                .browse(new URI("https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
         }
     }
 

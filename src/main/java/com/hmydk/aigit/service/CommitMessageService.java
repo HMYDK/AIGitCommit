@@ -3,10 +3,7 @@ package com.hmydk.aigit.service;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.impl.CloudflareWorkersAIService;
-import com.hmydk.aigit.service.impl.GeminiService;
-import com.hmydk.aigit.service.impl.OllamaService;
-import com.hmydk.aigit.service.impl.OpenAIService;
+import com.hmydk.aigit.service.impl.*;
 import com.hmydk.aigit.util.PromptUtil;
 
 import java.util.function.Consumer;
@@ -32,6 +29,7 @@ public class CommitMessageService {
 
     public void generateCommitMessageStream(String diff, Consumer<String> onNext, Consumer<Throwable> onError) throws Exception{
         String prompt = PromptUtil.constructPrompt(diff);
+        System.out.println(prompt);
         aiService.generateCommitMessageStream(prompt, onNext);
     }
 
@@ -46,6 +44,7 @@ public class CommitMessageService {
             case Constants.Gemini -> new GeminiService();
             case Constants.OpenAI -> new OpenAIService();
             case Constants.CloudflareWorkersAI -> new CloudflareWorkersAIService();
+            case Constants.阿里云百炼 -> new AliYunBaiLianService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };
     }

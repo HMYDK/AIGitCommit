@@ -26,6 +26,7 @@ This plugin uses AI to automatically generate commit messages based on the chang
 - Gemini
 - Ollama
 - Cloudflare Workers AI
+- 阿里云百炼
 
 ## Install
 

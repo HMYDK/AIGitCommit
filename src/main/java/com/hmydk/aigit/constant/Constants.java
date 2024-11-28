@@ -30,17 +30,19 @@ public class Constants {
     public static final String Gemini = "Gemini";
     public static final String Ollama = "Ollama";
     public static final String OpenAI = "OpenAI";
+    public static final String 阿里云百炼 = "阿里云百炼";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
 
-    public static final String[] LLM_CLIENTS = { Gemini, Ollama, CloudflareWorkersAI };
+    public static final String[] LLM_CLIENTS = {Gemini, Ollama, CloudflareWorkersAI, 阿里云百炼};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
-            put(Gemini, new String[] { "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro" });
-            put(OpenAI, new String[] { "gpt-4o-mini" });
-            put(Ollama, new String[] { "qwen2.5:14b", "llama3.2:3b" });
+            put(Gemini, new String[]{"gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
+            put(OpenAI, new String[]{"gpt-4o-mini"});
+            put(Ollama, new String[]{"qwen2.5:14b", "llama3.2:3b"});
             put(CloudflareWorkersAI,
-                    new String[] { "@cf/meta/llama-3.1-70b-instruct", "@cf/meta/llama-3.1-8b-instruct" });
+                    new String[]{"@cf/meta/llama-3.1-70b-instruct", "@cf/meta/llama-3.1-8b-instruct"});
+            put(阿里云百炼, new String[]{"qwen-plus"});
         }
     };
 
@@ -49,6 +51,7 @@ public class Constants {
             put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models", ""));
             put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate", ""));
             put(OpenAI, new ApiKeySettings.ModuleConfig("https://api.openai.com/v1/chat/completions", ""));
+            put(阿里云百炼, new ApiKeySettings.ModuleConfig("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", ""));
             put(CloudflareWorkersAI, new ApiKeySettings.ModuleConfig(
                     "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions", ""));
         }
@@ -66,6 +69,8 @@ public class Constants {
                     +
                     "<li>Replace {account_id} with your Cloudflare account ID</li>" +
                     "</html>";
+            case 阿里云百炼 ->
+                    "<html>Get your API key from <a href='https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7'>阿里云百炼</a></html>";
             default -> "";
         };
     }
