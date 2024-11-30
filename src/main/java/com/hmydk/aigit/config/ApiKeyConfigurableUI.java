@@ -6,7 +6,9 @@ import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
@@ -52,7 +54,7 @@ public class ApiKeyConfigurableUI {
         moduleComboBox.setEditable(true);
         languageComboBox = new ComboBox<>(Constants.languages);
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
-        customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
+        customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
 
         // 设置 Description 列的首选宽度和最大宽度
@@ -220,6 +222,8 @@ public class ApiKeyConfigurableUI {
         PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
 
         SwingUtilities.invokeLater(() -> {
+            UIManager.put("OptionPane.okButtonText", "OK");
+            UIManager.put("OptionPane.cancelButtonText", "Cancel");
             JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
             JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
@@ -230,55 +234,52 @@ public class ApiKeyConfigurableUI {
                 String description = promptDialogUI.getDescriptionField().getText().trim();
                 String content = promptDialogUI.getContentArea().getText().trim();
                 if (!description.isEmpty() && !content.isEmpty()) {
-                    customPromptsTableModel.addRow(new Object[] { description, content });
+                    customPromptsTableModel.addRow(new Object[]{description, content});
                 }
             }
         });
     }
 
     private void removeCustomPrompt() {
-        int selectedRow = customPromptsTable.getSelectedRow();
-        if (selectedRow != -1) {
-            int confirm = JOptionPane.showConfirmDialog(
-                    mainPanel,
-                    "Are you sure you want to remove this prompt?",
-                    "Confirm Removal",
-                    JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                customPromptsTableModel.removeRow(selectedRow);
-                if (customPromptsTableModel.getRowCount() > 0) {
-                    int newSelectedRow = Math.min(selectedRow, customPromptsTableModel.getRowCount() - 1);
-                    customPromptsTable.setRowSelectionInterval(newSelectedRow, newSelectedRow);
-                    SELECTED_ROW = newSelectedRow;
-                } else {
-                    SELECTED_ROW = -1;
+        ApplicationManager.getApplication().invokeLater(() -> {
+            int selectedRow = customPromptsTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int result = Messages.showYesNoDialog(
+                    "Are you sure you want to delete this custom prompt?",
+                    "Confirm Deletion",
+                    Messages.getQuestionIcon()
+                );
+                if (result == Messages.YES) {
+                    customPromptsTableModel.removeRow(selectedRow);
                 }
             }
-        } else {
-            JOptionPane.showMessageDialog(mainPanel, "Please select a prompt to remove.", "No Selection",
-                    JOptionPane.WARNING_MESSAGE);
-        }
+        });
     }
 
     private void editCustomPrompt(int row) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             String description = (String) customPromptsTableModel.getValueAt(row, 0);
             String content = (String) customPromptsTableModel.getValueAt(row, 1);
 
-            PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
-                    content);
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
+                        content);
 
-            int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "Update Your Prompt",
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                UIManager.put("OptionPane.okButtonText", "OK");
+                UIManager.put("OptionPane.cancelButtonText", "Cancel");
+                
+                int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "Update Your Prompt",
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-            if (result == JOptionPane.OK_OPTION) {
-                String newDescription = promptDialogUI.getDescriptionField().getText().trim();
-                String newContent = promptDialogUI.getContentArea().getText().trim();
-                if (!newDescription.isEmpty() && !newContent.isEmpty()) {
-                    customPromptsTableModel.setValueAt(newDescription, row, 0);
-                    customPromptsTableModel.setValueAt(newContent, row, 1);
+                if (result == JOptionPane.OK_OPTION) {
+                    String newDescription = promptDialogUI.getDescriptionField().getText().trim();
+                    String newContent = promptDialogUI.getContentArea().getText().trim();
+                    if (!newDescription.isEmpty() && !newContent.isEmpty()) {
+                        customPromptsTableModel.setValueAt(newDescription, row, 0);
+                        customPromptsTableModel.setValueAt(newContent, row, 1);
+                    }
                 }
-            }
+            }, ModalityState.defaultModalityState());
         });
     }
 

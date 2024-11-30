@@ -36,7 +36,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     private JButton checkConfigButton; // 校验当前配置是否正确
     private ApiKeySettings.ModuleConfig originalConfig; // 保存原始配置
     private boolean isPasswordVisible = false;
-    private boolean checkIsPassed = false;
+
 
     public ModuleConfigDialog(Component parent, String client, String module) {
         super(parent, true);
@@ -108,28 +108,19 @@ public class ModuleConfigDialog extends DialogWrapper {
 
     private void updateHelpText() {
         helpLabel.setText(Constants.getHelpText(client));
-        if (client.equals(Constants.Gemini)) {
+
+        String url = Constants.CLIENT_HELP_URLS.get(client);
+        if (url != null) {
             helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
             helpLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     try {
-                        Desktop.getDesktop().browse(new URI("https://aistudio.google.com/app/apikey"));
+                        Desktop.getDesktop().browse(new URI(url));
                     } catch (Exception ex) {
                         ex.printStackTrace();
-                    }
-                }
-            });
-        } else if (client.equals(Constants.CloudflareWorkersAI)) {
-            helpLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            helpLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        Desktop.getDesktop()
-                                .browse(new URI("https://developers.cloudflare.com/workers-ai/get-started/rest-api"));
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                        // 可以考虑添加错误提示
+                        // Messages.showErrorDialog("无法打开链接: " + ex.getMessage(), "错误");
                     }
                 }
             });

@@ -9,9 +9,36 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description><![CDATA[
-    This plugin uses AI to automatically generate commit messages based on the changes in your code.
-    ]]></description>
+    <description>
+    <![CDATA[
+    <h3>This plugin uses AI to automatically generate commit messages based on the changes in your code.</h3>
+    
+
+    <h3>Supported Models:</h3>
+    <ul>
+        <li>Support for OpenAI API.</li>
+        <li>Support for Gemini.</li>
+        <li>Support for Ollama.</li>
+        <li>Support for Cloudflare Workers AI.</li>
+        <li>Support for 阿里云百炼(Model Hub).</li>
+        <li>Support for SiliconFlow(Model Hub).</li>
+    </ul>
+
+    <h3>Usage:</h3>
+    <ul>
+        <li>Select the code you want to commit.</li>
+        <li>Click the "Generate AI Commit Message" button.</li>
+        <li>The generated commit message will be displayed in the commit message editor.</li>
+    </ul>
+
+    <h3>Custom Prompts:</h3>
+    <ul>
+        <li>You can add, edit, and delete custom prompts in the settings.</li>
+        <li>Custom prompts will be used when generating commit messages.</li>
+        <li>You can share and find more information about custom prompts in the <a href="https://github.com/HMYDK/AIGitCommit/discussions/23">Discussion</a>.</li>
+    </ul>
+    ]]>
+    </description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
@@ -52,16 +79,9 @@
         <![CDATA[
         <h3>Added:</h3>
         <ul>
-            <li>Added support for generating commit messages for files not under version control.</li>
-            <li>Added support for generating commit messages in stream mode.</li>
-        </ul>
-        <h3>Changed:</h3>
-        <ul>
-            <li>Optimize the configuration validation logic.</li>
-        </ul>
-        <h3>Fixed:</h3>
-        <ul>
-            <li>Fix the issue that the plugin is not working when the configuration is missing.</li>
+            <li>Added support for OpenAI API.</li>
+            <li>Added support for 阿里云百炼(Model Hub).</li>
+            <li>Added support for SiliconFlow(Model Hub).</li>
         </ul>
         ]]>
     </change-notes>
