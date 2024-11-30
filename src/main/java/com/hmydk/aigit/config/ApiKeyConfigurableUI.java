@@ -12,6 +12,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
+import com.intellij.openapi.ui.Messages;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -52,7 +53,7 @@ public class ApiKeyConfigurableUI {
         moduleComboBox.setEditable(true);
         languageComboBox = new ComboBox<>(Constants.languages);
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
-        customPromptsTableModel = new DefaultTableModel(new String[] { "Description", "Prompt" }, 0);
+        customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
 
         // 设置 Description 列的首选宽度和最大宽度
@@ -230,34 +231,26 @@ public class ApiKeyConfigurableUI {
                 String description = promptDialogUI.getDescriptionField().getText().trim();
                 String content = promptDialogUI.getContentArea().getText().trim();
                 if (!description.isEmpty() && !content.isEmpty()) {
-                    customPromptsTableModel.addRow(new Object[] { description, content });
+                    customPromptsTableModel.addRow(new Object[]{description, content});
                 }
             }
         });
     }
 
     private void removeCustomPrompt() {
-        int selectedRow = customPromptsTable.getSelectedRow();
-        if (selectedRow != -1) {
-            int confirm = JOptionPane.showConfirmDialog(
-                    mainPanel,
-                    "Are you sure you want to remove this prompt?",
-                    "Confirm Removal",
-                    JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                customPromptsTableModel.removeRow(selectedRow);
-                if (customPromptsTableModel.getRowCount() > 0) {
-                    int newSelectedRow = Math.min(selectedRow, customPromptsTableModel.getRowCount() - 1);
-                    customPromptsTable.setRowSelectionInterval(newSelectedRow, newSelectedRow);
-                    SELECTED_ROW = newSelectedRow;
-                } else {
-                    SELECTED_ROW = -1;
+        ApplicationManager.getApplication().invokeLater(() -> {
+            int selectedRow = customPromptsTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int result = Messages.showYesNoDialog(
+                    "Are you sure you want to delete this custom prompt?",
+                    "Confirm Deletion",
+                    Messages.getQuestionIcon()
+                );
+                if (result == Messages.YES) {
+                    customPromptsTableModel.removeRow(selectedRow);
                 }
             }
-        } else {
-            JOptionPane.showMessageDialog(mainPanel, "Please select a prompt to remove.", "No Selection",
-                    JOptionPane.WARNING_MESSAGE);
-        }
+        });
     }
 
     private void editCustomPrompt(int row) {
