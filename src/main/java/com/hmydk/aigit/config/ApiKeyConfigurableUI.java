@@ -6,13 +6,14 @@ import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-import com.intellij.openapi.ui.Messages;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -221,6 +222,8 @@ public class ApiKeyConfigurableUI {
         PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(true, null, null);
 
         SwingUtilities.invokeLater(() -> {
+            UIManager.put("OptionPane.okButtonText", "OK");
+            UIManager.put("OptionPane.cancelButtonText", "Cancel");
             JOptionPane optionPane = new JOptionPane(promptDialogUI.getPanel(), JOptionPane.PLAIN_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
             JDialog dialog = optionPane.createDialog(mainPanel, "Add Prompt");
@@ -254,24 +257,29 @@ public class ApiKeyConfigurableUI {
     }
 
     private void editCustomPrompt(int row) {
-        ApplicationManager.getApplication().invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             String description = (String) customPromptsTableModel.getValueAt(row, 0);
             String content = (String) customPromptsTableModel.getValueAt(row, 1);
 
-            PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
-                    content);
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                PromptDialogUIUtil.PromptDialogUI promptDialogUI = PromptDialogUIUtil.showPromptDialog(false, description,
+                        content);
 
-            int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "Update Your Prompt",
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                UIManager.put("OptionPane.okButtonText", "OK");
+                UIManager.put("OptionPane.cancelButtonText", "Cancel");
+                
+                int result = JOptionPane.showConfirmDialog(mainPanel, promptDialogUI.getPanel(), "Update Your Prompt",
+                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-            if (result == JOptionPane.OK_OPTION) {
-                String newDescription = promptDialogUI.getDescriptionField().getText().trim();
-                String newContent = promptDialogUI.getContentArea().getText().trim();
-                if (!newDescription.isEmpty() && !newContent.isEmpty()) {
-                    customPromptsTableModel.setValueAt(newDescription, row, 0);
-                    customPromptsTableModel.setValueAt(newContent, row, 1);
+                if (result == JOptionPane.OK_OPTION) {
+                    String newDescription = promptDialogUI.getDescriptionField().getText().trim();
+                    String newContent = promptDialogUI.getContentArea().getText().trim();
+                    if (!newDescription.isEmpty() && !newContent.isEmpty()) {
+                        customPromptsTableModel.setValueAt(newDescription, row, 0);
+                        customPromptsTableModel.setValueAt(newContent, row, 1);
+                    }
                 }
-            }
+            }, ModalityState.defaultModalityState());
         });
     }
 
