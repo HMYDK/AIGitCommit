@@ -1,12 +1,5 @@
 package com.hmydk.aigit.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hmydk.aigit.config.ApiKeySettings;
-import com.hmydk.aigit.pojo.OpenAIRequestBO;
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,6 +9,14 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.pojo.OpenAIRequestBO;
 
 public class OpenAIUtil {
 
@@ -32,7 +33,6 @@ public class OpenAIUtil {
     }
 
     public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
-
         OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
         openAIRequestBO.setModel(module);
         openAIRequestBO.setStream(true);
@@ -44,7 +44,8 @@ public class OpenAIUtil {
         URI uri = URI.create(url);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000); // 连接超时：10秒
@@ -65,7 +66,10 @@ public class OpenAIUtil {
         HttpURLConnection connection = OpenAIUtil.getHttpURLConnection(moduleConfig.getUrl(), selectedModule,
                 moduleConfig.getApiKey(), textContent);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+        // 获取响应的字符集
+        String charset = getCharsetFromContentType(connection.getContentType());
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {
@@ -82,5 +86,18 @@ public class OpenAIUtil {
                 }
             }
         }
+    }
+
+    private static String getCharsetFromContentType(String contentType) {
+        if (contentType != null) {
+            String[] values = contentType.split(";");
+            for (String value : values) {
+                value = value.trim();
+                if (value.toLowerCase().startsWith("charset=")) {
+                    return value.substring("charset=".length());
+                }
+            }
+        }
+        return StandardCharsets.UTF_8.name(); // 默认使用UTF-8
     }
 }
