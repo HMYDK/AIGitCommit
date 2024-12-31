@@ -46,9 +46,19 @@ public class ApiKeyConfigurable implements Configurable {
 
     @Override
     public void apply() {
-        settings.setSelectedClient((String) ui.getClientComboBox().getSelectedItem());
-        settings.setSelectedModule((String) ui.getModuleComboBox().getSelectedItem());
-        settings.setCommitLanguage((String) ui.getLanguageComboBox().getSelectedItem());
+        if (ui == null) {
+            return;  // 如果UI已经被销毁，直接返回
+        }
+        
+        // 保存当前设置到临时变量
+        String selectedClient = (String) ui.getClientComboBox().getSelectedItem();
+        String selectedModule = (String) ui.getModuleComboBox().getSelectedItem();
+        String commitLanguage = (String) ui.getLanguageComboBox().getSelectedItem();
+        
+        // 应用设置
+        settings.setSelectedClient(selectedClient);
+        settings.setSelectedModule(selectedModule);
+        settings.setCommitLanguage(commitLanguage);
 
         // 保存prompt内容
         Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
