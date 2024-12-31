@@ -18,7 +18,7 @@ import java.util.Map;
 @State(name = "com.hmydk.aigit.config.ApiKeySettings", storages = { @Storage("AIGitCommitSettings.xml") })
 public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> {
     private String selectedClient = "Gemini";
-    private String selectedModule = "gemini-1.5-flash-latest";
+    private String selectedModule = "gemini-2.0-flash-exp";
     private String commitLanguage = "English";
 
     private String promptType = Constants.CUSTOM_PROMPT;
