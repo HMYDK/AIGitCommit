@@ -80,7 +80,8 @@
         <![CDATA[
         <h3>Added:</h3>
         <ul>
-            <li>Added support for DeepSeek-v3.</li>
+            <li>Fix the issue of encoding error.</li>
+            <li>Support for DeepSeek-v3.</li>
         </ul>
         ]]>
     </change-notes>
