@@ -27,8 +27,9 @@ This plugin uses AI to automatically generate commit messages based on the chang
 - Ollama
 - Cloudflare Workers AI(Model Hub)
 - 阿里云百炼(Model Hub)
-- SiliconFlow(Model Hub)：新用户2000万免费Tokens
+- SiliconFlow(Model Hub)：新用户 2000 万免费 Tokens
 - OpenAI API
+- DeepSeek-v3
 
 ## Install
 

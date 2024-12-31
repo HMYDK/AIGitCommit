@@ -34,6 +34,8 @@ public class GenerateCommitMessageAction extends AnAction {
         return (CommitMessage) e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL);
     }
 
+    private final StringBuilder messageBuilder = new StringBuilder();
+
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
@@ -75,15 +77,17 @@ public class GenerateCommitMessageAction extends AnAction {
                     String diff = GItCommitUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
 //                    System.out.println("diff: " + diff);
                     if (commitMessageService.generateByStream()) {
+                        messageBuilder.setLength(0);
                         commitMessageService.generateCommitMessageStream(
                                 diff,
                                 // onNext 处理每个token
                                 token -> ApplicationManager.getApplication().invokeLater(() -> {
-                                    String currentMessage = commitMessage.getText();
-                                    if (currentMessage.equals(Constants.GENERATING_COMMIT_MESSAGE)) {
+                                    if (messageBuilder.isEmpty()) {
+                                        messageBuilder.append(token);
                                         commitMessage.setCommitMessage(token);
                                     } else {
-                                        commitMessage.setCommitMessage(currentMessage + token);
+                                        messageBuilder.append(token);
+                                        commitMessage.setCommitMessage(messageBuilder.toString());
                                     }
                                 }),
                                 // onError 处理错误

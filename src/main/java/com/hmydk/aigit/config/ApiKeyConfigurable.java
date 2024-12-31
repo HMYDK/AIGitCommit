@@ -1,17 +1,19 @@
 package com.hmydk.aigit.config;
 
-import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.pojo.PromptInfo;
-import com.intellij.openapi.options.Configurable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.table.DefaultTableModel;
+
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.util.ArrayList;
-import java.util.List;
+import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.pojo.PromptInfo;
+import com.intellij.openapi.options.Configurable;
 
 public class ApiKeyConfigurable implements Configurable {
 

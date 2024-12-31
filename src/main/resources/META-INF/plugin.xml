@@ -18,6 +18,7 @@
     <ul>
         <li>Support for OpenAI API.</li>
         <li>Support for Gemini.</li>
+        <li>Support for DeepSeek.</li>
         <li>Support for Ollama.</li>
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
@@ -79,9 +80,7 @@
         <![CDATA[
         <h3>Added:</h3>
         <ul>
-            <li>Added support for OpenAI API.</li>
-            <li>Added support for 阿里云百炼(Model Hub).</li>
-            <li>Added support for SiliconFlow(Model Hub).</li>
+            <li>Added support for DeepSeek-v3.</li>
         </ul>
         ]]>
     </change-notes>

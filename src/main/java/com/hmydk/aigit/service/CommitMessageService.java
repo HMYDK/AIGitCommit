@@ -42,6 +42,7 @@ public class CommitMessageService {
         return switch (selectedClient) {
             case Constants.Ollama -> new OllamaService();
             case Constants.Gemini -> new GeminiService();
+            case Constants.DeepSeek -> new DeepSeekAPIService();
             case Constants.OpenAI_API -> new OpenAIAPIService();
             case Constants.CloudflareWorkersAI -> new CloudflareWorkersAIService();
             case Constants.阿里云百炼 -> new AliYunBaiLianService();

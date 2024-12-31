@@ -28,17 +28,19 @@ public class Constants {
     }
 
     public static final String Gemini = "Gemini";
+    public static final String DeepSeek = "DeepSeek";
     public static final String Ollama = "Ollama";
     public static final String OpenAI_API = "OpenAI API";
     public static final String 阿里云百炼 = "阿里云百炼(Model Hub)";
     public static final String SiliconFlow = "SiliconFlow(Model Hub)";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
 
-    public static final String[] LLM_CLIENTS = {Gemini, OpenAI_API, Ollama, CloudflareWorkersAI, 阿里云百炼, SiliconFlow};
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, CloudflareWorkersAI, 阿里云百炼, SiliconFlow};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
             put(Gemini, new String[]{"gemini-2.0-flash-exp", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
+            put(DeepSeek, new String[]{"deepseek-chat"});
             put(OpenAI_API, new String[]{""});
             put(Ollama, new String[]{"qwen2.5:14b", "llama3.2:3b"});
             put(CloudflareWorkersAI,
@@ -51,6 +53,7 @@ public class Constants {
     public static Map<String, ApiKeySettings.ModuleConfig> moduleConfigs = new HashMap<>() {
         {
             put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models", ""));
+            put(DeepSeek, new ApiKeySettings.ModuleConfig("https://api.deepseek.com/chat/completions", ""));
             put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate", ""));
             put(OpenAI_API, new ApiKeySettings.ModuleConfig("https://{host}/v1/chat/completions", ""));
             put(阿里云百炼, new ApiKeySettings.ModuleConfig("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", ""));
@@ -63,6 +66,7 @@ public class Constants {
     public static final Map<String, String> CLIENT_HELP_URLS = new HashMap<>() {
         {
             put(Constants.Gemini, "https://aistudio.google.com/app/apikey");
+            put(Constants.DeepSeek, "https://platform.deepseek.com/api_keys");
             put(Constants.CloudflareWorkersAI, "https://developers.cloudflare.com/workers-ai/get-started/rest-api");
             put(Constants.阿里云百炼, "https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7");
             put(Constants.SiliconFlow, "https://cloud.siliconflow.cn/i/lszKPlCW");
@@ -74,6 +78,10 @@ public class Constants {
         return switch (client) {
             case Gemini ->
                     "<html>Get your API key from <a href='https://aistudio.google.com/app/apikey'>Google AI Studio</a></html>";
+            case DeepSeek -> "<html>" +
+                    "<li>Get your API key from <a href='https://platform.deepseek.com/api_keys'>platform.deepseek.com</a></li>" +
+                    "<li>Current model is deepseek-v3.</li>" +
+                    "</html>";
             case Ollama ->
                     "<html><li>Make sure Ollama is running locally on the specified URL</li><li>API Key is not required</li></html>";
             case OpenAI_API -> "<html>" +
