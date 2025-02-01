@@ -13,7 +13,6 @@ public class PromptUtil {
     public static final String DEFAULT_PROMPT_1 = getDeepSeekPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
-//    public static final String DEEP_SEEK_PROMPT = getDeepSeekPrompt();
 
 
 
