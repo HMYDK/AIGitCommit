@@ -10,9 +10,12 @@ import com.hmydk.aigit.constant.Constants;
  */
 public class PromptUtil {
 
-    public static final String DEFAULT_PROMPT_1 = getDefaultPrompt();
+    public static final String DEFAULT_PROMPT_1 = getDeepSeekPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
+//    public static final String DEEP_SEEK_PROMPT = getDeepSeekPrompt();
+
+
 
     public static String constructPrompt(String diff) {
         String promptContent = "";
@@ -39,8 +42,30 @@ public class PromptUtil {
         return promptContent;
     }
 
-    private static String getPrompt4() {
+    private static String getDeepSeekPrompt(){
         return """
+                Generate a concise and standardized git commit message in {language} based on the code changes. 
+                Follow the conventional commit format, including:
+                
+                1.Type: Use one of feat, fix, docs, style, refactor, test, chore, etc.
+                
+                2.Scope: Specify the module or file affected (if applicable).
+                
+                3.Subject: A short, clear description of the change (50 characters or less).
+                
+                4.Body (optional): Provide additional context or details if necessary, but keep it brief.
+                
+                Ensure the output is clean and does not include any unnecessary formatting (e.g., code blocks or extra symbols).
+
+                Here are the code changes:
+                {diff}
+                """;
+    }
+
+
+    private static String getPrompt4() {
+        return
+"""
 You are a Git commit message generation expert. Please analyze the following code changes and generate a clear, standardized commit message in {language}.
 
 Code changes:
@@ -67,7 +92,7 @@ Requirements for the commit message:
 4. Use present tense
 
 Please output only the commit message, without any additional explanations.
-                """;
+""";
     }
 
     private static String getDefaultPrompt() {

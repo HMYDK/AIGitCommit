@@ -175,14 +175,17 @@ public class ModuleConfigDialog extends DialogWrapper {
                             Messages.showInfoMessage("Configuration validation successful", "Success");
                         } else {
                             Messages.showErrorDialog(
-                                    "Configuration validation failed. You can click the reset button to restore default values.",
+                                    "Configuration validation failed. <br>" +
+                                            "- Please check your API Key and URL. <br>" +
+                                            "- Please check your network connection.<br>" +
+                                            "- Some models may be unstable, you can try multiple times.",
                                     "Error");
                         }
                     });
                 } catch (Exception e) {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         Messages.showErrorDialog(
-                                "Validation error occurred: " + e.getMessage(),
+                                "Validation error occurred: <br>" + e.getMessage(),
                                 "Error");
                     });
                 }

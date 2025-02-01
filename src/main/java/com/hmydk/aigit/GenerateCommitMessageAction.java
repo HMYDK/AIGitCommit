@@ -92,7 +92,7 @@ public class GenerateCommitMessageAction extends AnAction {
                                 }),
                                 // onError 处理错误
                                 error -> ApplicationManager.getApplication().invokeLater(() -> {
-                                    IdeaDialogUtil.showError(project, "Error generating commit message: " + error.getMessage(), "Error");
+                                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + error.getMessage(), "Error");
                                 })
                         );
                     } else {
@@ -105,7 +105,7 @@ public class GenerateCommitMessageAction extends AnAction {
                     IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.",
                             "AI Commit Message Warning");
                 } catch (Exception ex) {
-                    IdeaDialogUtil.showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
+                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + ex.getMessage(), "Error");
                 }
             }
         });
