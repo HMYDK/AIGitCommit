@@ -109,7 +109,14 @@ public class ApiKeyConfigurableUI {
         addComponent(new JBLabel("Module:"), gbc, 0, 1, 0.0);
         addComponent(modulePanel, gbc, 1, 1, 1.0);
 
-        addComponent(new JBLabel("Language:"), gbc, 0, 3, 0.0);
+        JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel languageLabel = new JBLabel("Language: ");
+        JBLabel helpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        helpIcon.setToolTipText("The language of the generated commit message");
+        languagePanel.add(languageLabel);
+        languagePanel.add(helpIcon);
+        
+        addComponent(languagePanel, gbc, 0, 3, 0.0);
         addComponent(languageComboBox, gbc, 1, 3, 1.0);
 
         addComponent(new JBLabel("Prompt type:"), gbc, 0, 4, 0.0);
