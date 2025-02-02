@@ -32,7 +32,7 @@ public interface AIService {
             return false;
         }
         // 打印状态码
-        System.out.println("HTTP Status Code: " + statusCode);
+//        System.out.println("HTTP Status Code: " + statusCode);
         return statusCode == 200;
     }
 }
