@@ -1,8 +1,6 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.AIService;
-import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -79,14 +77,11 @@ public class ApiKeyConfigurableUI {
         streamLabel.setForeground(JBColor.GRAY);
         clientPanel.add(streamLabel, BorderLayout.EAST);
 
-        // 更新Stream状态显示
-        updateStreamStatus(streamLabel, (String) clientComboBox.getSelectedItem());
 
         // 添加客户端选择监听器
         clientComboBox.addActionListener(e -> {
             String selectedClient = (String) clientComboBox.getSelectedItem();
             updateModuleComboBox(selectedClient);
-            updateStreamStatus(streamLabel, selectedClient);
         });
 
         // 初始化模块下拉框
@@ -360,11 +355,4 @@ public class ApiKeyConfigurableUI {
         return clientComboBox;
     }
 
-    private void updateStreamStatus(JLabel streamLabel, String selectedClient) {
-        AIService aiService = CommitMessageService.getAIService(selectedClient);
-        boolean supportsStream = aiService.generateByStream();
-        streamLabel.setText(supportsStream ? "(Supports Stream)" : "(No Stream)");
-        streamLabel.setForeground(supportsStream ? new JBColor(new Color(0, 128, 0), new Color(0, 128, 0))
-                : JBColor.GRAY);
-    }
 }
