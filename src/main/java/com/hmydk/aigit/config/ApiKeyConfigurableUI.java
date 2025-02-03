@@ -1,8 +1,6 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.AIService;
-import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -79,14 +77,11 @@ public class ApiKeyConfigurableUI {
         streamLabel.setForeground(JBColor.GRAY);
         clientPanel.add(streamLabel, BorderLayout.EAST);
 
-        // 更新Stream状态显示
-        updateStreamStatus(streamLabel, (String) clientComboBox.getSelectedItem());
 
         // 添加客户端选择监听器
         clientComboBox.addActionListener(e -> {
             String selectedClient = (String) clientComboBox.getSelectedItem();
             updateModuleComboBox(selectedClient);
-            updateStreamStatus(streamLabel, selectedClient);
         });
 
         // 初始化模块下拉框
@@ -109,7 +104,14 @@ public class ApiKeyConfigurableUI {
         addComponent(new JBLabel("Module:"), gbc, 0, 1, 0.0);
         addComponent(modulePanel, gbc, 1, 1, 1.0);
 
-        addComponent(new JBLabel("Language:"), gbc, 0, 3, 0.0);
+        JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel languageLabel = new JBLabel("Language: ");
+        JBLabel helpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        helpIcon.setToolTipText("The language of the generated commit message");
+        languagePanel.add(languageLabel);
+        languagePanel.add(helpIcon);
+        
+        addComponent(languagePanel, gbc, 0, 3, 0.0);
         addComponent(languageComboBox, gbc, 1, 3, 1.0);
 
         addComponent(new JBLabel("Prompt type:"), gbc, 0, 4, 0.0);
@@ -353,11 +355,4 @@ public class ApiKeyConfigurableUI {
         return clientComboBox;
     }
 
-    private void updateStreamStatus(JLabel streamLabel, String selectedClient) {
-        AIService aiService = CommitMessageService.getAIService(selectedClient);
-        boolean supportsStream = aiService.generateByStream();
-        streamLabel.setText(supportsStream ? "(Supports Stream)" : "(No Stream)");
-        streamLabel.setForeground(supportsStream ? new JBColor(new Color(0, 128, 0), new Color(0, 128, 0))
-                : JBColor.GRAY);
-    }
 }

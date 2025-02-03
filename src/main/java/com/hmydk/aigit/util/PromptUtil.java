@@ -2,6 +2,7 @@ package com.hmydk.aigit.util;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
+import com.intellij.openapi.project.Project;
 
 /**
  * PromptUtil
@@ -10,17 +11,18 @@ import com.hmydk.aigit.constant.Constants;
  */
 public class PromptUtil {
 
-    public static final String DEFAULT_PROMPT_1 = getDefaultPrompt();
+    public static final String DEFAULT_PROMPT_1 = getDeepSeekPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
 
-    public static String constructPrompt(String diff) {
+
+    public static String constructPrompt(Project project, String diff) {
         String promptContent = "";
 
         // get prompt content
         ApiKeySettings settings = ApiKeySettings.getInstance();
         if (Constants.PROJECT_PROMPT.equals(settings.getPromptType())) {
-            promptContent = FileUtil.loadProjectPrompt();
+            promptContent = FileUtil.loadProjectPrompt(project);
         } else {
             promptContent = settings.getCustomPrompt().getPrompt();
         }
@@ -29,45 +31,75 @@ public class PromptUtil {
         if (!promptContent.contains("{diff}")) {
             throw new IllegalArgumentException("The prompt file must contain the placeholder {diff}.");
         }
-        if (!promptContent.contains("{language}")) {
-            throw new IllegalArgumentException("The prompt file must contain the placeholder {language}.");
-        }
 
-        // replace placeholder
+
+        if (Constants.PROJECT_PROMPT.equals(settings.getPromptType())) {
+            //使用项目级别的提示文件时：language可以在文件中指定，所以这里不做强制替换
+            if (promptContent.contains("{language}")) {
+                promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
+            }
+        } else {
+            if (!promptContent.contains("{language}")) {
+                throw new IllegalArgumentException("The prompt file must contain the placeholder {language}.");
+            }
+            // replace placeholder
+            promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
+        }
         promptContent = promptContent.replace("{diff}", diff);
-        promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
         return promptContent;
     }
 
-    private static String getPrompt4() {
+    private static String getDeepSeekPrompt() {
         return """
-You are a Git commit message generation expert. Please analyze the following code changes and generate a clear, standardized commit message in {language}.
+                Generate a concise and standardized git commit message in {language} based on the code changes. 
+                Follow the conventional commit format, including:
+                                
+                1.Type: Use one of feat, fix, docs, style, refactor, test, chore, etc.
+                                
+                2.Scope: Specify the module or file affected (if applicable).
+                                
+                3.Subject: A short, clear description of the change (50 characters or less).
+                                
+                4.Body (optional): Provide additional context or details if necessary, but keep it brief.
+                                
+                Ensure the output is clean and does not include any unnecessary formatting (e.g., code blocks or extra symbols).
 
-Code changes:
-{diff}
-
-Requirements for the commit message:
-1. First line should start with one of these types:
-   feat: (new feature)
-   fix: (bug fix)
-   docs: (documentation)
-   style: (formatting)
-   refactor: (code refactoring)
-   perf: (performance)
-   test: (testing)
-   chore: (maintenance)
-
-2. First line should be no longer than 72 characters
-
-3. After the first line, leave one blank line and provide detailed explanation if needed:
-   - Why was this change necessary?
-   - How does it address the issue?
-   - Any breaking changes?
-
-4. Use present tense
-
-Please output only the commit message, without any additional explanations.
+                Here are the code changes:
+                {diff}
                 """;
+    }
+
+
+    private static String getPrompt4() {
+        return
+                """
+                        You are a Git commit message generation expert. Please analyze the following code changes and generate a clear, standardized commit message in {language}.
+
+                        Code changes:
+                        {diff}
+
+                        Requirements for the commit message:
+                        1. First line should start with one of these types:
+                           feat: (new feature)
+                           fix: (bug fix)
+                           docs: (documentation)
+                           style: (formatting)
+                           refactor: (code refactoring)
+                           perf: (performance)
+                           test: (testing)
+                           chore: (maintenance)
+
+                        2. First line should be no longer than 72 characters
+
+                        3. After the first line, leave one blank line and provide detailed explanation if needed:
+                           - Why was this change necessary?
+                           - How does it address the issue?
+                           - Any breaking changes?
+
+                        4. Use present tense
+
+                        Please output only the commit message, without any additional explanations.
+                        """;
     }
 
     private static String getDefaultPrompt() {

@@ -79,6 +79,7 @@ public class GenerateCommitMessageAction extends AnAction {
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
                         commitMessageService.generateCommitMessageStream(
+                                project,
                                 diff,
                                 // onNext 处理每个token
                                 token -> ApplicationManager.getApplication().invokeLater(() -> {
@@ -92,23 +93,48 @@ public class GenerateCommitMessageAction extends AnAction {
                                 }),
                                 // onError 处理错误
                                 error -> ApplicationManager.getApplication().invokeLater(() -> {
-                                    IdeaDialogUtil.showError(project, "Error generating commit message: " + error.getMessage(), "Error");
+                                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(error.getMessage()), "Error");
                                 })
                         );
                     } else {
-                        String commitMessageFromAi = commitMessageService.generateCommitMessage(diff).trim();
+                        String commitMessageFromAi = commitMessageService.generateCommitMessage(project, diff).trim();
                         ApplicationManager.getApplication().invokeLater(() -> {
                             commitMessage.setCommitMessage(commitMessageFromAi);
                         });
                     }
                 } catch (IllegalArgumentException ex) {
-                    IdeaDialogUtil.showWarning(project, ex.getMessage() + "\n ----Please check your module config.",
-                            "AI Commit Message Warning");
+                    IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
-                    IdeaDialogUtil.showError(project, "Error generating commit message: " + ex.getMessage(), "Error");
+                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(ex.getMessage()), "Error");
                 }
             }
         });
+    }
+
+    private static @NotNull String getErrorMessage(String errorMessage) {
+        if (errorMessage.contains("429")) {
+            errorMessage = "Too many requests. Please try again later.";
+        } else if (errorMessage.contains("Read timeout") || errorMessage.contains("Timeout") || errorMessage.contains("timed out")) {
+            errorMessage = "Read timeout. Please try again later. <br> " +
+                    "This may be caused by the API key or network issues or the server is busy.";
+        } else if (errorMessage.contains("400")) {
+            errorMessage = "Bad Request. Please try again later.";
+        } else if (errorMessage.contains("401")) {
+            errorMessage = "Unauthorized. Please check your API key.";
+        } else if (errorMessage.contains("403")) {
+            errorMessage = "Forbidden. Please check your API key.";
+        } else if (errorMessage.contains("404")) {
+            errorMessage = "Not Found. Please check your API key.";
+        } else if (errorMessage.contains("500")) {
+            errorMessage = "Internal Server Error. Please try again later.";
+        } else if (errorMessage.contains("502")) {
+            errorMessage = "Bad Gateway. Please try again later.";
+        } else if (errorMessage.contains("503")) {
+            errorMessage = "Service Unavailable. Please try again later.";
+        } else if (errorMessage.contains("504")) {
+            errorMessage = "Gateway Timeout. Please try again later.";
+        }
+        return errorMessage;
     }
 
     @Override
