@@ -5,6 +5,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.impl.*;
 import com.hmydk.aigit.util.PromptUtil;
+import com.intellij.openapi.project.Project;
 
 import java.util.function.Consumer;
 
@@ -22,13 +23,13 @@ public class CommitMessageService {
         return aiService.checkNecessaryModuleConfigIsRight();
     }
 
-    public String generateCommitMessage(String diff) throws Exception{
-        String prompt = PromptUtil.constructPrompt(diff);
+    public String generateCommitMessage(Project project, String diff) throws Exception {
+        String prompt = PromptUtil.constructPrompt(project, diff);
         return aiService.generateCommitMessage(prompt);
     }
 
-    public void generateCommitMessageStream(String diff, Consumer<String> onNext, Consumer<Throwable> onError) throws Exception{
-        String prompt = PromptUtil.constructPrompt(diff);
+    public void generateCommitMessageStream(Project project, String diff, Consumer<String> onNext, Consumer<Throwable> onError) throws Exception {
+        String prompt = PromptUtil.constructPrompt(project, diff);
 //        System.out.println(prompt);
         aiService.generateCommitMessageStream(prompt, onNext);
     }

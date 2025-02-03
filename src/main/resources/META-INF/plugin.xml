@@ -78,9 +78,11 @@
 
     <change-notes>
         <![CDATA[
-        <h3>Added:</h3>
+        <h3>Detail:</h3>
         <ul>
             <li>Support 2025.1 eap</li>
+            <li>Optimized message notifications</li>
+            <li>Fix <a href="https://github.com/HMYDK/AIGitCommit/issues/30">Issue 30</a></li>
         </ul>
         ]]>
     </change-notes>
