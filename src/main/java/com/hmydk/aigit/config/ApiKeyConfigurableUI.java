@@ -101,7 +101,15 @@ public class ApiKeyConfigurableUI {
         modulePanel.add(moduleComboBox, BorderLayout.CENTER);
         modulePanel.add(configButton, BorderLayout.EAST);
 
-        addComponent(new JBLabel("Module:"), gbc, 0, 1, 0.0);
+        // Create module label panel with help icon
+        JPanel moduleLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel moduleLabel = new JBLabel("Module: ");
+        JBLabel moduleHelpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        moduleHelpIcon.setToolTipText("You can input custom module name");
+        moduleLabelPanel.add(moduleLabel);
+        moduleLabelPanel.add(moduleHelpIcon);
+
+        addComponent(moduleLabelPanel, gbc, 0, 1, 0.0);
         addComponent(modulePanel, gbc, 1, 1, 1.0);
 
         JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
