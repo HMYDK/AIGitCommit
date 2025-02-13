@@ -145,15 +145,28 @@ public class ApiKeyConfigurableUI {
         addComponent(new JBLabel("Prompt type:"), gbc, 0, 4, 0.0);
         addComponent(promptTypeComboBox, gbc, 1, 4, 1.0);
 
+        // Create a panel to maintain consistent height
+        JPanel contentPanel = new JPanel(new CardLayout());
+        contentPanel.setPreferredSize(new Dimension(-1, 200)); // 设置固定高度
+        contentPanel.add(customPromptPanel, "CUSTOM_PROMPT");
+        contentPanel.add(projectPromptPanel, "PROJECT_PROMPT");
+
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        mainPanel.add(customPromptPanel, gbc);
+        mainPanel.add(contentPanel, gbc);
 
-        promptTypeComboBox.addActionListener(e -> updatePromptPanelVisibility());
+        promptTypeComboBox.addActionListener(e -> {
+            CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
+            if (Constants.CUSTOM_PROMPT.equals(promptTypeComboBox.getSelectedItem())) {
+                cardLayout.show(contentPanel, "CUSTOM_PROMPT");
+            } else {
+                cardLayout.show(contentPanel, "PROJECT_PROMPT");
+            }
+        });
     }
 
     private void addComponent(Component component, GridBagConstraints gbc, int gridx, int gridy, double weightx) {
@@ -213,39 +226,25 @@ public class ApiKeyConfigurableUI {
 
     private JPanel createProjectPromptPanel() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(-1, 200)); // 设置与customPromptPanel相同的高度
+
+        JPanel labelPanel = new JPanel(new BorderLayout());
+        labelPanel.setBorder(JBUI.Borders.empty(0, 0, 5, 0));
+
         JLabel infoLabel = new JLabel(
                 "Using project-specific prompt from '" + Constants.PROJECT_PROMPT_FILE_NAME + "' in the project root.");
         infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 12));
         infoLabel.setForeground(JBColor.GRAY);
-        panel.add(infoLabel, BorderLayout.CENTER);
-        return panel;
-    }
+        labelPanel.add(infoLabel, BorderLayout.CENTER);
 
-    private void updatePromptPanelVisibility() {
-        String selectedPromptType = (String) promptTypeComboBox.getSelectedItem();
-        if (Constants.CUSTOM_PROMPT.equals(selectedPromptType)) {
-            mainPanel.remove(projectPromptPanel);
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 5;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gbc.fill = GridBagConstraints.BOTH;
-            mainPanel.add(customPromptPanel, gbc);
-        } else {
-            mainPanel.remove(customPromptPanel);
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 5;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1.0;
-            gbc.weighty = 0.0;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            mainPanel.add(projectPromptPanel, gbc);
-        }
-        mainPanel.revalidate();
-        mainPanel.repaint();
+        panel.add(labelPanel, BorderLayout.NORTH);
+
+        // 添加一个空面板来占据剩余空间，保持布局一致性
+        JPanel emptyPanel = new JPanel();
+        emptyPanel.setBackground(UIManager.getColor("Panel.background"));
+        panel.add(emptyPanel, BorderLayout.CENTER);
+
+        return panel;
     }
 
     private void addCustomPrompt() {
