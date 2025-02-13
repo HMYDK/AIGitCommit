@@ -81,6 +81,7 @@
         <h3>Detail:</h3>
         <ul>
             <li>Add Module support message, you can customize the input of the module</li>
+            <li>Add Report Bug link in the top right corner</li>
         </ul>
         ]]>
     </change-notes>

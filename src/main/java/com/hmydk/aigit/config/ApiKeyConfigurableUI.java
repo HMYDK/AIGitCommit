@@ -94,8 +94,28 @@ public class ApiKeyConfigurableUI {
         gbc.insets = JBUI.insets(5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        addComponent(new JBLabel("LLM client:"), gbc, 0, 0, 0.0);
-        addComponent(clientPanel, gbc, 1, 0, 1.0);
+        // Add Report Bug link in the top right corner
+        JPanel topPanel = new JPanel(new BorderLayout());
+        JLabel reportBugLabel = new JLabel(
+                "<html><a href='https://github.com/HMYDK/AIGitCommit/issues'>Report Bug ↗</a></html>");
+        reportBugLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        reportBugLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/HMYDK/AIGitCommit/issues"));
+                } catch (Exception ignored) {}
+            }
+        });
+        topPanel.add(reportBugLabel, BorderLayout.EAST);
+        gbc.gridwidth = 2;
+        addComponent(topPanel, gbc, 0, 0, 1.0);
+        
+        // Reset gridwidth for subsequent components
+        gbc.gridwidth = 1;
+
+        addComponent(new JBLabel("LLM client:"), gbc, 0, 1, 0.0);
+        addComponent(clientPanel, gbc, 1, 1, 1.0);
 
         JPanel modulePanel = new JPanel(new BorderLayout(5, 0));
         modulePanel.add(moduleComboBox, BorderLayout.CENTER);
@@ -105,12 +125,12 @@ public class ApiKeyConfigurableUI {
         JPanel moduleLabelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         JBLabel moduleLabel = new JBLabel("Module: ");
         JBLabel moduleHelpIcon = new JBLabel(AllIcons.General.ContextHelp);
-        moduleHelpIcon.setToolTipText("You can input custom module name");
+        moduleHelpIcon.setToolTipText("You can input custom module name(this is a editable comboBox)");
         moduleLabelPanel.add(moduleLabel);
         moduleLabelPanel.add(moduleHelpIcon);
 
-        addComponent(moduleLabelPanel, gbc, 0, 1, 0.0);
-        addComponent(modulePanel, gbc, 1, 1, 1.0);
+        addComponent(moduleLabelPanel, gbc, 0, 2, 0.0);
+        addComponent(modulePanel, gbc, 1, 2, 1.0);
 
         JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         JBLabel languageLabel = new JBLabel("Language: ");
