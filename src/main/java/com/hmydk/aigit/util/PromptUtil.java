@@ -46,6 +46,8 @@ public class PromptUtil {
             promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
         }
         promptContent = promptContent.replace("{diff}", diff);
+        //增加提示：以纯文本的形式输出结果，不要包含任何的markdown格式
+        promptContent = promptContent + "\n\nNote: Output the result in plain text format, do not include any markdown formatting";
         return promptContent;
     }
 
