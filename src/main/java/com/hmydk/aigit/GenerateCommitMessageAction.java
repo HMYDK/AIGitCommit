@@ -2,7 +2,7 @@ package com.hmydk.aigit;
 
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.CommitMessageService;
-import com.hmydk.aigit.util.GItCommitUtil;
+import com.hmydk.aigit.util.GItUtil;
 import com.hmydk.aigit.util.IdeaDialogUtil;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -74,7 +74,7 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    String diff = GItCommitUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
+                    String diff = GItUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
 //                    System.out.println("diff: " + diff);
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
