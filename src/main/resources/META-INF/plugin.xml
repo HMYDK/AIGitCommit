@@ -80,9 +80,10 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>Support 2025.1 eap</li>
-            <li>Optimized message notifications</li>
-            <li>Fix <a href="https://github.com/HMYDK/AIGitCommit/issues/30">Issue 30</a></li>
+            <li>Add Module support message, you can customize the input of the module</li>
+            <li>Add Report Bug link in the top right corner</li>
+            <li>Fix <a href="https://github.com/HMYDK/AIGitCommit/issues/37">Issue 37</a></li>
+            <li>Add a rule to the inner prompt to output the result in plain text format (<a href="https://github.com/HMYDK/AIGitCommit/issues/39">Issue 39</a>)</li>
         </ul>
         ]]>
     </change-notes>

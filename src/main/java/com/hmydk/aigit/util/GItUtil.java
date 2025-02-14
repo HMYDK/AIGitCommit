@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
  *
  * @author hmydk
  */
-public class GItCommitUtil {
-    private static final Logger log = LoggerFactory.getLogger(GItCommitUtil.class);
+public class GItUtil {
+    private static final Logger log = LoggerFactory.getLogger(GItUtil.class);
 
 
     public static String computeDiff(@NotNull List<Change> includedChanges,
