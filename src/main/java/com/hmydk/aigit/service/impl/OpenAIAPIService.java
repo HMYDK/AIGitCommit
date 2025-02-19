@@ -1,12 +1,13 @@
 package com.hmydk.aigit.service.impl;
 
-import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.AIService;
-import com.hmydk.aigit.util.OpenAIUtil;
+import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Consumer;
+import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.AIService;
+import com.hmydk.aigit.util.OpenAIUtil;
 
 /**
  * OpenAIAPIService
@@ -28,8 +29,8 @@ public class OpenAIAPIService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
-        OpenAIUtil.getAIResponseStream(Constants.OpenAI_API, content, onNext);
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
+        OpenAIUtil.getAIResponseStream(Constants.OpenAI_API, content, onNext, onError, onComplete);
     }
 
     @Override

@@ -28,9 +28,9 @@ public class AliYunBaiLianService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext)
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete)
             throws Exception {
-        OpenAIUtil.getAIResponseStream(Constants.阿里云百炼, content, onNext);
+        OpenAIUtil.getAIResponseStream(Constants.阿里云百炼, content, onNext, onError, onComplete);
     }
 
     @Override

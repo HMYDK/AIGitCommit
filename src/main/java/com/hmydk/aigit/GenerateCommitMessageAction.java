@@ -4,6 +4,7 @@ import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.GItUtil;
 import com.hmydk.aigit.util.IdeaDialogUtil;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -12,6 +13,7 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
@@ -19,7 +21,9 @@ import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Action 类，用于生成 Git commit 消息
@@ -35,6 +39,44 @@ public class GenerateCommitMessageAction extends AnAction {
     }
 
     private final StringBuilder messageBuilder = new StringBuilder();
+    private Timer iconAnimationTimer;
+    private final AtomicBoolean isGenerating = new AtomicBoolean(false);
+    private int currentIconIndex = 0;
+    private final Icon originalIcon = IconLoader.getIcon("/icons/git-commit-logo.svg", getClass());
+    private final Icon[] progressIcons = new Icon[]{
+            AllIcons.Process.Step_1,
+            AllIcons.Process.Step_2,
+            AllIcons.Process.Step_3,
+            AllIcons.Process.Step_4,
+            AllIcons.Process.Step_5,
+            AllIcons.Process.Step_6,
+            AllIcons.Process.Step_7,
+            AllIcons.Process.Step_8
+    };
+
+    private void startIconAnimation(AnActionEvent e) {
+        if (iconAnimationTimer != null) {
+            iconAnimationTimer.stop();
+        }
+        
+        iconAnimationTimer = new Timer(100, event -> {
+            if (isGenerating.get()) {
+                currentIconIndex = (currentIconIndex + 1) % progressIcons.length;
+                e.getPresentation().setIcon(progressIcons[currentIconIndex]);
+            }
+        });
+        iconAnimationTimer.start();
+        isGenerating.set(true);
+    }
+
+    private void stopIconAnimation(AnActionEvent e) {
+        if (iconAnimationTimer != null) {
+            iconAnimationTimer.stop();
+            iconAnimationTimer = null;
+        }
+        isGenerating.set(false);
+        e.getPresentation().setIcon(originalIcon);
+    }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
@@ -42,10 +84,14 @@ public class GenerateCommitMessageAction extends AnAction {
         if (project == null) {
             return;
         }
+
+        startIconAnimation(e);  // 开始图标动画
+
         // 根据配置，创建对应的服务
         CommitMessageService commitMessageService = new CommitMessageService();
 
         if (!commitMessageService.checkNecessaryModuleConfigIsRight()) {
+            stopIconAnimation(e);
             IdeaDialogUtil.handleModuleNecessaryConfigIsWrong(project);
             return;
         }
@@ -53,6 +99,7 @@ public class GenerateCommitMessageAction extends AnAction {
         AbstractCommitWorkflowHandler<?, ?> commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(
                 VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
         if (commitWorkflowHandler == null) {
+            stopIconAnimation(e);
             IdeaDialogUtil.handleNoChangesSelected(project);
             return;
         }
@@ -63,6 +110,7 @@ public class GenerateCommitMessageAction extends AnAction {
         List<FilePath> includedUnversionedFiles = commitWorkflowHandler.getUi().getIncludedUnversionedFiles();
 
         if (includedChanges.isEmpty() && includedUnversionedFiles.isEmpty()) {
+            stopIconAnimation(e);
             commitMessage.setCommitMessage(Constants.NO_FILE_SELECTED);
             return;
         }
@@ -93,20 +141,33 @@ public class GenerateCommitMessageAction extends AnAction {
                                 }),
                                 // onError 处理错误
                                 error -> ApplicationManager.getApplication().invokeLater(() -> {
-                                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(error.getMessage()), "Error");
+                                    stopIconAnimation(e);
+//                                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(error.getMessage()), "Error");
+                                }),
+                                // onComplete 处理完成
+                                () -> ApplicationManager.getApplication().invokeLater(() -> {
+                                    stopIconAnimation(e);
                                 })
                         );
                     } else {
                         String commitMessageFromAi = commitMessageService.generateCommitMessage(project, diff).trim();
                         ApplicationManager.getApplication().invokeLater(() -> {
                             commitMessage.setCommitMessage(commitMessageFromAi);
+                            stopIconAnimation(e);
                         });
                     }
                 } catch (IllegalArgumentException ex) {
+                    stopIconAnimation(e);
                     IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
+                    stopIconAnimation(e);
                     IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(ex.getMessage()), "Error");
                 }
+            }
+
+            @Override
+            public void onFinished() {
+                stopIconAnimation(e);
             }
         });
     }

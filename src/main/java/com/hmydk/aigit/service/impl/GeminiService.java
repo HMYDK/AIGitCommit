@@ -47,9 +47,9 @@ public class GeminiService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext)
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete)
             throws Exception {
-        getAIResponseStream(content, onNext);
+        getAIResponseStream(content, onNext, onError, onComplete);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class GeminiService implements AIService {
         return connection;
     }
 
-    private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception{
+    private void getAIResponseStream(String textContent, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
@@ -183,10 +183,14 @@ public class GeminiService implements AIService {
                                     .asText();
                             onNext.accept(text);
                         }
+                    } else {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                        break;
                     }
                 }
             }
         }
-
     }
 }
