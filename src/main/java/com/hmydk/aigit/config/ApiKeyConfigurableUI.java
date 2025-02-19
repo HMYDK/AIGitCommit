@@ -135,7 +135,7 @@ public class ApiKeyConfigurableUI {
         JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         JBLabel languageLabel = new JBLabel("Language: ");
         JBLabel helpIcon = new JBLabel(AllIcons.General.ContextHelp);
-        helpIcon.setToolTipText("The language of the generated commit message");
+        helpIcon.setToolTipText("The language of the generated commit message. Note that the actual output language depends on the LLM model's language capabilities.");
         languagePanel.add(languageLabel);
         languagePanel.add(helpIcon);
         
