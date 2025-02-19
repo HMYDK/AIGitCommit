@@ -14,6 +14,7 @@ public class PromptUtil {
     public static final String DEFAULT_PROMPT_1 = getDeepSeekPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
+    public static final String EMOJI = getEMOJIPrompt();
 
 
     public static String constructPrompt(Project project, String diff) {
@@ -211,5 +212,12 @@ public class PromptUtil {
 
                 Note: The whole result should be given in {language} and the final result must not contain ‘```’
                 """;
+    }
+    private static String getEMOJIPrompt() {
+        return """
+                Write a concise commit message from 'git diff --staged' output in the format `[EMOJI] [TYPE](file/topic): [description in {language}]`. Use GitMoji emojis (e.g., ✨ → feat), present tense, active voice, max 120 characters per line, no code blocks.
+                ---
+                {diff}
+               """;
     }
 }
