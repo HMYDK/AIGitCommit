@@ -142,7 +142,6 @@ public class GenerateCommitMessageAction extends AnAction {
                                 // onError 处理错误
                                 error -> ApplicationManager.getApplication().invokeLater(() -> {
                                     stopIconAnimation(e);
-//                                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(error.getMessage()), "Error");
                                 }),
                                 // onComplete 处理完成
                                 () -> ApplicationManager.getApplication().invokeLater(() -> {

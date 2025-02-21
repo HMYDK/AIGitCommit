@@ -16,13 +16,13 @@
 
     <h3>Supported Models:</h3>
     <ul>
-        <li>Support for OpenAI API.</li>
-        <li>Support for Gemini.</li>
         <li>Support for DeepSeek.</li>
+        <li>Support for Gemini.</li>
+        <li>Support for SiliconFlow(Model Hub).</li>
         <li>Support for Ollama.</li>
+        <li>Support for OpenAI API.</li>
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
-        <li>Support for SiliconFlow(Model Hub).</li>
     </ul>
 
     <h3>Usage:</h3>
