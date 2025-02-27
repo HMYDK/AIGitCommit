@@ -172,13 +172,16 @@ public class GenerateCommitMessageAction extends AnAction {
     }
 
     private static @NotNull String getErrorMessage(String errorMessage) {
+        String append = "<br>This issue is caused by service instability. You can try again.";
         if (errorMessage.contains("429")) {
             errorMessage = "Too many requests. Please try again later.";
+            errorMessage += append;
         } else if (errorMessage.contains("Read timeout") || errorMessage.contains("Timeout") || errorMessage.contains("timed out")) {
-            errorMessage = "Read timeout. Please try again later. <br> " +
-                    "This may be caused by the API key or network issues or the server is busy.";
+            errorMessage = "Read timeout. Please try again later. ";
+            errorMessage += append;
         } else if (errorMessage.contains("400")) {
             errorMessage = "Bad Request. Please try again later.";
+            errorMessage += append;
         } else if (errorMessage.contains("401")) {
             errorMessage = "Unauthorized. Please check your API key.";
         } else if (errorMessage.contains("403")) {
@@ -187,12 +190,16 @@ public class GenerateCommitMessageAction extends AnAction {
             errorMessage = "Not Found. Please check your API key.";
         } else if (errorMessage.contains("500")) {
             errorMessage = "Internal Server Error. Please try again later.";
+            errorMessage += append;
         } else if (errorMessage.contains("502")) {
             errorMessage = "Bad Gateway. Please try again later.";
+            errorMessage += append;
         } else if (errorMessage.contains("503")) {
             errorMessage = "Service Unavailable. Please try again later.";
+            errorMessage += append;
         } else if (errorMessage.contains("504")) {
             errorMessage = "Gateway Timeout. Please try again later.";
+            errorMessage += append;
         }
         return errorMessage;
     }
