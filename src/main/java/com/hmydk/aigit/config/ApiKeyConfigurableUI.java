@@ -1,10 +1,35 @@
 package com.hmydk.aigit.config;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableModel;
+
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
@@ -12,13 +37,6 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.URI;
 
 public class ApiKeyConfigurableUI {
 
@@ -108,6 +126,20 @@ public class ApiKeyConfigurableUI {
             }
         });
         topPanel.add(reportBugLabel, BorderLayout.EAST);
+
+        // Add proxy settings link
+        JLabel proxySettingsLabel = new JLabel(
+                "<html><a href='#'>Manage HTTP proxy settings (requires restart)</a></html>");
+        proxySettingsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        proxySettingsLabel.setForeground(JBColor.GRAY);
+        proxySettingsLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                ShowSettingsUtil.getInstance().showSettingsDialog(null, "HTTP Proxy");
+            }
+        });
+        topPanel.add(proxySettingsLabel, BorderLayout.WEST);
+
         gbc.gridwidth = 2;
         addComponent(topPanel, gbc, 0, 0, 1.0);
         
