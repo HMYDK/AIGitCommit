@@ -6,6 +6,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
+import com.hmydk.aigit.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -150,6 +151,7 @@ public class GeminiService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000); // 连接超时：10秒
         connection.setReadTimeout(10000); // 读取超时：10秒
@@ -169,7 +171,10 @@ public class GeminiService implements AIService {
         HttpURLConnection connection = getStreamHttpURLConnection(moduleConfig.getUrl(), selectedModule,
                 moduleConfig.getApiKey(), textContent);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+        // 获取响应的字符集
+        String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {

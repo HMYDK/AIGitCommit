@@ -101,6 +101,7 @@ public class OllamaService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
 
         try (OutputStream os = connection.getOutputStream()) {

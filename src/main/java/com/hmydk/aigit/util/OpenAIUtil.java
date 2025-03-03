@@ -1,5 +1,12 @@
 package com.hmydk.aigit.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.pojo.OpenAIRequestBO;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,14 +16,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
-
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hmydk.aigit.config.ApiKeySettings;
-import com.hmydk.aigit.pojo.OpenAIRequestBO;
 
 public class OpenAIUtil {
 
@@ -67,7 +66,10 @@ public class OpenAIUtil {
 
         HttpURLConnection connection = getHttpURLConnection(url, selectedModule, apiKey, content);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+        // 获取响应的字符集
+        String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {
@@ -104,18 +106,5 @@ public class OpenAIUtil {
         } finally {
             connection.disconnect();
         }
-    }
-
-    private static String getCharsetFromContentType(String contentType) {
-        if (contentType != null) {
-            String[] values = contentType.split(";");
-            for (String value : values) {
-                value = value.trim();
-                if (value.toLowerCase().startsWith("charset=")) {
-                    return value.substring("charset=".length());
-                }
-            }
-        }
-        return StandardCharsets.UTF_8.name(); // 默认使用UTF-8
     }
 }
