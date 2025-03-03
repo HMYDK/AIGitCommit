@@ -160,7 +160,7 @@ public class GenerateCommitMessageAction extends AnAction {
                     IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
                     stopIconAnimation(e);
-                    IdeaDialogUtil.showError(project, "Error generating commit message: <br>" + getErrorMessage(ex.getMessage()), "Error");
+                    IdeaDialogUtil.showError(project, getErrorMessage(ex.getMessage()), "Error");
                 }
             }
 
