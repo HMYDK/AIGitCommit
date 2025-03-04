@@ -49,6 +49,7 @@ public class PromptInfo implements Serializable {
         prompts.add(new PromptInfo("Default", PromptUtil.DEFAULT_PROMPT_1));
         prompts.add(new PromptInfo("Detailed", PromptUtil.DEFAULT_PROMPT_2));
         prompts.add(new PromptInfo("Perfect", PromptUtil.DEFAULT_PROMPT_3));
+        prompts.add(new PromptInfo("EMOJI", PromptUtil.EMOJI));
         return prompts;
     }
 }

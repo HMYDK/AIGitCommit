@@ -72,12 +72,17 @@ public class GItUtil {
         // 按仓库分组处理变更
         Map<GitRepository, List<Change>> changesByRepository = includedChanges.stream()
                 .map(change -> {
+                    GitRepository repository = null;
                     if (change.getVirtualFile() != null) {
-                        GitRepository repository = gitRepositoryManager
-                                .getRepositoryForFileQuick(change.getVirtualFile());
-                        if (repository != null) {
-                            return new AbstractMap.SimpleEntry<>(repository, change);
-                        }
+                        // 对于新增、修改、移动的文件，使用当前文件
+                        repository = gitRepositoryManager.getRepositoryForFileQuick(change.getVirtualFile());
+                    } else if (change.getBeforeRevision() != null && change.getBeforeRevision().getFile().getPath() != null) {
+                        // 对于删除的文件，使用删除前的文件路径
+                        repository = gitRepositoryManager.getRepositoryForFile(change.getBeforeRevision().getFile());
+                    }
+
+                    if (repository != null) {
+                        return new AbstractMap.SimpleEntry<>(repository, change);
                     }
                     return null;
                 })
@@ -131,15 +136,12 @@ public class GItUtil {
 
     private static String getChangeType(List<Change> changes, String filePath) {
         for (Change change : changes) {
-            if (change.getVirtualFile() != null &&
-                    change.getVirtualFile().getPath().endsWith(filePath)) {
-                return switch (change.getType()) {
-                    case NEW -> "[ADD]";
-                    case DELETED -> "[DELETE]";
-                    case MOVED -> "[MOVE]";
-                    case MODIFICATION -> "[MODIFY]";
-                };
-            }
+            return switch (change.getType()) {
+                case NEW -> "[ADD]";
+                case DELETED -> "[DELETE]";
+                case MOVED -> "[MOVE]";
+                case MODIFICATION -> "[MODIFY]";
+            };
         }
         return "[UNKNOWN]";
     }

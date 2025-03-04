@@ -16,13 +16,13 @@
 
     <h3>Supported Models:</h3>
     <ul>
-        <li>Support for OpenAI API.</li>
-        <li>Support for Gemini.</li>
         <li>Support for DeepSeek.</li>
+        <li>Support for Gemini.</li>
+        <li>Support for SiliconFlow(Model Hub).</li>
         <li>Support for Ollama.</li>
+        <li>Support for OpenAI API.</li>
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
-        <li>Support for SiliconFlow(Model Hub).</li>
     </ul>
 
     <h3>Usage:</h3>
@@ -80,10 +80,10 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>Add Module support message, you can customize the input of the module</li>
-            <li>Add Report Bug link in the top right corner</li>
-            <li>Fix <a href="https://github.com/HMYDK/AIGitCommit/issues/37">Issue 37</a></li>
-            <li>Add a rule to the inner prompt to output the result in plain text format (<a href="https://github.com/HMYDK/AIGitCommit/issues/39">Issue 39</a>)</li>
+            <li>Add EMOJI prompt</li>
+            <li>Supplement the plugin icon display in progress</li>
+            <li>Add proxy settings link</li>
+            <li>Fix the garbled text issue when using Gemini.(<a href="https://github.com/HMYDK/AIGitCommit/issues/49">Issue 49</a>)</li>
         </ul>
         ]]>
     </change-notes>

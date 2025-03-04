@@ -1,13 +1,19 @@
 package com.hmydk.aigit.service;
 
 
+import java.util.function.Consumer;
+
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.impl.*;
+import com.hmydk.aigit.service.impl.AliYunBaiLianService;
+import com.hmydk.aigit.service.impl.CloudflareWorkersAIService;
+import com.hmydk.aigit.service.impl.DeepSeekAPIService;
+import com.hmydk.aigit.service.impl.GeminiService;
+import com.hmydk.aigit.service.impl.OllamaService;
+import com.hmydk.aigit.service.impl.OpenAIAPIService;
+import com.hmydk.aigit.service.impl.SiliconFlowService;
 import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.project.Project;
-
-import java.util.function.Consumer;
 
 public class CommitMessageService {
     private final AIService aiService;
@@ -28,10 +34,9 @@ public class CommitMessageService {
         return aiService.generateCommitMessage(prompt);
     }
 
-    public void generateCommitMessageStream(Project project, String diff, Consumer<String> onNext, Consumer<Throwable> onError) throws Exception {
+    public void generateCommitMessageStream(Project project, String diff, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         String prompt = PromptUtil.constructPrompt(project, diff);
-//        System.out.println(prompt);
-        aiService.generateCommitMessageStream(prompt, onNext);
+        aiService.generateCommitMessageStream(prompt, onNext, onError, onComplete);
     }
 
     public boolean generateByStream() {

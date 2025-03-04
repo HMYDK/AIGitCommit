@@ -6,6 +6,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
+import com.hmydk.aigit.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -47,9 +48,9 @@ public class GeminiService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext)
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete)
             throws Exception {
-        getAIResponseStream(content, onNext);
+        getAIResponseStream(content, onNext, onError, onComplete);
     }
 
     @Override
@@ -150,6 +151,7 @@ public class GeminiService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
         connection.setConnectTimeout(10000); // 连接超时：10秒
         connection.setReadTimeout(10000); // 读取超时：10秒
@@ -161,7 +163,7 @@ public class GeminiService implements AIService {
         return connection;
     }
 
-    private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception{
+    private void getAIResponseStream(String textContent, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);
@@ -169,7 +171,10 @@ public class GeminiService implements AIService {
         HttpURLConnection connection = getStreamHttpURLConnection(moduleConfig.getUrl(), selectedModule,
                 moduleConfig.getApiKey(), textContent);
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+        // 获取响应的字符集
+        String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {
@@ -183,10 +188,14 @@ public class GeminiService implements AIService {
                                     .asText();
                             onNext.accept(text);
                         }
+                    } else {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                        break;
                     }
                 }
             }
         }
-
     }
 }

@@ -1,5 +1,12 @@
 package com.hmydk.aigit.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.pojo.OpenAIRequestBO;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,14 +16,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
-
-import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hmydk.aigit.config.ApiKeySettings;
-import com.hmydk.aigit.pojo.OpenAIRequestBO;
 
 public class OpenAIUtil {
 
@@ -58,46 +57,54 @@ public class OpenAIUtil {
         return connection;
     }
 
-    public static void getAIResponseStream(String client, String textContent, Consumer<String> onNext) throws Exception {
+    public static void getAIResponseStream(String client, String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(client);
+        String url = moduleConfig.getUrl();
+        String apiKey = moduleConfig.getApiKey();
 
-        HttpURLConnection connection = OpenAIUtil.getHttpURLConnection(moduleConfig.getUrl(), selectedModule,
-                moduleConfig.getApiKey(), textContent);
+        HttpURLConnection connection = getHttpURLConnection(url, selectedModule, apiKey, content);
 
         // 获取响应的字符集
-        String charset = getCharsetFromContentType(connection.getContentType());
-        
+        String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {
                     String jsonData = line.substring(6);
-                    if (!"[DONE]".equals(jsonData)) {
-                        ObjectMapper mapper = new ObjectMapper();
-                        JsonNode root = mapper.readTree(jsonData);
-                        JsonNode choices = root.path("choices");
-                        if (choices.isArray() && !choices.isEmpty()) {
-                            String text = choices.get(0).path("delta").path("content").asText();
-                            onNext.accept(text);
+                    if ("[DONE]".equals(jsonData)) {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                        break;
+                    }
+                    try {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        JsonNode rootNode = objectMapper.readTree(jsonData);
+                        JsonNode choices = rootNode.get("choices");
+                        if (choices != null && choices.isArray() && choices.size() > 0) {
+                            JsonNode delta = choices.get(0).get("delta");
+                            if (delta != null && delta.has("content")) {
+                                String tokenContent = delta.get("content").asText();
+                                onNext.accept(tokenContent);
+                            }
+                        }
+                    } catch (Exception e) {
+                        if (onError != null) {
+                            onError.accept(e);
                         }
                     }
                 }
             }
-        }
-    }
-
-    private static String getCharsetFromContentType(String contentType) {
-        if (contentType != null) {
-            String[] values = contentType.split(";");
-            for (String value : values) {
-                value = value.trim();
-                if (value.toLowerCase().startsWith("charset=")) {
-                    return value.substring("charset=".length());
-                }
+        } catch (Exception e) {
+            if (onError != null) {
+                onError.accept(e);
             }
+            throw e;
+        } finally {
+            connection.disconnect();
         }
-        return StandardCharsets.UTF_8.name(); // 默认使用UTF-8
     }
 }

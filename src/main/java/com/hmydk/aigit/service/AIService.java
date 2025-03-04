@@ -1,11 +1,11 @@
 package com.hmydk.aigit.service;
 
-import com.hmydk.aigit.util.OpenAIUtil;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import com.hmydk.aigit.util.OpenAIUtil;
 
 /**
  * AIService
@@ -18,7 +18,7 @@ public interface AIService {
 
     String generateCommitMessage(String content) throws Exception;
 
-    void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception;
+    void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception;
 
     boolean checkNecessaryModuleConfigIsRight();
 

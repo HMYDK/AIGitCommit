@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
     <defs>
         <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -11,7 +12,7 @@
 
     <!-- 字母 A，同时暗示 Git 分支 -->
     <path d="M25 75 L50 25 L75 75" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-    <line x1="37.5" y1="50" x2="62.5" y2="50" stroke="white" stroke-width="8" stroke-linecap="round" />
+    <line x1="37.5" y1="55" x2="62.5" y2="55" stroke="white" stroke-width="8" stroke-linecap="round" />
 
     <!-- 字母 I，同时作为 Git 主干 -->
     <line x1="50" y1="25" x2="50" y2="75" stroke="white" stroke-width="8" stroke-linecap="round" />

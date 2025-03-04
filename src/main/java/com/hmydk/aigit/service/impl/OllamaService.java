@@ -43,7 +43,7 @@ public class OllamaService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext) throws Exception {
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         getAIResponseStream(content, onNext);
     }
 
@@ -101,6 +101,7 @@ public class OllamaService implements AIService {
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
 
         try (OutputStream os = connection.getOutputStream()) {
@@ -179,10 +180,4 @@ public class OllamaService implements AIService {
             }
         }
     }
-
-    // public static void main(String[] args) {
-    // OllamaService ollamaService = new OllamaService();
-    // String s = ollamaService.generateCommitMessage("你如何看待节假日调休这件事情？");
-    // System.out.println(s);
-    // }
 }
