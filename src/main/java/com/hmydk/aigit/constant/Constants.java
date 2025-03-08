@@ -26,7 +26,6 @@ public class Constants {
     public static String[] getAllPromptTypes() {
         return new String[]{PROJECT_PROMPT, CUSTOM_PROMPT};
     }
-
     public static final String Gemini = "Gemini";
     public static final String DeepSeek = "DeepSeek";
     public static final String Ollama = "Ollama";
@@ -34,8 +33,8 @@ public class Constants {
     public static final String 阿里云百炼 = "阿里云百炼(Model Hub)";
     public static final String SiliconFlow = "SiliconFlow(Model Hub)";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
-
-    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, CloudflareWorkersAI, 阿里云百炼, SiliconFlow};
+    public static final String VolcEngine = "火山引擎(VolcEngine)";
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, CloudflareWorkersAI, 阿里云百炼, SiliconFlow, VolcEngine};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
@@ -47,6 +46,7 @@ public class Constants {
             put(CloudflareWorkersAI,
                     new String[]{"@cf/meta/llama-3.1-70b-instruct", "@cf/meta/llama-3.1-8b-instruct"});
             put(阿里云百炼, new String[]{"qwen-plus"});
+            put(VolcEngine, new String[]{"deepseek-v3-241226"});
         }
     };
 
@@ -60,6 +60,7 @@ public class Constants {
             put(SiliconFlow, new ApiKeySettings.ModuleConfig("https://api.siliconflow.cn/v1/chat/completions", ""));
             put(CloudflareWorkersAI, new ApiKeySettings.ModuleConfig(
                     "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions", ""));
+            put(VolcEngine, new ApiKeySettings.ModuleConfig("https://ark.cn-beijing.volces.com/api/v3/chat/completions", ""));
         }
     };
 
@@ -71,6 +72,7 @@ public class Constants {
             put(Constants.阿里云百炼, "https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7");
             put(Constants.SiliconFlow, "https://cloud.siliconflow.cn/i/lszKPlCW");
             put(Constants.OpenAI_API, "https://platform.openai.com/docs/overview");
+            put(Constants.VolcEngine, "https://www.volcengine.com/docs/82379");
         }
     };
 
