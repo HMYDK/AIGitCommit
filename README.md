@@ -30,6 +30,7 @@ This plugin uses AI to automatically generate commit messages based on the chang
 - [SiliconFlow(Model Hub): 新用户 2000 万免费 Tokens](https://cloud.siliconflow.cn/i/lszKPlCW)
 - OpenAI API
 - DeepSeek-v3
+- 火山引擎(VolcEngine)
 
 ## Install
 

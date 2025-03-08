@@ -5,13 +5,7 @@ import java.util.function.Consumer;
 
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
-import com.hmydk.aigit.service.impl.AliYunBaiLianService;
-import com.hmydk.aigit.service.impl.CloudflareWorkersAIService;
-import com.hmydk.aigit.service.impl.DeepSeekAPIService;
-import com.hmydk.aigit.service.impl.GeminiService;
-import com.hmydk.aigit.service.impl.OllamaService;
-import com.hmydk.aigit.service.impl.OpenAIAPIService;
-import com.hmydk.aigit.service.impl.SiliconFlowService;
+import com.hmydk.aigit.service.impl.*;
 import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.project.Project;
 
@@ -53,6 +47,7 @@ public class CommitMessageService {
             case Constants.CloudflareWorkersAI -> new CloudflareWorkersAIService();
             case Constants.阿里云百炼 -> new AliYunBaiLianService();
             case Constants.SiliconFlow -> new SiliconFlowService();
+            case Constants.VolcEngine -> new VolcEngineService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };
     }
