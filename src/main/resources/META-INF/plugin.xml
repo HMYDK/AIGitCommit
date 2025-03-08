@@ -23,6 +23,8 @@
         <li>Support for OpenAI API.</li>
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
+        <li>Support for 阿里云百炼(Model Hub).</li>
+        <li>Support for 火山引擎(VolcEngine).</li>
     </ul>
 
     <h3>Usage:</h3>

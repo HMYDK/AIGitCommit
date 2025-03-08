@@ -6,6 +6,9 @@ import com.hmydk.aigit.util.OpenAIUtil;
 
 import java.util.function.Consumer;
 
+/**
+ * <a href="https://www.volcengine.com/docs/82379/1099455">火山引擎</a>
+ */
 public class VolcEngineService implements AIService {
     @Override
     public boolean generateByStream() {

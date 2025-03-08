@@ -172,7 +172,7 @@ public class ModuleConfigDialog extends DialogWrapper {
                     // Use invokeLater to ensure dialogs are shown in EDT thread
                     ApplicationManager.getApplication().invokeLater(() -> {
                         if (isValid) {
-                            Messages.showInfoMessage("Configuration validation successful", "Success");
+                            Messages.showInfoMessage("Configuration validation successful! 👏", "Success");
                         } else {
                             Messages.showErrorDialog(
                                     "Configuration validation failed. <br>" +
