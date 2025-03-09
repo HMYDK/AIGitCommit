@@ -26,6 +26,7 @@ public class Constants {
     public static String[] getAllPromptTypes() {
         return new String[]{PROJECT_PROMPT, CUSTOM_PROMPT};
     }
+
     public static final String Gemini = "Gemini";
     public static final String DeepSeek = "DeepSeek";
     public static final String Ollama = "Ollama";
@@ -34,7 +35,7 @@ public class Constants {
     public static final String SiliconFlow = "SiliconFlow(Model Hub)";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
     public static final String VolcEngine = "火山引擎(VolcEngine)";
-    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, CloudflareWorkersAI, 阿里云百炼, SiliconFlow, VolcEngine};
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {

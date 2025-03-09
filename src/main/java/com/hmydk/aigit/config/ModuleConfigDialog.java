@@ -3,6 +3,7 @@ package com.hmydk.aigit.config;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
 import com.hmydk.aigit.service.CommitMessageService;
+import com.hmydk.aigit.util.DialogUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -14,6 +15,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.util.ui.JBUI;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -167,25 +169,24 @@ public class ModuleConfigDialog extends DialogWrapper {
                             "module", module,
                             "apiKey", new String(apiKeyField.getPassword()));
 
-                    boolean isValid = aiService.validateConfig(checkConfig);
+                    Pair<Boolean, String> validateResPair = aiService.validateConfig(checkConfig);
 
                     // Use invokeLater to ensure dialogs are shown in EDT thread
                     ApplicationManager.getApplication().invokeLater(() -> {
-                        if (isValid) {
+                        if (validateResPair.getLeft()) {
                             Messages.showInfoMessage("Configuration validation successful! 👏", "Success");
                         } else {
-                            Messages.showErrorDialog(
-                                    "Configuration validation failed. <br>" +
-                                            "- Please check your API Key and URL. <br>" +
-                                            "- Please check your network connection.<br>" +
-                                            "- Some models may be unstable, you can try multiple times.",
-                                    "Error");
+                            DialogUtil.showErrorDialog(
+                                    ModuleConfigDialog.this.getContentPanel(),
+                                    validateResPair.getRight(),
+                                    DialogUtil.CONFIGURATION_ERROR_TITLE
+                            );
                         }
                     });
                 } catch (Exception e) {
                     ApplicationManager.getApplication().invokeLater(() -> {
                         Messages.showErrorDialog(
-                                "Validation error occurred: <br>" + e.getMessage(),
+                                "Validation error occurred: " + e.getMessage(),
                                 "Error");
                     });
                 }

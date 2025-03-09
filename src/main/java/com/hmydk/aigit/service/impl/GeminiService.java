@@ -8,6 +8,7 @@ import com.hmydk.aigit.pojo.GeminiRequestBO;
 import com.hmydk.aigit.service.AIService;
 import com.hmydk.aigit.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,18 +68,30 @@ public class GeminiService implements AIService {
     }
 
     @Override
-    public boolean validateConfig(Map<String, String> config) {
-        int statusCode;
+    public Pair<Boolean, String> validateConfig(Map<String, String> config) {
+        HttpURLConnection connection = null;
         try {
-            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"),
-                    config.get("apiKey"), "hi");
-            statusCode = connection.getResponseCode();
-        } catch (IOException e) {
-            return false;
+            connection = getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
+            if (connection.getResponseCode() != 200) {
+                // 读取错误响应
+                StringBuilder response = new StringBuilder();
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                return Pair.of(false, response.toString());
+            }
+        } catch (Exception e) {
+            return Pair.of(false, e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
-        // 打印状态码
-//        System.out.println("HTTP Status Code: " + statusCode);
-        return statusCode == 200;
+
+        return Pair.of(true, "");
     }
 
     public static String getAIResponse(String url, String module, String apiKey, String textContent) throws Exception {
@@ -174,7 +187,7 @@ public class GeminiService implements AIService {
         // 获取响应的字符集
         String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(),charset))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("data: ")) {
