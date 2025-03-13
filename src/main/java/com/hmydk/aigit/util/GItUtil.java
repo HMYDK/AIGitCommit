@@ -6,6 +6,9 @@ import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -16,10 +19,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +30,91 @@ import java.util.stream.Collectors;
 public class GItUtil {
     private static final Logger log = LoggerFactory.getLogger(GItUtil.class);
 
+    /**
+     * 计算差异并收集丰富的上下文信息，用于生成更准确的commit message
+     * 
+     * @param includedChanges 包含的变更
+     * @param unversionedFiles 未版本控制的文件
+     * @param project 项目
+     * @return 包含丰富上下文的差异信息
+     */
+    private static Map<String, Object> computeEnhancedDiff(@NotNull List<Change> includedChanges,
+                                     @NotNull List<FilePath> unversionedFiles,
+                                     @NotNull Project project) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // 基本差异信息
+        String rawDiff = computeDiff(includedChanges, unversionedFiles, project);
+        result.put("rawDiff", rawDiff);
+        
+        // 收集变更文件的相关信息
+        List<Map<String, Object>> fileContexts = new ArrayList<>();
+        
+        // 处理已版本控制的变更
+        for (Change change : includedChanges) {
+            Map<String, Object> fileContext = new HashMap<>();
+            
+            VirtualFile vFile = null;
+            String filePath = null;
+            
+            if (change.getVirtualFile() != null) {
+                vFile = change.getVirtualFile();
+                filePath = vFile.getPath();
+            } else if (change.getBeforeRevision() != null) {
+                filePath = change.getBeforeRevision().getFile().getPath();
+            }
+            
+            if (filePath == null) continue;
+            
+            fileContext.put("filePath", filePath);
+            fileContext.put("changeType", change.getType().toString());
+            
+            // 收集文件类型信息
+            if (vFile != null) {
+                fileContext.put("fileType", vFile.getFileType().getName());
+                fileContext.put("fileExtension", vFile.getExtension());
+                
+                // 对于代码文件，尝试提取基本信息
+                PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+                if (psiFile != null) {
+                    fileContext.put("language", psiFile.getLanguage().getDisplayName());
+                    fileContext.put("fileName", psiFile.getName());
+                }
+            }
+            
+            fileContexts.add(fileContext);
+        }
+        
+        // 处理未版本控制的文件
+        for (FilePath unversionedFile : unversionedFiles) {
+            Map<String, Object> fileContext = new HashMap<>();
+            fileContext.put("filePath", unversionedFile.getPath());
+            fileContext.put("changeType", "NEW");
+            if (unversionedFile.getVirtualFile() != null) {
+                fileContext.put("fileType", unversionedFile.getVirtualFile().getFileType().getName());
+                fileContext.put("fileExtension", unversionedFile.getVirtualFile().getExtension());
+            }
+            
+            fileContexts.add(fileContext);
+        }
+        
+        result.put("fileContexts", fileContexts);
+        
+        // 添加项目级别的上下文
+        Map<String, Object> projectContext = new HashMap<>();
+        GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
+        List<GitRepository> repositories = gitRepositoryManager.getRepositories();
+        if (!repositories.isEmpty()) {
+            GitRepository mainRepo = repositories.get(0);
+            projectContext.put("currentBranch", mainRepo.getCurrentBranch() != null ? 
+                    mainRepo.getCurrentBranch().getName() : "unknown");
+        }
+        projectContext.put("projectName", project.getName());
+        
+        result.put("projectContext", projectContext);
+        
+        return result;
+    }
 
     public static String computeDiff(@NotNull List<Change> includedChanges,
                                      @NotNull List<FilePath> unversionedFiles,
@@ -144,5 +229,53 @@ public class GItUtil {
             };
         }
         return "[UNKNOWN]";
+    }
+
+    /**
+     * 将增强的差异信息转换为格式化的字符串
+     * 
+     * @param includedChanges 包含的变更
+     * @param unversionedFiles 未版本控制的文件
+     * @param project 项目
+     * @return 格式化的差异信息字符串
+     */
+    public static String getFormattedDiff(@NotNull List<Change> includedChanges,
+                                        @NotNull List<FilePath> unversionedFiles,
+                                        @NotNull Project project) {
+        Map<String, Object> diffInfo = computeEnhancedDiff(includedChanges, unversionedFiles, project);
+        StringBuilder result = new StringBuilder();
+        
+        // 添加项目信息
+        @SuppressWarnings("unchecked")
+        Map<String, Object> projectContext = (Map<String, Object>) diffInfo.get("projectContext");
+        result.append("项目信息:\n");
+        result.append("- 项目名称: ").append(projectContext.get("projectName")).append("\n");
+        result.append("- 当前分支: ").append(projectContext.get("currentBranch")).append("\n\n");
+        
+        // 添加文件变更信息
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> fileContexts = (List<Map<String, Object>>) diffInfo.get("fileContexts");
+        result.append("文件变更:\n");
+        for (Map<String, Object> fileContext : fileContexts) {
+            result.append("- 文件: ").append(fileContext.get("filePath")).append("\n");
+            result.append("  类型: ").append(fileContext.get("changeType")).append("\n");
+            
+            if (fileContext.get("fileType") != null) {
+                result.append("  文件类型: ").append(fileContext.get("fileType")).append("\n");
+            }
+            if (fileContext.get("fileExtension") != null) {
+                result.append("  扩展名: ").append(fileContext.get("fileExtension")).append("\n");
+            }
+            if (fileContext.get("language") != null) {
+                result.append("  编程语言: ").append(fileContext.get("language")).append("\n");
+            }
+            result.append("\n");
+        }
+        
+        // 添加具体的差异信息
+        result.append("详细变更:\n");
+        result.append(diffInfo.get("rawDiff"));
+        
+        return result.toString();
     }
 }
