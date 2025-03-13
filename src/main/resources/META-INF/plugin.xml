@@ -84,6 +84,7 @@
         <ul>
             <li>Support for 火山引擎(VolcEngine) by <a href="https://github.com/callMeExiao">Exiao</a></li>
             <li>Show model information when an error occurs</li>
+            <li>添加 Conventional Commit 提示词</li>
         </ul>
         ]]>
     </change-notes>
