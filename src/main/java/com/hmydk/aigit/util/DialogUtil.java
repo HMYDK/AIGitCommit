@@ -70,7 +70,7 @@ public class DialogUtil {
                     UIUtil.getLabelFont().getSize() + "pt;'>" +
                     "Possible causes:<br><br>" +
                     "• API Key or URL configuration error<br>" +
-                    "• Network connection issues<br>" +
+                    "• Network connection issues(check your proxy)<br>" +
                     "• The model may be temporarily unstable, please try again later<br><br>" +
                     "Please check your configuration and try again." +
                     "</body></html>");
