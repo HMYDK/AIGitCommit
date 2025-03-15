@@ -1,5 +1,6 @@
 package com.hmydk.aigit.util;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
@@ -38,7 +39,7 @@ public class GItUtil {
      * @param project 项目
      * @return 包含丰富上下文的差异信息
      */
-    private static Map<String, Object> computeEnhancedDiff(@NotNull List<Change> includedChanges,
+    public static Map<String, Object> computeEnhancedDiff(@NotNull List<Change> includedChanges,
                                      @NotNull List<FilePath> unversionedFiles,
                                      @NotNull Project project) {
         Map<String, Object> result = new HashMap<>();
@@ -54,14 +55,17 @@ public class GItUtil {
         for (Change change : includedChanges) {
             Map<String, Object> fileContext = new HashMap<>();
             
-            VirtualFile vFile = null;
+            VirtualFile vFile;
             String filePath = null;
             
             if (change.getVirtualFile() != null) {
                 vFile = change.getVirtualFile();
                 filePath = vFile.getPath();
-            } else if (change.getBeforeRevision() != null) {
-                filePath = change.getBeforeRevision().getFile().getPath();
+            } else {
+                vFile = null;
+                if (change.getBeforeRevision() != null) {
+                    filePath = change.getBeforeRevision().getFile().getPath();
+                }
             }
             
             if (filePath == null) continue;
@@ -71,15 +75,18 @@ public class GItUtil {
             
             // 收集文件类型信息
             if (vFile != null) {
-                fileContext.put("fileType", vFile.getFileType().getName());
-                fileContext.put("fileExtension", vFile.getExtension());
-                
-                // 对于代码文件，尝试提取基本信息
-                PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
-                if (psiFile != null) {
-                    fileContext.put("language", psiFile.getLanguage().getDisplayName());
-                    fileContext.put("fileName", psiFile.getName());
-                }
+                // 在read action中执行PSI操作
+                ReadAction.run(() -> {
+                    fileContext.put("fileType", vFile.getFileType().getName());
+                    fileContext.put("fileExtension", vFile.getExtension());
+                    
+                    // 对于代码文件，尝试提取基本信息
+                    PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+                    if (psiFile != null) {
+                        fileContext.put("language", psiFile.getLanguage().getDisplayName());
+                        fileContext.put("fileName", psiFile.getName());
+                    }
+                });
             }
             
             fileContexts.add(fileContext);
@@ -90,10 +97,15 @@ public class GItUtil {
             Map<String, Object> fileContext = new HashMap<>();
             fileContext.put("filePath", unversionedFile.getPath());
             fileContext.put("changeType", "NEW");
-            if (unversionedFile.getVirtualFile() != null) {
-                fileContext.put("fileType", unversionedFile.getVirtualFile().getFileType().getName());
-                fileContext.put("fileExtension", unversionedFile.getVirtualFile().getExtension());
-            }
+            
+            // 在read action中执行PSI操作
+            ReadAction.run(() -> {
+                if (unversionedFile.getVirtualFile() != null) {
+                    VirtualFile vFile = unversionedFile.getVirtualFile();
+                    fileContext.put("fileType", vFile.getFileType().getName());
+                    fileContext.put("fileExtension", vFile.getExtension());
+                }
+            });
             
             fileContexts.add(fileContext);
         }
