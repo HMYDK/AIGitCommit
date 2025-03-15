@@ -33,9 +33,10 @@ public class Constants {
     public static final String OpenAI_API = "OpenAI API";
     public static final String 阿里云百炼 = "阿里云百炼(Model Hub)";
     public static final String SiliconFlow = "SiliconFlow(Model Hub)";
+    public static final String OpenRouter = "OpenRouter";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
     public static final String VolcEngine = "火山引擎(VolcEngine)";
-    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI};
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, OpenRouter, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
@@ -48,6 +49,7 @@ public class Constants {
                     new String[]{"@cf/meta/llama-3.1-70b-instruct", "@cf/meta/llama-3.1-8b-instruct"});
             put(阿里云百炼, new String[]{"qwen-plus"});
             put(VolcEngine, new String[]{"deepseek-v3-241226"});
+            put(OpenRouter, new String[]{"google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.3-70b-instruct:free", "deepseek/deepseek-chat:free", "deepseek/deepseek-r1:free", "deepseek/deepseek-r1-zero:free"});
         }
     };
 
@@ -62,6 +64,7 @@ public class Constants {
             put(CloudflareWorkersAI, new ApiKeySettings.ModuleConfig(
                     "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions", ""));
             put(VolcEngine, new ApiKeySettings.ModuleConfig("https://ark.cn-beijing.volces.com/api/v3/chat/completions", ""));
+            put(OpenRouter, new ApiKeySettings.ModuleConfig("https://openrouter.ai/api/v1/chat/completions", ""));
         }
     };
 
@@ -74,6 +77,7 @@ public class Constants {
             put(Constants.SiliconFlow, "https://cloud.siliconflow.cn/i/lszKPlCW");
             put(Constants.OpenAI_API, "https://platform.openai.com/docs/overview");
             put(Constants.VolcEngine, "https://www.volcengine.com/docs/82379");
+            put(Constants.OpenRouter, "https://openrouter.ai/settings/keys");
         }
     };
 
@@ -105,6 +109,10 @@ public class Constants {
                     "<html>Get your API key from <a href='https://cloud.siliconflow.cn/i/lszKPlCW'>" + SiliconFlow + "</a></html>";
             case VolcEngine ->
                     "<html>Get your API key from <a href='https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey'>" + VolcEngine + "</a></html>";
+            case OpenRouter -> "<html>" +
+                    "<li>Get your API key from <a href='https://openrouter.ai/settings/keys'>" + OpenRouter + "</a></html></li>" +
+                    "<li>Get free model from <a href='https://openrouter.ai/models?q=free'>here</a>.</li>" +
+                    "</html>";
             default -> "";
         };
     }

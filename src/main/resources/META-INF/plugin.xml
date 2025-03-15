@@ -83,6 +83,7 @@
         <h3>Detail:</h3>
         <ul>
             <li>Support for 火山引擎(VolcEngine) by <a href="https://github.com/callMeExiao">Exiao</a></li>
+            <li>Support for <a href="https://openrouter.ai">OpenRouter</a></li>
             <li>Show model information when an error occurs</li>
             <li>Add Conventional Commit prompt for chose</li>
             <li>Enhance the quality of commit message generation</li>
