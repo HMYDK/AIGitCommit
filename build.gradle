@@ -20,7 +20,7 @@ intellij {
 }
 
 patchPluginXml.sinceBuild.set("231.8109.175")
-patchPluginXml.untilBuild.set("251.*")
+patchPluginXml.untilBuild.set("243.*")
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

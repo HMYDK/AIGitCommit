@@ -24,7 +24,8 @@
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
-        <li>Support for 火山引擎(VolcEngine).</li>
+        <li>Support for 火山引擎(VolcEngine) by <a href="https://github.com/callMeExiao">Exiao</a></li>
+        <li>Support for OpenRouter.</li>
     </ul>
 
     <h3>Usage:</h3>
@@ -48,6 +49,8 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.vcs</depends>
     <depends>Git4Idea</depends>
+    <depends>com.intellij.modules.json</depends>
+
 
 
     <!-- Extension points defined by the plugin.

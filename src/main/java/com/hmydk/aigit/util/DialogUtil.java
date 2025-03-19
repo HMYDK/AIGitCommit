@@ -1,5 +1,15 @@
 package com.hmydk.aigit.util;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JTextPane;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.intellij.icons.AllIcons;
 import com.intellij.json.JsonFileType;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -11,11 +21,6 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class DialogUtil {
 
@@ -144,8 +149,7 @@ public class DialogUtil {
                 return "No error details available";
             }
             
-            com.google.gson.JsonParser parser = new com.google.gson.JsonParser();
-            com.google.gson.JsonElement jsonElement = parser.parse(jsonStr);
+            com.google.gson.JsonElement jsonElement = com.google.gson.JsonParser.parseString(jsonStr);
             com.google.gson.Gson gson = new com.google.gson.GsonBuilder()
                     .setPrettyPrinting()
                     .create();
