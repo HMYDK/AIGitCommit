@@ -15,6 +15,7 @@ public class PromptUtil {
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
     public static final String EMOJI = getEMOJIPrompt();
+    public static final String Conventional = getConventionalPrompt();
 
 
     public static String constructPrompt(Project project, String diff) {
@@ -219,5 +220,14 @@ public class PromptUtil {
                 ---
                 {diff}
                """;
+    }
+
+    private static String getConventionalPrompt() {
+        return """
+                Please generate a Git commit message that follows the Conventional Commits specification based on the following git diff information. 
+                The commit message should clearly express the purpose and intent of this code change and concisely summarize the changes made. 
+                Please output the final result in {language}. Below is the code diff: 
+                {diff}
+                """;
     }
 }

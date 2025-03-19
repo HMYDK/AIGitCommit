@@ -1,18 +1,11 @@
 package com.hmydk.aigit.util;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * PromptDialogUIUtil
@@ -98,8 +91,9 @@ public class PromptDialogUIUtil {
         gbc.weighty = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         JLabel helpTextLabel = new JLabel("<html>Supported placeholders:<br>" +
-                "• {diff} - The code changes in diff format<br>" +
-                "• {language} - The language of the generated commit message</html>");
+                "• {diff} - The code changes in diff format.<br>" +
+                "• {language} - The language of the generated commit message.<br>"+
+                "Note: If you want to output the branch name in the final result, just write your requirements in the prompt.</html>");
         helpTextLabel.setForeground(JBColor.GRAY);
         helpTextLabel.setFont(helpTextLabel.getFont().deriveFont(Font.ITALIC));
         panel.add(helpTextLabel, gbc);

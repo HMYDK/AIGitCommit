@@ -23,14 +23,15 @@ This plugin uses AI to automatically generate commit messages based on the chang
 
 ## Supported models
 
-- Gemini
+- [Gemini](https://aistudio.google.com/app/apikey)
 - Ollama
 - Cloudflare Workers AI(Model Hub)
 - 阿里云百炼(Model Hub)
 - [SiliconFlow(Model Hub): 新用户 2000 万免费 Tokens](https://cloud.siliconflow.cn/i/lszKPlCW)
-- OpenAI API
-- DeepSeek-v3
-- 火山引擎(VolcEngine)
+- [OpenAI API](https://platform.openai.com/docs/overview)
+- [DeepSeek](https://platform.deepseek.com/api_keys)
+- [火山引擎(VolcEngine)](https://volcengine.com/L/QpwJ2INEat4/)
+- [OpenRouter](https://openrouter.ai/)
 
 ## Install
 

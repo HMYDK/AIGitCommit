@@ -1,13 +1,13 @@
 package com.hmydk.aigit.service;
 
 
-import java.util.function.Consumer;
-
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.impl.*;
 import com.hmydk.aigit.util.PromptUtil;
 import com.intellij.openapi.project.Project;
+
+import java.util.function.Consumer;
 
 public class CommitMessageService {
     private final AIService aiService;
@@ -48,6 +48,7 @@ public class CommitMessageService {
             case Constants.阿里云百炼 -> new AliYunBaiLianService();
             case Constants.SiliconFlow -> new SiliconFlowService();
             case Constants.VolcEngine -> new VolcEngineService();
+            case Constants.OpenRouter -> new OpenRouterService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };
     }

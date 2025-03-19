@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.hmydk"
-version = "1.5.3"
+version = "1.5.4"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ repositories {
 intellij {
     version.set("2024.1")
     type.set("IC") // Target IDE Platform
-    plugins = ["Git4Idea"]
+    plugins = ["Git4Idea", "java"]
 }
 
 patchPluginXml.sinceBuild.set("231.8109.175")

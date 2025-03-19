@@ -3,13 +3,21 @@ package com.hmydk.aigit.service.impl;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
 import com.hmydk.aigit.util.OpenAIUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
 /**
- * <a href="https://www.volcengine.com/docs/82379/1099455">火山引擎</a>
+ *
+ * <a href="https://openrouter.ai/">OpenRouter</a>
+ *
+ * @author hmydk
  */
-public class VolcEngineService implements AIService {
+public class OpenRouterService implements AIService {
+
+    private static final Logger log = LoggerFactory.getLogger(OpenRouterService.class);
+
     @Override
     public boolean generateByStream() {
         return true;
@@ -22,11 +30,11 @@ public class VolcEngineService implements AIService {
 
     @Override
     public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
-        OpenAIUtil.getAIResponseStream(Constants.VolcEngine, content, onNext, onError, onComplete);
+        OpenAIUtil.getAIResponseStream(Constants.OpenRouter, content, onNext, onError, onComplete);
     }
 
     @Override
     public boolean checkNecessaryModuleConfigIsRight() {
-        return OpenAIUtil.checkNecessaryModuleConfigIsRight(Constants.VolcEngine);
+        return OpenAIUtil.checkNecessaryModuleConfigIsRight(Constants.OpenRouter);
     }
 }

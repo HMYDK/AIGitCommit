@@ -6,6 +6,7 @@ import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -60,17 +61,31 @@ public class OllamaService implements AIService {
     }
 
     @Override
-    public boolean validateConfig(Map<String, String> config) {
-        int statusCode;
+    public Pair<Boolean, String> validateConfig(Map<String, String> config) {
+        HttpURLConnection connection = null;
         try {
-            HttpURLConnection connection = getHttpURLConnection(config.get("module"), config.get("url"), "hi");
-            statusCode = connection.getResponseCode();
-        } catch (IOException e) {
-            return false;
+            connection = getHttpURLConnection(config.get("module"), config.get("url"), "hi");
+            if (connection.getResponseCode() != 200) {
+                // 读取错误响应
+                StringBuilder response = new StringBuilder();
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                return Pair.of(false, response.toString());
+            }
+        } catch (Exception e) {
+            return Pair.of(false, e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
-        // 打印状态码
-//        System.out.println("HTTP Status Code: " + statusCode);
-        return statusCode == 200;
+
+        return Pair.of(true, "");
+
     }
 
     private static String getAIResponse(String module, String url, String textContent) throws Exception {

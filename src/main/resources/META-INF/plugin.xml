@@ -23,6 +23,8 @@
         <li>Support for OpenAI API.</li>
         <li>Support for Cloudflare Workers AI.</li>
         <li>Support for 阿里云百炼(Model Hub).</li>
+        <li>Support for 阿里云百炼(Model Hub).</li>
+        <li>Support for 火山引擎(VolcEngine).</li>
     </ul>
 
     <h3>Usage:</h3>
@@ -80,10 +82,12 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>Add EMOJI prompt</li>
-            <li>Supplement the plugin icon display in progress</li>
-            <li>Add proxy settings link</li>
-            <li>Fix the garbled text issue when using Gemini.(<a href="https://github.com/HMYDK/AIGitCommit/issues/49">Issue 49</a>)</li>
+            <li>Support for 火山引擎(VolcEngine) by <a href="https://github.com/callMeExiao">Exiao</a></li>
+            <li>Support for <a href="https://openrouter.ai">OpenRouter</a></li>
+            <li>Show model information when an error occurs</li>
+            <li>Add Conventional Commit prompt for chose</li>
+            <li>Enhance the quality of commit message generation</li>
+            <li>Fix the problem of binary file error</li>
         </ul>
         ]]>
     </change-notes>

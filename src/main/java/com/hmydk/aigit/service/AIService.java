@@ -1,11 +1,11 @@
 package com.hmydk.aigit.service;
 
-import java.io.IOException;
+import com.hmydk.aigit.util.OpenAIUtil;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.net.HttpURLConnection;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import com.hmydk.aigit.util.OpenAIUtil;
 
 /**
  * AIService
@@ -23,16 +23,29 @@ public interface AIService {
     boolean checkNecessaryModuleConfigIsRight();
 
 
-    default boolean validateConfig(Map<String, String> config) {
-        int statusCode;
+    default Pair<Boolean, String> validateConfig(Map<String, String> config) {
+        HttpURLConnection connection = null;
         try {
-            HttpURLConnection connection = OpenAIUtil.getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
-            statusCode = connection.getResponseCode();
-        } catch (IOException e) {
-            return false;
+            connection = OpenAIUtil.getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
+            if (connection.getResponseCode() != 200) {
+                // 读取错误响应
+                StringBuilder response = new StringBuilder();
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                return Pair.of(false, response.toString());
+            }
+        } catch (Exception e) {
+            return Pair.of(false, e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
-        // 打印状态码
-//        System.out.println("HTTP Status Code: " + statusCode);
-        return statusCode == 200;
+        
+        return Pair.of(true, "");
     }
 }

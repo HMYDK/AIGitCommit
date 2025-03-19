@@ -2,6 +2,7 @@ package com.hmydk.aigit;
 
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.CommitMessageService;
+import com.hmydk.aigit.util.DialogUtil;
 import com.hmydk.aigit.util.GItUtil;
 import com.hmydk.aigit.util.IdeaDialogUtil;
 import com.intellij.icons.AllIcons;
@@ -18,6 +19,7 @@ import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.VcsDataKeys;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.ui.CommitMessage;
+import com.intellij.openapi.wm.WindowManager;
 import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -122,8 +124,8 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    String diff = GItUtil.computeDiff(includedChanges, includedUnversionedFiles, project);
-//                    System.out.println("diff: " + diff);
+                    String diff = GItUtil.getFormattedDiff(includedChanges, includedUnversionedFiles, project);
+//                    System.out.println(diff);
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
                         commitMessageService.generateCommitMessageStream(
@@ -155,12 +157,15 @@ public class GenerateCommitMessageAction extends AnAction {
                             stopIconAnimation(e);
                         });
                     }
-                } catch (IllegalArgumentException ex) {
-                    stopIconAnimation(e);
-                    IdeaDialogUtil.showWarning(project, ex.getMessage(), "AI Commit Message Warning");
                 } catch (Exception ex) {
                     stopIconAnimation(e);
-                    IdeaDialogUtil.showError(project, getErrorMessage(ex.getMessage()), "Error");
+                    ApplicationManager.getApplication().invokeLater(() -> {
+                        DialogUtil.showErrorDialog(
+                                WindowManager.getInstance().getFrame(project),
+                                ex.getMessage(),
+                                DialogUtil.GENERATE_COMMIT_MESSAGE_ERROR_TITLE
+                        );
+                    });
                 }
             }
 
@@ -169,39 +174,6 @@ public class GenerateCommitMessageAction extends AnAction {
                 stopIconAnimation(e);
             }
         });
-    }
-
-    private static @NotNull String getErrorMessage(String errorMessage) {
-        String append = "<br>This issue is caused by service instability. You can try again.";
-        if (errorMessage.contains("429")) {
-            errorMessage = "Too many requests. Please try again later.";
-            errorMessage += append;
-        } else if (errorMessage.contains("Read timeout") || errorMessage.contains("Timeout") || errorMessage.contains("timed out")) {
-            errorMessage = "Read timeout. Please try again later. ";
-            errorMessage += append;
-        } else if (errorMessage.contains("400")) {
-            errorMessage = "Bad Request. Please try again later.";
-            errorMessage += append;
-        } else if (errorMessage.contains("401")) {
-            errorMessage = "Unauthorized. Please check your API key.";
-        } else if (errorMessage.contains("403")) {
-            errorMessage = "Forbidden. Please check your API key.";
-        } else if (errorMessage.contains("404")) {
-            errorMessage = "Not Found. Please check your API key.";
-        } else if (errorMessage.contains("500")) {
-            errorMessage = "Internal Server Error. Please try again later.";
-            errorMessage += append;
-        } else if (errorMessage.contains("502")) {
-            errorMessage = "Bad Gateway. Please try again later.";
-            errorMessage += append;
-        } else if (errorMessage.contains("503")) {
-            errorMessage = "Service Unavailable. Please try again later.";
-            errorMessage += append;
-        } else if (errorMessage.contains("504")) {
-            errorMessage = "Gateway Timeout. Please try again later.";
-            errorMessage += append;
-        }
-        return errorMessage;
     }
 
     @Override

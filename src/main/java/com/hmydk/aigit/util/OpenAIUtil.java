@@ -65,6 +65,17 @@ public class OpenAIUtil {
         String apiKey = moduleConfig.getApiKey();
 
         HttpURLConnection connection = getHttpURLConnection(url, selectedModule, apiKey, content);
+        if (connection.getResponseCode() != 200) {
+            // 读取错误响应
+            StringBuilder response = new StringBuilder();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+            }
+            throw new Exception(response.toString());
+        }
 
         // 获取响应的字符集
         String charset = CommonUtil.getCharsetFromContentType(connection.getContentType());

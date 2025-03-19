@@ -7,6 +7,7 @@ import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
 import com.hmydk.aigit.service.AIService;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,17 +64,15 @@ public class CloudflareWorkersAIService implements AIService {
     }
 
     @Override
-    public boolean validateConfig(Map<String, String> config) {
+    public Pair<Boolean, String> validateConfig(Map<String, String> config) {
         int statusCode;
         try {
             HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
             statusCode = connection.getResponseCode();
-        } catch (IOException e) {
-            return false;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }  catch (Exception e) {
+            return Pair.of(false, e.getMessage());
         }
-        return statusCode == 200;
+        return Pair.of(statusCode == 200, "");
     }
 
     public static String getAIResponse(String url, String module, String apiKey, String textContent) throws Exception {
