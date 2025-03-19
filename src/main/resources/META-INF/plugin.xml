@@ -87,6 +87,7 @@
             <li>Show model information when an error occurs</li>
             <li>Add Conventional Commit prompt for chose</li>
             <li>Enhance the quality of commit message generation</li>
+            <li>Fix the problem of binary file error</li>
         </ul>
         ]]>
     </change-notes>

@@ -1,5 +1,21 @@
 package com.hmydk.aigit.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
@@ -10,18 +26,9 @@ import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * GItCommitUtil
@@ -75,16 +82,22 @@ public class GItUtil {
             
             // 收集文件类型信息
             if (vFile != null) {
+                // 检查是否为二进制文件
+                boolean isBinary = vFile.getFileType().isBinary();
+                fileContext.put("isBinary", isBinary);
+                
                 // 在read action中执行PSI操作
                 ReadAction.run(() -> {
                     fileContext.put("fileType", vFile.getFileType().getName());
                     fileContext.put("fileExtension", vFile.getExtension());
                     
-                    // 对于代码文件，尝试提取基本信息
-                    PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
-                    if (psiFile != null) {
-                        fileContext.put("language", psiFile.getLanguage().getDisplayName());
-                        fileContext.put("fileName", psiFile.getName());
+                    // 只对非二进制文件提取PSI信息
+                    if (!isBinary) {
+                        PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
+                        if (psiFile != null) {
+                            fileContext.put("language", psiFile.getLanguage().getDisplayName());
+                            fileContext.put("fileName", psiFile.getName());
+                        }
                     }
                 });
             }
@@ -139,9 +152,16 @@ public class GItUtil {
 
         // 处理未版本控制的文件
         for (FilePath unversionedFile : unversionedFiles) {
+            VirtualFile vFile = unversionedFile.getVirtualFile();
             diffBuilder.append("[ADD]: ")
                     .append(unversionedFile.getPath())
                     .append("\n");
+
+            // 检查是否为二进制文件
+            if (vFile != null && vFile.getFileType().isBinary()) {
+                diffBuilder.append("二进制文件，内容已省略\n\n");
+                continue;
+            }
 
             try {
                 // 读取新文件的内容
