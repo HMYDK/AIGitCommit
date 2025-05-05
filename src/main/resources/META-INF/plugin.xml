@@ -86,6 +86,7 @@
         <h3>Detail:</h3>
         <ul>
             <li>修复非Git环境(如SVN)下仍然显示插件按钮的问题</li>
+            <li>Support custom language</li>
         </ul>
         ]]>
     </change-notes>

@@ -1,29 +1,5 @@
 package com.hmydk.aigit.config;
 
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.URI;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.table.DefaultTableModel;
-
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
@@ -37,6 +13,13 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 
 public class ApiKeyConfigurableUI {
 
@@ -69,6 +52,7 @@ public class ApiKeyConfigurableUI {
         moduleComboBox = new ComboBox<>();
         moduleComboBox.setEditable(true);
         languageComboBox = new ComboBox<>(Constants.languages);
+        languageComboBox.setEditable(true);
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
