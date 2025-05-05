@@ -310,4 +310,25 @@ public class GItUtil {
         
         return result.toString();
     }
+    
+    /**
+     * 检查当前项目是否为Git仓库
+     * 
+     * @param project 项目
+     * @return 如果是Git仓库则返回true，否则返回false
+     */
+    public static boolean isGitRepository(@NotNull Project project) {
+        if (project == null) {
+            return false;
+        }
+        
+        GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
+        if (gitRepositoryManager == null) {
+            return false;
+        }
+        
+        // 检查是否有Git仓库
+        List<GitRepository> repositories = gitRepositoryManager.getRepositories();
+        return !repositories.isEmpty();
+    }
 }

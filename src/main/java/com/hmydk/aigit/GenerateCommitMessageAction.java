@@ -180,7 +180,16 @@ public class GenerateCommitMessageAction extends AnAction {
     public void update(@NotNull AnActionEvent e) {
         // 控制 Action 的启用/禁用状态
         Project project = e.getProject();
-        e.getPresentation().setEnabledAndVisible(project != null);
+        boolean isEnabled = project != null;
+        
+        // 检查是否是Git版本控制系统
+        if (isEnabled) {
+            // 获取VCS类型，确保只在Git环境下启用
+            boolean isGit = GItUtil.isGitRepository(project);
+            isEnabled = isGit;
+        }
+        
+        e.getPresentation().setEnabledAndVisible(isEnabled);
     }
 
     @Override
