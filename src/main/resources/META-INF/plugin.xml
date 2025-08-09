@@ -71,7 +71,7 @@
 
     <actions>
         <!-- Declare the action for manual commit message generation -->
-        <action id="AICommitMessage.Generate"
+        <action id="com.hmydk.aigit.GenerateCommitMessageAction"
                 class="com.hmydk.aigit.GenerateCommitMessageAction"
                 text="Generate AI Commit Message"
                 icon="/icons/git-commit-logo.svg"

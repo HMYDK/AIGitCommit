@@ -1,10 +1,10 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.intellij") version "1.17.4"
 }
 
 group = "com.hmydk"
-version = "1.5.5"
+version = "1.5.8"
 
 repositories {
     mavenCentral()
@@ -19,8 +19,8 @@ intellij {
     plugins = ["Git4Idea", "java"]
 }
 
-patchPluginXml.sinceBuild.set("231.8109.175")
-patchPluginXml.untilBuild.set("243.*")
+patchPluginXml.sinceBuild.set("241.0")
+patchPluginXml.untilBuild.set("253.*")
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
