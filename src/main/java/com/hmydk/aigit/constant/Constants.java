@@ -41,7 +41,7 @@ public class Constants {
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
             put(DeepSeek, new String[]{"deepseek-chat"});
-            put(Gemini, new String[]{"gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05", "gemini-2.0-flash-exp", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
+            put(Gemini, new String[]{"gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05", "gemini-2.0-flash-exp", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
             put(OpenAI_API, new String[]{""});
             put(SiliconFlow, new String[]{"deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-Coder-32B-Instruct"});
             put(Ollama, new String[]{"qwen2.5:14b", "llama3.2:3b"});
