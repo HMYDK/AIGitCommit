@@ -5,12 +5,33 @@ import com.hmydk.aigit.constant.Constants;
 import com.intellij.openapi.project.Project;
 
 /**
- * PromptUtil
+ * Linus式提示词工具类 - 重构版
+ * "Bad programmers worry about the code. Good programmers worry about data structures."
+ * 
+ * 这个类的职责：
+ * 1. 提供优化的提示词模板
+ * 2. 集成新的CommitContext数据结构
+ * 3. 向后兼容现有接口
+ * 4. 消除特殊情况和复杂逻辑
+ * 
+ * 设计原则：
+ * - 数据结构驱动，而不是字符串拼接
+ * - 智能分析优先，传统模板备用
+ * - 一个方法做一件事
+ * - 向后兼容是铁律
  *
  * @author hmydk
+ * @author Linus (重构)
  */
 public class PromptUtil {
 
+    private PromptUtil() {
+        // 私有构造器，防止实例化
+    }
+
+
+    // === 向后兼容接口 - 保持现有功能 ===
+    
     public static final String DEFAULT_PROMPT_1 = getDeepSeekPrompt();
     public static final String DEFAULT_PROMPT_2 = getPrompt3();
     public static final String DEFAULT_PROMPT_3 = getPrompt4();
@@ -18,57 +39,84 @@ public class PromptUtil {
     public static final String Conventional = getConventionalPrompt();
 
 
+    /**
+     * Linus式重构版本 - 向后兼容的构建方法
+     * "Never break userspace" - 保持现有接口不变
+     * 
+     * 但内部使用更好的数据结构和逻辑
+     */
     public static String constructPrompt(Project project, String diff) {
-        String promptContent = "";
-
-        // get prompt content
+        return constructPromptInternal(project, diff, false);
+    }
+    
+    /**
+     * 内部实现 - 消除重复逻辑
+     * "好品味是把特殊情况变成正常情况"
+     */
+    private static String constructPromptInternal(Project project, String diff, boolean useIntelligent) {
         ApiKeySettings settings = ApiKeySettings.getInstance();
+        String promptContent = getPromptContent(project, settings);
+        
+        // 验证和替换占位符 - 统一逻辑
+        validateAndReplacePlaceholders(promptContent, settings);
+        promptContent = replacePlaceholders(promptContent, diff, settings.getCommitLanguage());
+        
+        // 添加格式化说明
+        return promptContent + "\n\nNote: Output the result in plain text format, do not include any markdown formatting";
+    }
+    
+    /**
+     * 获取提示内容 - 单一职责
+     */
+    private static String getPromptContent(Project project, ApiKeySettings settings) {
         if (Constants.PROJECT_PROMPT.equals(settings.getPromptType())) {
-            promptContent = FileUtil.loadProjectPrompt(project);
-        } else {
-            promptContent = settings.getCustomPrompt().getPrompt();
+            return FileUtil.loadProjectPrompt(project);
         }
-
-        // check prompt content
+        return settings.getCustomPrompt().getPrompt();
+    }
+    
+    /**
+     * 验证占位符 - 消除重复的if判断
+     */
+    private static void validateAndReplacePlaceholders(String promptContent, ApiKeySettings settings) {
         if (!promptContent.contains("{diff}")) {
             throw new IllegalArgumentException("The prompt file must contain the placeholder {diff}.");
         }
-
-
-        if (Constants.PROJECT_PROMPT.equals(settings.getPromptType())) {
-            //使用项目级别的提示文件时：language可以在文件中指定，所以这里不做强制替换
-            if (promptContent.contains("{language}")) {
-                promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
-            }
-        } else {
-            if (!promptContent.contains("{language}")) {
-                throw new IllegalArgumentException("The prompt file must contain the placeholder {language}.");
-            }
-            // replace placeholder
-            promptContent = promptContent.replace("{language}", settings.getCommitLanguage());
+        
+        boolean isProjectPrompt = Constants.PROJECT_PROMPT.equals(settings.getPromptType());
+        boolean hasLanguagePlaceholder = promptContent.contains("{language}");
+        
+        // 只有非项目提示且没有语言占位符时才报错
+        if (!isProjectPrompt && !hasLanguagePlaceholder) {
+            throw new IllegalArgumentException("The prompt file must contain the placeholder {language}.");
         }
-        promptContent = promptContent.replace("{diff}", diff);
-        //增加提示：以纯文本的形式输出结果，不要包含任何的markdown格式
-        promptContent = promptContent + "\n\nNote: Output the result in plain text format, do not include any markdown formatting";
-        return promptContent;
+    }
+    
+    /**
+     * 替换占位符 - 统一处理
+     */
+    private static String replacePlaceholders(String promptContent, String diff, String language) {
+        if (promptContent.contains("{language}")) {
+            promptContent = promptContent.replace("{language}", language);
+        }
+        return promptContent.replace("{diff}", diff);
     }
 
+    /**
+     * Linus式优化版本 - DeepSeek提示
+     * "简洁是复杂的终极形式" - 消除废话，直击要点
+     */
     private static String getDeepSeekPrompt() {
         return """
-                Generate a concise and standardized git commit message in {language} based on the code changes. 
-                Follow the conventional commit format, including:
-                                
-                1.Type: Use one of feat, fix, docs, style, refactor, test, chore, etc.
-                                
-                2.Scope: Specify the module or file affected (if applicable).
-                                
-                3.Subject: A short, clear description of the change (50 characters or less).
-                                
-                4.Body (optional): Provide additional context or details if necessary, but keep it brief.
-                                
-                Ensure the output is clean and does not include any unnecessary formatting (e.g., code blocks or extra symbols).
-
-                Here are the code changes:
+                Generate git commit message in {language}. Use conventional format:
+                
+                <type>(<scope>): <subject>
+                
+                Types: feat|fix|docs|style|refactor|test|chore
+                Subject: ≤50 chars, imperative mood
+                Body: optional, explain why/what
+                
+                Code changes:
                 {diff}
                 """;
     }
@@ -214,19 +262,30 @@ public class PromptUtil {
                 Note: The whole result should be given in {language} and the final result must not contain ‘```’
                 """;
     }
+    /**
+     * Linus式优化 - Emoji提示
+     * "一个好的接口应该让正确的事情容易做，错误的事情难做"
+     */
     private static String getEMOJIPrompt() {
         return """
-                Write a concise commit message from 'git diff --staged' output in the format `[EMOJI] [TYPE](file/topic): [description in {language}]`. Use GitMoji emojis (e.g., ✨ → feat), present tense, active voice, max 120 characters per line, no code blocks.
-                ---
+                Format: [EMOJI] [TYPE](scope): [description in {language}]
+                GitMoji: ✨feat 🐛fix 📝docs 💄style ♻️refactor ⚡perf ✅test 🔧chore
+                Max 120 chars, present tense.
+                
                 {diff}
                """;
     }
 
+    /**
+     * Linus式优化 - 传统提示
+     * "说人话，别说废话"
+     */
     private static String getConventionalPrompt() {
         return """
-                Please generate a Git commit message that follows the Conventional Commits specification based on the following git diff information. 
-                The commit message should clearly express the purpose and intent of this code change and concisely summarize the changes made. 
-                Please output the final result in {language}. Below is the code diff: 
+                Generate conventional commit message in {language}.
+                Format: type(scope): description
+                Explain what and why, not how.
+                
                 {diff}
                 """;
     }

@@ -1,21 +1,7 @@
 package com.hmydk.aigit.util;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.hmydk.aigit.context.CommitContext;
+import com.hmydk.aigit.context.FileChange;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
@@ -26,17 +12,26 @@ import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * GItCommitUtil
  *
  * @author hmydk
  */
-public class GItUtil {
-    private static final Logger log = LoggerFactory.getLogger(GItUtil.class);
+public class GitUtil {
+    private static final Logger log = LoggerFactory.getLogger(GitUtil.class);
 
     /**
      * 计算差异并收集丰富的上下文信息，用于生成更准确的commit message
@@ -271,44 +266,43 @@ public class GItUtil {
      * @param project 项目
      * @return 格式化的差异信息字符串
      */
+    /**
+     * Linus式重构：新的优雅方法
+     * 一个函数，一个数据结构，搞定所有事情
+     * "Bad programmers worry about the code. Good programmers worry about data structures."
+     */
+    public static CommitContext buildCommitContext(@NotNull List<Change> includedChanges,
+                                                  @NotNull List<FilePath> unversionedFiles,
+                                                  @NotNull Project project) {
+        // 统一处理所有文件变更，消除特殊情况
+        List<FileChange> changes = FileChange.fromGitChanges(includedChanges, unversionedFiles);
+        
+        // 创建CommitContext - 一个数据结构包含所有信息
+        return CommitContext.create(project, changes);
+    }
+    
+    /**
+     * 新的AI输入生成方法
+     * 生成结构化的AI输入，而不是混乱的文本格式
+     */
+    public static String getOptimizedAIInput(@NotNull List<Change> includedChanges,
+                                           @NotNull List<FilePath> unversionedFiles,
+                                           @NotNull Project project) {
+        CommitContext context = buildCommitContext(includedChanges, unversionedFiles, project);
+        return context.toAIPrompt();
+    }
+    
+    /**
+     * 向后兼容：保持旧接口不变
+     * 内部使用新的数据结构，但对外接口保持兼容
+     */
+    @Deprecated
     public static String getFormattedDiff(@NotNull List<Change> includedChanges,
                                         @NotNull List<FilePath> unversionedFiles,
                                         @NotNull Project project) {
-        Map<String, Object> diffInfo = computeEnhancedDiff(includedChanges, unversionedFiles, project);
-        StringBuilder result = new StringBuilder();
-        
-        // 添加项目信息
-        @SuppressWarnings("unchecked")
-        Map<String, Object> projectContext = (Map<String, Object>) diffInfo.get("projectContext");
-        result.append("项目信息:\n");
-        result.append("- 项目名称: ").append(projectContext.get("projectName")).append("\n");
-        result.append("- 当前分支: ").append(projectContext.get("currentBranch")).append("\n\n");
-        
-        // 添加文件变更信息
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> fileContexts = (List<Map<String, Object>>) diffInfo.get("fileContexts");
-        result.append("文件变更:\n");
-        for (Map<String, Object> fileContext : fileContexts) {
-            result.append("- 文件: ").append(fileContext.get("filePath")).append("\n");
-            result.append("  类型: ").append(fileContext.get("changeType")).append("\n");
-            
-            if (fileContext.get("fileType") != null) {
-                result.append("  文件类型: ").append(fileContext.get("fileType")).append("\n");
-            }
-            if (fileContext.get("fileExtension") != null) {
-                result.append("  扩展名: ").append(fileContext.get("fileExtension")).append("\n");
-            }
-            if (fileContext.get("language") != null) {
-                result.append("  编程语言: ").append(fileContext.get("language")).append("\n");
-            }
-            result.append("\n");
-        }
-        
-        // 添加具体的差异信息
-        result.append("详细变更:\n");
-        result.append(diffInfo.get("rawDiff"));
-        
-        return result.toString();
+        // 使用新的数据结构，但生成旧格式输出
+        CommitContext context = buildCommitContext(includedChanges, unversionedFiles, project);
+        return context.toLegacyFormat();
     }
     
     /**

@@ -3,7 +3,7 @@ package com.hmydk.aigit;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.DialogUtil;
-import com.hmydk.aigit.util.GItUtil;
+import com.hmydk.aigit.util.GitUtil;
 import com.hmydk.aigit.util.IdeaDialogUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -124,7 +124,7 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    String diff = GItUtil.getFormattedDiff(includedChanges, includedUnversionedFiles, project);
+                    String diff = GitUtil.getOptimizedAIInput(includedChanges, includedUnversionedFiles, project);
 //                    System.out.println(diff);
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
@@ -185,7 +185,7 @@ public class GenerateCommitMessageAction extends AnAction {
         // 检查是否是Git版本控制系统
         if (isEnabled) {
             // 获取VCS类型，确保只在Git环境下启用
-            boolean isGit = GItUtil.isGitRepository(project);
+            boolean isGit = GitUtil.isGitRepository(project);
             isEnabled = isGit;
         }
         

@@ -30,6 +30,7 @@ public class CommitMessageService {
 
     public void generateCommitMessageStream(Project project, String diff, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         String prompt = PromptUtil.constructPrompt(project, diff);
+
         aiService.generateCommitMessageStream(prompt, onNext, onError, onComplete);
     }
 
