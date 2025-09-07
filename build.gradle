@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.hmydk"
-version = "1.5.6"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
