@@ -84,8 +84,8 @@
     <change-notes>
         <![CDATA[
         <h3>Detail:</h3>
-        <ul>
-            <li>Support for version 2025</li>
+        <ul>        
+            <li>Significantly improved the quality of generated git commit messages</li>
         </ul>
         ]]>
     </change-notes>

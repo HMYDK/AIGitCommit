@@ -1,8 +1,7 @@
 package com.hmydk.aigit.context;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vcs.VcsRoot;
-import com.intellij.openapi.vcs.ProjectLevelVcsManager;
+import com.intellij.openapi.project.ProjectUtil;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 
@@ -33,7 +32,7 @@ public class ProjectInfo {
             // 获取Git信息
             GitRepositoryManager gitManager = GitRepositoryManager.getInstance(project);
             if (gitManager != null) {
-                GitRepository repository = gitManager.getRepositoryForRoot(project.getBaseDir());
+                GitRepository repository = gitManager.getRepositoryForRoot(ProjectUtil.guessProjectDir(project));
                 if (repository != null) {
                     isGit = true;
                     if (repository.getCurrentBranch() != null) {
