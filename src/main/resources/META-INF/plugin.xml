@@ -84,7 +84,8 @@
     <change-notes>
         <![CDATA[
         <h3>Detail:</h3>
-        <ul>        
+        <ul>
+            <li>Refactored settings page for better user experience</li>
             <li>Support filtering files to exclude certain ones</li>
         </ul>
         ]]>
