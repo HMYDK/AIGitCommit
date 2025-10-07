@@ -23,6 +23,62 @@ public class Constants {
     public static final String PROJECT_PROMPT = "Project Prompt";
     public static final String CUSTOM_PROMPT = "Custom Prompt";
 
+    // 文件忽略相关常量
+    public static final String[] DEFAULT_EXCLUDE_PATTERNS = {
+            "*.pb.go",           // Protocol Buffer生成文件
+            "*.pb.cc",           // Protocol Buffer C++生成文件
+            "*.pb.h",            // Protocol Buffer头文件
+            "go.sum",            // Go依赖锁定文件
+            "go.mod",            // Go模块文件（可选）
+            "package-lock.json", // Node.js依赖锁定文件
+            "yarn.lock",         // Yarn依赖锁定文件
+            "pnpm-lock.yaml",    // PNPM依赖锁定文件
+            "Cargo.lock",        // Rust依赖锁定文件
+            "Pipfile.lock",      // Python依赖锁定文件
+            "poetry.lock",       // Poetry依赖锁定文件
+            "*.generated.*",     // 通用生成文件
+            "*.gen.*",           // 生成文件简写
+            "*_generated.*",     // 下划线生成文件
+            "*_gen.*",           // 下划线生成文件简写
+            "vendor/**",         // Go vendor目录
+            "node_modules/**",   // Node.js依赖目录
+            ".next/**",          // Next.js构建目录
+            "dist/**",           // 构建输出目录
+            "build/**",          // 构建目录
+            "target/**",         // Maven/Rust构建目录
+            "*.min.js",          // 压缩的JS文件
+            "*.min.css",         // 压缩的CSS文件
+            "*.bundle.*",        // 打包文件
+            "*.chunk.*",         // 代码分块文件
+            "coverage/**",       // 测试覆盖率目录
+            ".nyc_output/**",    // NYC覆盖率输出
+            "*.lcov",            // 覆盖率报告文件
+            "*.log",             // 日志文件
+            "*.tmp",             // 临时文件
+            "*.temp",            // 临时文件
+            ".DS_Store",         // macOS系统文件
+            "Thumbs.db",         // Windows系统文件
+            "*.swp",             // Vim交换文件
+            "*.swo",             // Vim交换文件
+            "*~"                 // 备份文件
+    };
+
+    public static final String EXCLUDE_PATTERNS_HELP_TEXT = 
+            "<html>" +
+            "<b>文件忽略规则说明：</b><br/>" +
+            "• 支持通配符模式，如 *.pb.go 匹配所有 .pb.go 文件<br/>" +
+            "• 支持目录模式，如 vendor/** 匹配 vendor 目录下所有文件<br/>" +
+            "• 每行一个规则，空行和 # 开头的行会被忽略<br/>" +
+            "• 常见的生成文件和依赖文件已预设，可根据项目需要调整<br/>" +
+            "<br/>" +
+            "<b>预设规则包括：</b><br/>" +
+            "• Protocol Buffer 生成文件 (*.pb.go, *.pb.cc 等)<br/>" +
+            "• 依赖锁定文件 (go.sum, package-lock.json 等)<br/>" +
+            "• 构建输出目录 (dist/, build/, target/ 等)<br/>" +
+            "• 压缩和打包文件 (*.min.js, *.bundle.* 等)<br/>" +
+            "• 系统和临时文件 (.DS_Store, *.log 等)<br/>" +
+            "</html>";
+
     public static String[] getAllPromptTypes() {
         return new String[]{PROJECT_PROMPT, CUSTOM_PROMPT};
     }

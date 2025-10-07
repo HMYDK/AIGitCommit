@@ -1,15 +1,5 @@
 package com.hmydk.aigit.util;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JTextPane;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import com.intellij.icons.AllIcons;
 import com.intellij.json.JsonFileType;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -21,6 +11,11 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class DialogUtil {
 
@@ -123,8 +118,8 @@ public class DialogUtil {
             detailsPanel.add(scrollPane, BorderLayout.CENTER);
 
             // 添加选项卡
-            tabbedPane.addTab("Overview", AllIcons.Actions.Help, overviewPanel);
             tabbedPane.addTab("Error Details", AllIcons.Debugger.Console, detailsPanel);
+            tabbedPane.addTab("Overview", AllIcons.Actions.Help, overviewPanel);
 
             return JBUI.Panels.simplePanel()
                     .withPreferredSize(500, 300)

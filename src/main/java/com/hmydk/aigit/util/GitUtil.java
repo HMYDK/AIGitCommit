@@ -2,6 +2,7 @@ package com.hmydk.aigit.util;
 
 import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
+import com.hmydk.aigit.config.ApiKeySettings;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
@@ -20,7 +21,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,6 +36,145 @@ import java.util.stream.Collectors;
  */
 public class GitUtil {
     private static final Logger log = LoggerFactory.getLogger(GitUtil.class);
+    
+    // 缓存PathMatcher以提高性能
+    private static final Map<String, PathMatcher> pathMatcherCache = new HashMap<>();
+
+    /**
+     * 检查文件是否应该被排除
+     * 
+     * @param filePath 文件路径
+     * @return 如果文件应该被排除则返回true
+     */
+    public static boolean shouldExcludeFile(String filePath) {
+        ApiKeySettings settings = ApiKeySettings.getInstance();
+        
+        // 如果文件排除功能未启用，则不排除任何文件
+        if (!settings.isEnableFileExclusion()) {
+            return false;
+        }
+        
+        List<String> excludePatterns = settings.getExcludePatterns();
+        if (excludePatterns == null || excludePatterns.isEmpty()) {
+            return false;
+        }
+        
+        // 标准化文件路径（使用正斜杠）
+        String normalizedPath = filePath.replace('\\', '/');
+        Path path = Paths.get(normalizedPath);
+        String fileName = path.getFileName() != null ? path.getFileName().toString() : "";
+        
+        for (String pattern : excludePatterns) {
+            if (pattern == null || pattern.trim().isEmpty()) {
+                continue;
+            }
+            
+            String trimmedPattern = pattern.trim();
+            
+            try {
+                // 检查是否匹配文件名模式
+                if (matchesFileName(fileName, trimmedPattern)) {
+                    log.debug("File excluded by filename pattern '{}': {}", trimmedPattern, filePath);
+                    return true;
+                }
+                
+                // 检查是否匹配路径模式
+                if (matchesPathPattern(normalizedPath, trimmedPattern)) {
+                    log.debug("File excluded by path pattern '{}': {}", trimmedPattern, filePath);
+                    return true;
+                }
+                
+                // 检查是否匹配glob模式
+                if (matchesGlobPattern(normalizedPath, trimmedPattern)) {
+                    log.debug("File excluded by glob pattern '{}': {}", trimmedPattern, filePath);
+                    return true;
+                }
+            } catch (Exception e) {
+                log.warn("Error matching pattern '{}' against file '{}': {}", trimmedPattern, filePath, e.getMessage());
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 检查文件名是否匹配模式
+     */
+    private static boolean matchesFileName(String fileName, String pattern) {
+        // 简单的文件名匹配（支持*通配符）
+        if (pattern.contains("/")) {
+            return false; // 包含路径分隔符的不是文件名模式
+        }
+        
+        return matchesSimplePattern(fileName, pattern);
+    }
+    
+    /**
+     * 检查路径是否匹配模式
+     */
+    private static boolean matchesPathPattern(String filePath, String pattern) {
+        // 精确路径匹配
+        if (filePath.equals(pattern)) {
+            return true;
+        }
+        
+        // 目录匹配（以/结尾的模式）
+        if (pattern.endsWith("/")) {
+            String dirPattern = pattern.substring(0, pattern.length() - 1);
+            return filePath.startsWith(dirPattern + "/") || filePath.equals(dirPattern);
+        }
+        
+        // 路径包含匹配
+        return filePath.contains(pattern);
+    }
+    
+    /**
+     * 检查是否匹配glob模式
+     */
+    private static boolean matchesGlobPattern(String filePath, String pattern) {
+        try {
+            // 使用缓存的PathMatcher
+            PathMatcher matcher = pathMatcherCache.computeIfAbsent(pattern, p -> {
+                try {
+                    return FileSystems.getDefault().getPathMatcher("glob:" + p);
+                } catch (Exception e) {
+                    log.debug("Invalid glob pattern '{}': {}", p, e.getMessage());
+                    return null;
+                }
+            });
+            
+            if (matcher != null) {
+                Path path = Paths.get(filePath);
+                return matcher.matches(path) || matcher.matches(path.getFileName());
+            }
+        } catch (Exception e) {
+            log.debug("Error matching glob pattern '{}' against '{}': {}", pattern, filePath, e.getMessage());
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 简单的通配符匹配（支持*和?）
+     */
+    private static boolean matchesSimplePattern(String text, String pattern) {
+        if (pattern.equals("*")) {
+            return true;
+        }
+        
+        // 转换为正则表达式
+        String regex = pattern
+                .replace(".", "\\.")
+                .replace("*", ".*")
+                .replace("?", ".");
+        
+        try {
+            return text.matches(regex);
+        } catch (Exception e) {
+            log.debug("Error matching simple pattern '{}' against '{}': {}", pattern, text, e.getMessage());
+            return false;
+        }
+    }
 
     /**
      * 计算差异并收集丰富的上下文信息，用于生成更准确的commit message
@@ -46,15 +189,27 @@ public class GitUtil {
                                      @NotNull Project project) {
         Map<String, Object> result = new HashMap<>();
         
+        // 过滤需要排除的文件
+        List<Change> filteredChanges = includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .collect(Collectors.toList());
+        
+        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
+                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
+                .collect(Collectors.toList());
+        
         // 基本差异信息
-        String rawDiff = computeDiff(includedChanges, unversionedFiles, project);
+        String rawDiff = computeDiff(filteredChanges, filteredUnversionedFiles, project);
         result.put("rawDiff", rawDiff);
         
         // 收集变更文件的相关信息
         List<Map<String, Object>> fileContexts = new ArrayList<>();
         
         // 处理已版本控制的变更
-        for (Change change : includedChanges) {
+        for (Change change : filteredChanges) {
             Map<String, Object> fileContext = new HashMap<>();
             
             VirtualFile vFile;
@@ -101,7 +256,7 @@ public class GitUtil {
         }
         
         // 处理未版本控制的文件
-        for (FilePath unversionedFile : unversionedFiles) {
+        for (FilePath unversionedFile : filteredUnversionedFiles) {
             Map<String, Object> fileContext = new HashMap<>();
             fileContext.put("filePath", unversionedFile.getPath());
             fileContext.put("changeType", "NEW");
@@ -135,18 +290,44 @@ public class GitUtil {
         
         return result;
     }
+    
+    /**
+     * 从Change对象中提取文件路径
+     */
+    private static String getFilePathFromChange(Change change) {
+        if (change.getVirtualFile() != null) {
+            return change.getVirtualFile().getPath();
+        } else if (change.getBeforeRevision() != null) {
+            return change.getBeforeRevision().getFile().getPath();
+        } else if (change.getAfterRevision() != null) {
+            return change.getAfterRevision().getFile().getPath();
+        }
+        return null;
+    }
 
     public static String computeDiff(@NotNull List<Change> includedChanges,
                                      @NotNull List<FilePath> unversionedFiles,
                                      @NotNull Project project) {
         StringBuilder diffBuilder = new StringBuilder();
 
+        // 过滤需要排除的文件
+        List<Change> filteredChanges = includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .collect(Collectors.toList());
+        
+        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
+                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
+                .collect(Collectors.toList());
+
         // 处理已版本控制的变更
-        String existingDiff = computeDiff(includedChanges, project);
+        String existingDiff = computeDiff(filteredChanges, project);
         diffBuilder.append(existingDiff);
 
         // 处理未版本控制的文件
-        for (FilePath unversionedFile : unversionedFiles) {
+        for (FilePath unversionedFile : filteredUnversionedFiles) {
             VirtualFile vFile = unversionedFile.getVirtualFile();
             diffBuilder.append("[ADD]: ")
                     .append(unversionedFile.getPath())
@@ -181,8 +362,16 @@ public class GitUtil {
         GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
         StringBuilder diffBuilder = new StringBuilder();
 
+        // 过滤需要排除的文件
+        List<Change> filteredChanges = includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .collect(Collectors.toList());
+
         // 按仓库分组处理变更
-        Map<GitRepository, List<Change>> changesByRepository = includedChanges.stream()
+        Map<GitRepository, List<Change>> changesByRepository = filteredChanges.stream()
                 .map(change -> {
                     GitRepository repository = null;
                     if (change.getVirtualFile() != null) {
@@ -274,8 +463,26 @@ public class GitUtil {
     public static CommitContext buildCommitContext(@NotNull List<Change> includedChanges,
                                                   @NotNull List<FilePath> unversionedFiles,
                                                   @NotNull Project project) {
+        // 过滤需要排除的文件
+        List<Change> filteredChanges = includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .toList();
+        
+        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
+                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
+                .toList();
+        //如果两个集合都为空，应该直接抛出异常
+        if (filteredChanges.isEmpty() && filteredUnversionedFiles.isEmpty()) {
+            //异常中要补充信息，也许是因为用户设置了排除规则，导致所有文件都被排除
+            throw new IllegalArgumentException("Both includedChanges and unversionedFiles are empty after exclusion. " +
+                    "Perhaps all files are excluded by the exclusion rules?");  
+        }
+        
         // 统一处理所有文件变更，消除特殊情况
-        List<FileChange> changes = FileChange.fromGitChanges(includedChanges, unversionedFiles);
+        List<FileChange> changes = FileChange.fromGitChanges(filteredChanges, filteredUnversionedFiles);
         
         // 创建CommitContext - 一个数据结构包含所有信息
         return CommitContext.create(project, changes);

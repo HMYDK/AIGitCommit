@@ -12,6 +12,9 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.table.JBTable;
+import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBTextArea;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 
 import javax.swing.*;
@@ -40,6 +43,12 @@ public class ApiKeyConfigurableUI {
     private int SELECTED_ROW = 0;
 
     private JPanel clientPanel;
+
+    // 文件忽略功能相关组件
+    private JBCheckBox enableFileExclusionCheckBox;
+    private JBTextArea excludePatternsTextArea;
+    private JButton resetToDefaultButton;
+    private JPanel fileExclusionPanel;
 
     public ApiKeyConfigurableUI() {
         initComponents();
@@ -70,6 +79,18 @@ public class ApiKeyConfigurableUI {
         configButton = new JButton(AllIcons.General.Settings);
         configButton.setToolTipText("Configure Module Settings");
 
+        // 初始化文件忽略功能组件
+        enableFileExclusionCheckBox = new JBCheckBox("Enable file exclusion");
+        excludePatternsTextArea = new JBTextArea(8, 50);
+        excludePatternsTextArea.setLineWrap(true);
+        excludePatternsTextArea.setWrapStyleWord(true);
+        excludePatternsTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        
+        resetToDefaultButton = new JButton("Reset to Default");
+        resetToDefaultButton.setToolTipText("Reset exclusion patterns to default values");
+        
+        fileExclusionPanel = createFileExclusionPanel();
+
         // 创建包含Stream支持状态的面板
         clientPanel = new JPanel(new BorderLayout(5, 0));
         clientPanel.add(clientComboBox, BorderLayout.CENTER);
@@ -78,7 +99,6 @@ public class ApiKeyConfigurableUI {
         JLabel streamLabel = new JLabel();
         streamLabel.setForeground(JBColor.GRAY);
         clientPanel.add(streamLabel, BorderLayout.EAST);
-
 
         // 添加客户端选择监听器
         clientComboBox.addActionListener(e -> {
@@ -161,6 +181,17 @@ public class ApiKeyConfigurableUI {
         addComponent(new JBLabel("Prompt type:"), gbc, 0, 4, 0.0);
         addComponent(promptTypeComboBox, gbc, 1, 4, 1.0);
 
+        // 添加文件忽略配置面板
+        gbc.gridwidth = 2;
+        gbc.weighty = 0.3;
+        gbc.fill = GridBagConstraints.BOTH;
+        addComponent(fileExclusionPanel, gbc, 0, 5, 1.0);
+        
+        // Reset for prompt content panel
+        gbc.gridwidth = 2;
+        gbc.weighty = 0.7;
+        gbc.fill = GridBagConstraints.BOTH;
+
         // Create a panel to maintain consistent height
         JPanel contentPanel = new JPanel(new CardLayout());
         contentPanel.setPreferredSize(new Dimension(-1, 200)); // 设置固定高度
@@ -168,10 +199,10 @@ public class ApiKeyConfigurableUI {
         contentPanel.add(projectPromptPanel, "PROJECT_PROMPT");
 
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
+        gbc.weighty = 0.7;
         gbc.fill = GridBagConstraints.BOTH;
         mainPanel.add(contentPanel, gbc);
 
@@ -335,6 +366,17 @@ public class ApiKeyConfigurableUI {
         });
 
         configButton.addActionListener(e -> showModuleConfigDialog());
+        
+        // 文件忽略功能监听器
+        enableFileExclusionCheckBox.addActionListener(e -> {
+            boolean enabled = enableFileExclusionCheckBox.isSelected();
+            excludePatternsTextArea.setEnabled(enabled);
+            resetToDefaultButton.setEnabled(enabled);
+        });
+        
+        resetToDefaultButton.addActionListener(e -> {
+            excludePatternsTextArea.setText(String.join("\n", Constants.DEFAULT_EXCLUDE_PATTERNS));
+        });
     }
 
     private void updateModuleComboBox(String selectedClient) {
@@ -398,4 +440,54 @@ public class ApiKeyConfigurableUI {
         return clientComboBox;
     }
 
+    // 文件忽略功能的getter方法
+    public JBCheckBox getEnableFileExclusionCheckBox() {
+        return enableFileExclusionCheckBox;
+    }
+
+    public JBTextArea getExcludePatternsTextArea() {
+        return excludePatternsTextArea;
+    }
+
+    private JPanel createFileExclusionPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(JBUI.Borders.compound(
+            JBUI.Borders.empty(10, 0, 5, 0),
+            JBUI.Borders.customLine(JBColor.border(), 1, 0, 0, 0)
+        ));
+
+        // 标题面板
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        JBLabel titleLabel = new JBLabel("File Exclusion Settings");
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 14));
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+        titlePanel.add(enableFileExclusionCheckBox, BorderLayout.EAST);
+        panel.add(titlePanel, BorderLayout.NORTH);
+
+        // 内容面板
+        JPanel contentPanel = new JPanel(new BorderLayout(0, 5));
+        contentPanel.setBorder(JBUI.Borders.empty(10, 0, 0, 0));
+
+        // 说明文本
+        JBLabel helpLabel = new JBLabel(Constants.EXCLUDE_PATTERNS_HELP_TEXT);
+        helpLabel.setFont(helpLabel.getFont().deriveFont(Font.PLAIN, 11));
+        helpLabel.setForeground(JBColor.GRAY);
+        contentPanel.add(helpLabel, BorderLayout.NORTH);
+
+        // 文本区域面板
+        JPanel textAreaPanel = new JPanel(new BorderLayout(0, 5));
+        JBScrollPane scrollPane = new JBScrollPane(excludePatternsTextArea);
+        scrollPane.setPreferredSize(new Dimension(-1, 120));
+        textAreaPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // 按钮面板
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        buttonPanel.add(resetToDefaultButton);
+        textAreaPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        contentPanel.add(textAreaPanel, BorderLayout.CENTER);
+        panel.add(contentPanel, BorderLayout.CENTER);
+
+        return panel;
+    }
 }

@@ -85,7 +85,7 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>        
-            <li>Significantly improved the quality of generated git commit messages</li>
+            <li>Support filtering files to exclude certain ones</li>
         </ul>
         ]]>
     </change-notes>

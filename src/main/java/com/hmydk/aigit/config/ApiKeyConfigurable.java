@@ -67,6 +67,9 @@ public class ApiKeyConfigurable implements Configurable {
         }
         // 保存prompt类型
         settings.setPromptType((String) selectedPromptType);
+        
+        // 保存文件忽略设置
+        saveFileExclusionSettings();
     }
 
     @Override
@@ -92,6 +95,9 @@ public class ApiKeyConfigurable implements Configurable {
 
             // 设置提示类型
             ui.getPromptTypeComboBox().setSelectedItem(settings.getPromptType());
+            
+            // 加载文件忽略设置
+            loadFileExclusionSettings();
         }
     }
 
@@ -170,5 +176,41 @@ public class ApiKeyConfigurable implements Configurable {
 
         return !model.getValueAt(selectedRow, 0).equals(settings.getCustomPrompt().getDescription())
                 || !model.getValueAt(selectedRow, 1).equals(settings.getCustomPrompt().getDescription());
+    }
+    
+    private void saveFileExclusionSettings() {
+        boolean enableFileExclusion = ui.getEnableFileExclusionCheckBox().isSelected();
+        String excludePatternsText = ui.getExcludePatternsTextArea().getText();
+        
+        settings.setEnableFileExclusion(enableFileExclusion);
+        
+        // 解析文本区域的内容为列表
+        List<String> excludePatterns = new ArrayList<>();
+        if (excludePatternsText != null && !excludePatternsText.trim().isEmpty()) {
+            String[] lines = excludePatternsText.split("\n");
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty() && !trimmed.startsWith("#")) {
+                    excludePatterns.add(trimmed);
+                }
+            }
+        }
+        settings.setExcludePatterns(excludePatterns);
+    }
+    
+    private void loadFileExclusionSettings() {
+        ui.getEnableFileExclusionCheckBox().setSelected(settings.isEnableFileExclusion());
+        
+        List<String> excludePatterns = settings.getExcludePatterns();
+        if (excludePatterns != null && !excludePatterns.isEmpty()) {
+            ui.getExcludePatternsTextArea().setText(String.join("\n", excludePatterns));
+        } else {
+            ui.getExcludePatternsTextArea().setText(String.join("\n", Constants.DEFAULT_EXCLUDE_PATTERNS));
+        }
+        
+        // 根据复选框状态设置组件启用状态
+        boolean enabled = settings.isEnableFileExclusion();
+        ui.getExcludePatternsTextArea().setEnabled(enabled);
+        ui.getExcludePatternsTextArea().getParent().getParent().setEnabled(enabled); // 设置滚动面板
     }
 }

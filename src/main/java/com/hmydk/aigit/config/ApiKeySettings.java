@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,10 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     private PromptInfo customPrompt = new PromptInfo("", "");
 
     private Map<String, ModuleConfig> moduleConfigs = new HashMap<>();
+
+    // 文件忽略规则配置
+    private boolean enableFileExclusion = false;  // 是否启用文件忽略功能
+    private List<String> excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS));  // 忽略规则列表
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
@@ -104,6 +109,33 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     public void setModuleConfigs(Map<String, ModuleConfig> moduleConfigs) {
         this.moduleConfigs = moduleConfigs;
+    }
+
+    // 文件忽略功能的getter和setter方法
+    public boolean isEnableFileExclusion() {
+        return enableFileExclusion;
+    }
+
+    public void setEnableFileExclusion(boolean enableFileExclusion) {
+        this.enableFileExclusion = enableFileExclusion;
+    }
+
+    public List<String> getExcludePatterns() {
+        if (excludePatterns == null || excludePatterns.isEmpty()) {
+            excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS));
+        }
+        return excludePatterns;
+    }
+
+    public void setExcludePatterns(List<String> excludePatterns) {
+        this.excludePatterns = excludePatterns;
+    }
+
+    /**
+     * 重置为默认忽略规则
+     */
+    public void resetToDefaultExcludePatterns() {
+        this.excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS));
     }
 
     public static class ModuleConfig {
