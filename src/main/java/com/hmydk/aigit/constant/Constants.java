@@ -69,6 +69,7 @@ public class Constants {
     public static final String EXCLUDE_PATTERNS_HELP_TEXT = 
             "<html>" +
             "<b>File Exclusion Rules:</b><br/>" +
+            "• Filtered files will not be included in commit message generation<br/>" +
             "• Supports wildcard patterns, e.g., *.pb.go matches all .pb.go files<br/>" +
             "• Supports directory patterns, e.g., vendor/** matches all files in vendor directory<br/>" +
             "• One rule per line, empty lines and lines starting with # are ignored<br/>" +

@@ -47,8 +47,8 @@ public class OpenAIUtil {
         connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setDoOutput(true);
-        connection.setConnectTimeout(10000); // 连接超时：10秒
-        connection.setReadTimeout(10000); // 读取超时：10秒
+        connection.setConnectTimeout(30000); // 连接超时：30秒
+        connection.setReadTimeout(30000); // 读取超时：30秒
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
