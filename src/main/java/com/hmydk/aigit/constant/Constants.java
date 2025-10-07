@@ -63,20 +63,23 @@ public class Constants {
             "*~"                 // 备份文件
     };
 
+    // 将默认排除模式转换为文本格式
+    public static final String DEFAULT_EXCLUDE_PATTERNS_TEXT = String.join("\n", DEFAULT_EXCLUDE_PATTERNS);
+
     public static final String EXCLUDE_PATTERNS_HELP_TEXT = 
             "<html>" +
-            "<b>文件忽略规则说明：</b><br/>" +
-            "• 支持通配符模式，如 *.pb.go 匹配所有 .pb.go 文件<br/>" +
-            "• 支持目录模式，如 vendor/** 匹配 vendor 目录下所有文件<br/>" +
-            "• 每行一个规则，空行和 # 开头的行会被忽略<br/>" +
-            "• 常见的生成文件和依赖文件已预设，可根据项目需要调整<br/>" +
+            "<b>File Exclusion Rules:</b><br/>" +
+            "• Supports wildcard patterns, e.g., *.pb.go matches all .pb.go files<br/>" +
+            "• Supports directory patterns, e.g., vendor/** matches all files in vendor directory<br/>" +
+            "• One rule per line, empty lines and lines starting with # are ignored<br/>" +
+            "• Common generated files and dependency files are pre-configured, adjust as needed<br/>" +
             "<br/>" +
-            "<b>预设规则包括：</b><br/>" +
-            "• Protocol Buffer 生成文件 (*.pb.go, *.pb.cc 等)<br/>" +
-            "• 依赖锁定文件 (go.sum, package-lock.json 等)<br/>" +
-            "• 构建输出目录 (dist/, build/, target/ 等)<br/>" +
-            "• 压缩和打包文件 (*.min.js, *.bundle.* 等)<br/>" +
-            "• 系统和临时文件 (.DS_Store, *.log 等)<br/>" +
+            "<b>Pre-configured rules include:</b><br/>" +
+            "• Protocol Buffer generated files (*.pb.go, *.pb.cc, etc.)<br/>" +
+            "• Dependency lock files (go.sum, package-lock.json, etc.)<br/>" +
+            "• Build output directories (dist/, build/, target/, etc.)<br/>" +
+            "• Compressed and bundled files (*.min.js, *.bundle.*, etc.)<br/>" +
+            "• System and temporary files (.DS_Store, *.log, etc.)<br/>" +
             "</html>";
 
     public static String[] getAllPromptTypes() {
