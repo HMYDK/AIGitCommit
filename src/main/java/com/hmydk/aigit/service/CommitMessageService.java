@@ -25,11 +25,13 @@ public class CommitMessageService {
 
     public String generateCommitMessage(Project project, String diff) throws Exception {
         String prompt = PromptUtil.constructPrompt(project, diff);
+        LastPromptService.setLastPrompt(project, prompt);
         return aiService.generateCommitMessage(prompt);
     }
 
     public void generateCommitMessageStream(Project project, String diff, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         String prompt = PromptUtil.constructPrompt(project, diff);
+        LastPromptService.setLastPrompt(project, prompt);
 
         aiService.generateCommitMessageStream(prompt, onNext, onError, onComplete);
     }

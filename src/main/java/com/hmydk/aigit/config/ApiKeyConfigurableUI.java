@@ -1,11 +1,14 @@
 package com.hmydk.aigit.config;
 
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.service.LastPromptService;
 import com.hmydk.aigit.util.PromptDialogUIUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.JBColor;
@@ -21,6 +24,7 @@ import com.intellij.util.ui.JBUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
@@ -49,6 +53,12 @@ public class ApiKeyConfigurableUI {
     private JBTextArea excludePatternsTextArea;
     private JButton resetToDefaultButton;
     private JPanel fileExclusionPanel;
+
+    // Recent Prompt 标签页组件
+    private JBTextArea recentPromptTextArea;
+    private JButton copyPromptButton;
+    private JButton refreshPromptButton;
+    private JBLabel promptStatusLabel;
 
     // 记录当前选中的行
     private int SELECTED_ROW = 0;
@@ -104,6 +114,23 @@ public class ApiKeyConfigurableUI {
         resetToDefaultButton.setToolTipText("Reset exclusion patterns to default values");
         
         fileExclusionPanel = createFileExclusionPanel();
+
+        // Initialize recent prompt components
+        recentPromptTextArea = new JBTextArea(15, 60);
+        recentPromptTextArea.setEditable(false);
+        recentPromptTextArea.setLineWrap(true);
+        recentPromptTextArea.setWrapStyleWord(true);
+        recentPromptTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        recentPromptTextArea.setBackground(UIManager.getColor("Panel.background"));
+        
+        copyPromptButton = new JButton("Copy Prompt");
+        copyPromptButton.setToolTipText("Copy the recent prompt to clipboard");
+        
+        refreshPromptButton = new JButton("Refresh");
+        refreshPromptButton.setToolTipText("Refresh the recent prompt display");
+        
+        promptStatusLabel = new JBLabel("No recent prompt available");
+        promptStatusLabel.setForeground(JBColor.GRAY);
     }
 
     private void layoutComponents() {
@@ -117,6 +144,7 @@ public class ApiKeyConfigurableUI {
         tabbedPane.addTab("Basic Settings", createBasicSettingsPanel());
         tabbedPane.addTab("Prompt Settings", createPromptSettingsPanel());
         tabbedPane.addTab("File Filtering", createFileFilterPanel());
+        tabbedPane.addTab("Recent Prompt", createRecentPromptPanel());
         
         // Add tabbed pane to main panel
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -263,8 +291,18 @@ public class ApiKeyConfigurableUI {
             String selectedClient = (String) clientComboBox.getSelectedItem();
             updateModuleComboBox(selectedClient);
         });
-
         configButton.addActionListener(e -> showModuleConfigDialog());
+        
+        // Recent Prompt tab listeners
+        copyPromptButton.addActionListener(e -> copyRecentPromptToClipboard());
+        refreshPromptButton.addActionListener(e -> refreshRecentPrompt());
+        
+        // Load recent prompt when tab is selected
+        tabbedPane.addChangeListener(e -> {
+            if (tabbedPane.getSelectedIndex() == 3) { // Recent Prompt tab index
+                refreshRecentPrompt();
+            }
+        });
     }
 
     private JPanel createBasicSettingsPanel() {
@@ -508,6 +546,108 @@ public class ApiKeyConfigurableUI {
         });
 
         return panel;
+    }
+
+    private JPanel createRecentPromptPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(JBUI.Borders.empty(10));
+
+        // Header panel with title and buttons
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        
+        JBLabel titleLabel = new JBLabel("Most Recent AI Prompt");
+        titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 14));
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        buttonPanel.add(refreshPromptButton);
+        buttonPanel.add(copyPromptButton);
+        headerPanel.add(buttonPanel, BorderLayout.EAST);
+        
+        // Status label
+        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
+        statusPanel.add(promptStatusLabel);
+        
+        // Create a combined north panel
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.add(headerPanel, BorderLayout.NORTH);
+        northPanel.add(statusPanel, BorderLayout.SOUTH);
+        
+        panel.add(northPanel, BorderLayout.NORTH);
+
+        // Text area with scroll pane
+        JBScrollPane scrollPane = new JBScrollPane(recentPromptTextArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(JBUI.Borders.compound(
+            JBUI.Borders.customLine(JBColor.GRAY, 1),
+            JBUI.Borders.empty(5)
+        ));
+        
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // Info panel at bottom
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 10));
+        JBLabel infoLabel = new JBLabel("This shows the most recent prompt sent to the AI for the current project.");
+        infoLabel.setFont(infoLabel.getFont().deriveFont(Font.PLAIN, 11));
+        infoLabel.setForeground(JBColor.GRAY);
+        infoPanel.add(infoLabel);
+        panel.add(infoPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private void refreshRecentPrompt() {
+        Project currentProject = getCurrentProject();
+        if (currentProject != null) {
+            String recentPrompt = LastPromptService.getLastPrompt(currentProject);
+            if (recentPrompt != null && !recentPrompt.trim().isEmpty()) {
+                recentPromptTextArea.setText(recentPrompt);
+                promptStatusLabel.setText("Last updated: " + java.time.LocalDateTime.now().format(
+                    java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                promptStatusLabel.setForeground(JBColor.GRAY);
+                copyPromptButton.setEnabled(true);
+            } else {
+                recentPromptTextArea.setText("");
+                promptStatusLabel.setText("No recent prompt available for current project");
+                promptStatusLabel.setForeground(JBColor.GRAY);
+                copyPromptButton.setEnabled(false);
+            }
+        } else {
+            recentPromptTextArea.setText("");
+            promptStatusLabel.setText("No project currently open");
+            promptStatusLabel.setForeground(JBColor.GRAY);
+            copyPromptButton.setEnabled(false);
+        }
+        recentPromptTextArea.setCaretPosition(0);
+    }
+
+    private void copyRecentPromptToClipboard() {
+        String promptText = recentPromptTextArea.getText();
+        if (promptText != null && !promptText.trim().isEmpty()) {
+            StringSelection selection = new StringSelection(promptText);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, null);
+            
+            // Show a brief confirmation
+            promptStatusLabel.setText("Prompt copied to clipboard!");
+            promptStatusLabel.setForeground(JBColor.GREEN);
+            
+            // Reset status after 2 seconds
+            Timer timer = new Timer(2000, e -> {
+                refreshRecentPrompt(); // This will reset the status label
+            });
+            timer.setRepeats(false);
+            timer.start();
+        }
+    }
+
+    private Project getCurrentProject() {
+        Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
+        if (openProjects.length > 0) {
+            // Return the first open project, or you could implement logic to detect the "current" project
+            return openProjects[0];
+        }
+        return null;
     }
 
 }

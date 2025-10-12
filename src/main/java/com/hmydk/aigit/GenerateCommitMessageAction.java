@@ -3,6 +3,7 @@ package com.hmydk.aigit;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.DialogUtil;
+import com.hmydk.aigit.util.LastPromptUIUtil;
 import com.hmydk.aigit.util.GitUtil;
 import com.hmydk.aigit.util.IdeaDialogUtil;
 import com.intellij.icons.AllIcons;
@@ -148,6 +149,8 @@ public class GenerateCommitMessageAction extends AnAction {
                                 // onComplete 处理完成
                                 () -> ApplicationManager.getApplication().invokeLater(() -> {
                                     stopIconAnimation(e);
+                                    // 展示最近 Prompt 折叠弹窗（锚定到提交信息编辑器）
+                                    LastPromptUIUtil.showLastPromptPopup(project, commitMessage.getEditorField());
                                 })
                         );
                     } else {
@@ -155,6 +158,8 @@ public class GenerateCommitMessageAction extends AnAction {
                         ApplicationManager.getApplication().invokeLater(() -> {
                             commitMessage.setCommitMessage(commitMessageFromAi);
                             stopIconAnimation(e);
+                            // 展示最近 Prompt 折叠弹窗（锚定到提交信息编辑器）
+                            LastPromptUIUtil.showLastPromptPopup(project, commitMessage.getEditorField());
                         });
                     }
                 } catch (Exception ex) {

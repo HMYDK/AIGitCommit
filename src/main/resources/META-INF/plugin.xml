@@ -87,6 +87,7 @@
         <ul>
             <li>Refactored settings page for better user experience</li>
             <li>Support filtering files to exclude certain ones</li>
+            <li>Support viewing the latest prompt content of the requested model in the settings interface</li>
         </ul>
         ]]>
     </change-notes>
