@@ -85,9 +85,7 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>Refactored settings page for better user experience</li>
-            <li>Support filtering files to exclude certain ones</li>
-            <li>Support viewing the latest prompt content of the requested model in the settings interface</li>
+            <li>Removed the popup after generation completes</li>
         </ul>
         ]]>
     </change-notes>
