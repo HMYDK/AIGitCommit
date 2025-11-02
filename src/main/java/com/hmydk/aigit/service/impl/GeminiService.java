@@ -155,8 +155,8 @@ public class GeminiService implements AIService {
         // + apiKey;
         String apiUrl = url + "/" + module + ":streamGenerateContent?alt=sse&key=" + apiKey;
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
-        geminiRequestBO
-                .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
+        geminiRequestBO.setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
+        geminiRequestBO.setGenerationConfig(new GeminiRequestBO.GenerationConfig(new GeminiRequestBO.ThinkingConfig(0)));
         ObjectMapper objectMapper1 = new ObjectMapper();
         String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
 
@@ -166,8 +166,8 @@ public class GeminiService implements AIService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
-        connection.setConnectTimeout(10000); // 连接超时：10秒
-        connection.setReadTimeout(10000); // 读取超时：10秒
+        connection.setConnectTimeout(30000); // 连接超时：30秒
+        connection.setReadTimeout(30000); // 读取超时：30秒
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);

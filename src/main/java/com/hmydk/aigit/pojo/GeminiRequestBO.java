@@ -13,6 +13,19 @@ public class GeminiRequestBO {
     @JsonProperty("contents")
     private List<Content> contents;
 
+    @JsonProperty("generationConfig")
+    private GenerationConfig generationConfig;
+
+
+    public GenerationConfig getGenerationConfig() {
+        return generationConfig;
+    }
+
+    public void setGenerationConfig(GenerationConfig generationConfig) {
+        this.generationConfig = generationConfig;
+    }
+
+
     public List<Content> getContents() {
         return contents;
     }
@@ -52,6 +65,41 @@ public class GeminiRequestBO {
 
         public void setText(String text) {
             this.text = text;
+        }
+    }
+
+
+    public static class GenerationConfig {
+        @JsonProperty("thinkingConfig")
+        private ThinkingConfig thinkingConfig;
+
+        public GenerationConfig(ThinkingConfig thinkingConfig) {
+            this.thinkingConfig = thinkingConfig;
+        }
+
+        public ThinkingConfig getThinkingConfig() {
+            return thinkingConfig;
+        }
+
+        public void setThinkingConfig(ThinkingConfig thinkingConfig) {
+            this.thinkingConfig = thinkingConfig;
+        }
+
+    }
+
+    public static class ThinkingConfig {
+        public Integer thinkingBudget;
+
+        public ThinkingConfig(Integer thinkingBudget) {
+            this.thinkingBudget = thinkingBudget;
+        }
+
+        public Integer getThinkingBudget() {
+            return thinkingBudget;
+        }
+
+        public void setThinkingBudget(Integer thinkingBudget) {
+            this.thinkingBudget = thinkingBudget;
         }
     }
 }
