@@ -83,7 +83,7 @@ public class GenerateCommitMessageAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         Project project = e.getProject();
-        if (project == null) {
+        if (project == null || isGenerating.get()) {
             return;
         }
 
