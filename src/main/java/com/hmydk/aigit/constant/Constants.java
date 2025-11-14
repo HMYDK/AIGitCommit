@@ -95,7 +95,8 @@ public class Constants {
     public static final String OpenRouter = "OpenRouter";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
     public static final String VolcEngine = "火山引擎(VolcEngine)";
-    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, OpenRouter, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI};
+    public static final String Kimi = "Kimi(Moonshot AI)";
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, OpenRouter, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI, Kimi};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
@@ -109,6 +110,7 @@ public class Constants {
             put(阿里云百炼, new String[]{"qwen-plus"});
             put(VolcEngine, new String[]{"deepseek-v3-241226"});
             put(OpenRouter, new String[]{"google/gemini-2.0-flash-exp:free", "meta-llama/llama-3.3-70b-instruct:free", "deepseek/deepseek-chat:free", "deepseek/deepseek-r1:free", "deepseek/deepseek-r1-zero:free"});
+            put(Kimi, new String[]{"kimi-latest", "kimi-k2-0905-preview", "kimi-k1.5-preview", "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"});
         }
     };
 
@@ -124,6 +126,7 @@ public class Constants {
                     "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/chat/completions", ""));
             put(VolcEngine, new ApiKeySettings.ModuleConfig("https://ark.cn-beijing.volces.com/api/v3/chat/completions", ""));
             put(OpenRouter, new ApiKeySettings.ModuleConfig("https://openrouter.ai/api/v1/chat/completions", ""));
+            put(Kimi, new ApiKeySettings.ModuleConfig("https://api.moonshot.cn/v1/chat/completions", ""));
         }
     };
 
@@ -137,6 +140,7 @@ public class Constants {
             put(Constants.OpenAI_API, "https://platform.openai.com/docs/overview");
             put(Constants.VolcEngine, "https://www.volcengine.com/docs/82379");
             put(Constants.OpenRouter, "https://openrouter.ai/settings/keys");
+            put(Constants.Kimi, "https://platform.moonshot.cn/console/api-keys");
         }
     };
 
@@ -171,6 +175,11 @@ public class Constants {
             case OpenRouter -> "<html>" +
                     "<li>Get your API key from <a href='https://openrouter.ai/settings/keys'>" + OpenRouter + "</a></html></li>" +
                     "<li>Get free model from <a href='https://openrouter.ai/models?q=free'>here</a>.</li>" +
+                    "</html>";
+            case Kimi -> "<html>" +
+                    "<li>Get your API key from <a href='https://platform.moonshot.cn/console/api-keys'>platform.moonshot.cn</a></li>" +
+                    "<li>Current models include: kimi-latest, kimi-k2-0905-preview, kimi-k1.5-preview</li>" +
+                    "<li>Kimi is optimized for Chinese language understanding and conversation</li>" +
                     "</html>";
             default -> "";
         };
