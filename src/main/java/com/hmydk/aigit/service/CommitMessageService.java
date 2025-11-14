@@ -52,6 +52,7 @@ public class CommitMessageService {
             case Constants.SiliconFlow -> new SiliconFlowService();
             case Constants.VolcEngine -> new VolcEngineService();
             case Constants.OpenRouter -> new OpenRouterService();
+            case Constants.Kimi -> new KimiService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };
     }
