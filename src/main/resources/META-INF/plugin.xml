@@ -85,8 +85,8 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>Removed the popup after generation completes</li>
-            <li>Support gemini-2.5</li>
+            <li>feat(llm): Add Kimi AI support for commit message generation (by <a href="https://github.com/dodola">@dodola</a>)</li>
+            <li>fix: Duplicate requests caused by multiple clicks on the button (by <a href="https://github.com/SydneyOwl">@SydneyOwl</a>)</li>
         </ul>
         ]]>
     </change-notes>
