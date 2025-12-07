@@ -85,8 +85,7 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>feat(llm): Add Kimi AI support for commit message generation (by <a href="https://github.com/dodola">@dodola</a>)</li>
-            <li>fix: Duplicate requests caused by multiple clicks on the button (by <a href="https://github.com/SydneyOwl">@SydneyOwl</a>)</li>
+            <li>fix: 使用OpenAI生成后末尾总是会有null (by <a href="https://github.com/HMYDK/AIGitCommit/issues/77">#77</a>)</li>
         </ul>
         ]]>
     </change-notes>

@@ -98,8 +98,11 @@ public class OpenAIUtil {
                         if (choices != null && choices.isArray() && choices.size() > 0) {
                             JsonNode delta = choices.get(0).get("delta");
                             if (delta != null && delta.has("content")) {
-                                String tokenContent = delta.get("content").asText();
-                                onNext.accept(tokenContent);
+                                JsonNode contentNode = delta.get("content");
+                                if (contentNode != null && !contentNode.isNull()) {
+                                    String tokenContent = contentNode.asText();
+                                    onNext.accept(tokenContent);
+                                }
                             }
                         }
                     } catch (Exception e) {
