@@ -47,6 +47,7 @@ public class CommitMessageService {
             case Constants.Gemini -> new GeminiService();
             case Constants.DeepSeek -> new DeepSeekAPIService();
             case Constants.OpenAI_API -> new OpenAIAPIService();
+            case Constants.OpenAI_Compatible -> new OpenAICompatibleService();
             case Constants.CloudflareWorkersAI -> new CloudflareWorkersAIService();
             case Constants.阿里云百炼 -> new AliYunBaiLianService();
             case Constants.SiliconFlow -> new SiliconFlowService();

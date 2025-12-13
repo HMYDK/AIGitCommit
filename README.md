@@ -32,6 +32,7 @@ This plugin uses AI to automatically generate commit messages based on the chang
 - [DeepSeek](https://platform.deepseek.com/api_keys)
 - [火山引擎(VolcEngine)](https://volcengine.com/L/QpwJ2INEat4/)
 - [OpenRouter](https://openrouter.ai/)
+- OpenAI Compatible LLMs
 
 
 

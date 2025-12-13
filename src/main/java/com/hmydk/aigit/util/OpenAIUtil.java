@@ -3,6 +3,7 @@ package com.hmydk.aigit.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hmydk.aigit.config.ApiKeySettings;
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,9 @@ public class OpenAIUtil {
         String selectedModule = settings.getSelectedModule();
         String url = moduleConfig.getUrl();
         String apiKey = moduleConfig.getApiKey();
+        if (Constants.OpenAI_Compatible.equals(client)) {
+            return StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey) && StringUtils.isNotEmpty(moduleConfig.getModelId());
+        }
         return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey);
     }
 
@@ -67,7 +71,12 @@ public class OpenAIUtil {
         String url = moduleConfig.getUrl();
         String apiKey = moduleConfig.getApiKey();
 
-        HttpURLConnection connection = getHttpURLConnection(url, selectedModule, apiKey, content);
+        String modelToUse = selectedModule;
+        if (Constants.OpenAI_Compatible.equals(client) && moduleConfig.getModelId() != null && !moduleConfig.getModelId().trim().isEmpty()) {
+            modelToUse = moduleConfig.getModelId();
+        }
+
+        HttpURLConnection connection = getHttpURLConnection(url, modelToUse, apiKey, content);
         if (connection.getResponseCode() != 200) {
             // 读取错误响应
             StringBuilder response = new StringBuilder();
