@@ -166,9 +166,8 @@ public class Constants {
                     "<li>Refer to the API definition on the <a href='https://platform.openai.com/docs/overview'>OpenAI Platform</a>.</li>" +
                     "</html>";
             case OpenAI_Compatible -> "<html>" +
-                    "<li>Use this option for OpenAI-compatible providers.\n</li>" +
-                    "<li>Set the full Base URL and API key for your provider.</li>" +
-                    "<li>Replace {host} if needed by your provider.</li>" +
+                    "<li>Use this option for providers that support the <a href=\"https://platform.openai.com/docs/api-reference/chat\">OpenAI-compatible API</a>.</li>" +
+                    "<li>Specify the full endpoint URL, for example: https://{host}/v1/chat/completions, along with your provider’s API key.</li>" +
                     "</html>";
             case CloudflareWorkersAI -> "<html>" +
                     "<li>Please refer to the <a href='https://developers.cloudflare.com/workers-ai/get-started/rest-api'>official documentation</a> for details</li>"
