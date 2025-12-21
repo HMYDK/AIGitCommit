@@ -85,8 +85,7 @@
         <![CDATA[
         <h3>Detail:</h3>
         <ul>
-            <li>fix: 使用OpenAI生成后末尾总是会有null (<a href="https://github.com/HMYDK/AIGitCommit/issues/77">#77</a>)</li>
-            <li>fix: 输出结果中包含<think>内容 (<a href="https://github.com/HMYDK/AIGitCommit/issues/78">#78</a>)</li>
+            <li>feat: Add Support for OpenAI-compatible services(<a href="https://github.com/HMYDK/AIGitCommit/pull/80">#80</a>)(by <a href="https://github.com/KaoriEl">@KaoriEl</a>)</li>
         </ul>
         ]]>
     </change-notes>
