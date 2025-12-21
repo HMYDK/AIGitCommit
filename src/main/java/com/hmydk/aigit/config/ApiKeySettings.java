@@ -141,6 +141,7 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     public static class ModuleConfig {
         private String url;
         private String apiKey;
+        private String modelId; // model id for OpenAI Compatible
 
         public ModuleConfig() {
         }
@@ -148,6 +149,12 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
         public ModuleConfig(String url, String apiKey) {
             this.url = url;
             this.apiKey = apiKey;
+        }
+
+        public ModuleConfig(String url, String apiKey, String modelId) {
+            this.url = url;
+            this.apiKey = apiKey;
+            this.modelId = modelId;
         }
 
         public String getUrl() {
@@ -164,6 +171,14 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
         public void setApiKey(String apiKey) {
             this.apiKey = apiKey;
+        }
+
+        public String getModelId() {
+            return modelId;
+        }
+
+        public void setModelId(String modelId) {
+            this.modelId = modelId;
         }
     }
 }

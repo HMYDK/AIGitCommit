@@ -30,6 +30,8 @@ import java.util.Map;
 public class ModuleConfigDialog extends DialogWrapper {
     private JTextField urlField;
     private JBPasswordField apiKeyField;
+    private JTextField modelIdField;
+    private JLabel modelIdLabel;
     private final String client;
     private final String module;
     // 文字提示
@@ -52,7 +54,7 @@ public class ModuleConfigDialog extends DialogWrapper {
     protected @Nullable JComponent createCenterPanel() {
         // 创建主面板
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(700, 200));
+        panel.setPreferredSize(new Dimension(700, 240));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = JBUI.insets(5, 10, 5, 10); // 增加左右间距
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -61,6 +63,8 @@ public class ModuleConfigDialog extends DialogWrapper {
         // 初始化组件
         urlField = new JTextField();
         apiKeyField = new JBPasswordField();
+        modelIdField = new JTextField();
+        modelIdLabel = new JLabel("Model ID:");
         helpLabel = new JLabel();
         helpLabel.setForeground(JBColor.GRAY);
 
@@ -97,13 +101,27 @@ public class ModuleConfigDialog extends DialogWrapper {
         gbc.weightx = 1.0;
         panel.add(apiKeyPanel, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0;
+        panel.add(modelIdLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        panel.add(modelIdField, gbc);
+
         // 帮助文本
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.insets = new Insets(0, 10, 5, 10);
         updateHelpText();
         panel.add(helpLabel, gbc);
+
+        if (!Constants.OpenAI_Compatible.equals(client)) {
+            modelIdField.setVisible(false);
+            modelIdLabel.setVisible(false);
+        }
 
         return panel;
     }
@@ -164,9 +182,15 @@ public class ModuleConfigDialog extends DialogWrapper {
                     indicator.setText("Validating configuration...");
 
                     AIService aiService = CommitMessageService.getAIService(client);
+
+                    String moduleValue = module;
+                    if (Constants.OpenAI_Compatible.equals(client)) {
+                        moduleValue = modelIdField.getText() == null ? "" : modelIdField.getText().trim();
+                    }
+
                     Map<String, String> checkConfig = Map.of(
                             "url", urlField.getText(),
-                            "module", module,
+                            "module", moduleValue,
                             "apiKey", new String(apiKeyField.getPassword()));
 
                     Pair<Boolean, String> validateResPair = aiService.validateConfig(checkConfig);
@@ -205,10 +229,14 @@ public class ModuleConfigDialog extends DialogWrapper {
                     ApiKeySettings.ModuleConfig config = new ApiKeySettings.ModuleConfig();
                     config.setUrl(defaultConfig.getUrl());
                     config.setApiKey(defaultConfig.getApiKey());
+                    config.setModelId(defaultConfig.getModelId());
                     return config;
                 });
         urlField.setText(moduleConfig.getUrl());
         apiKeyField.setText(moduleConfig.getApiKey());
+        if (moduleConfig.getModelId() != null) {
+            modelIdField.setText(moduleConfig.getModelId());
+        }
     }
 
     @Override
@@ -220,6 +248,7 @@ public class ModuleConfigDialog extends DialogWrapper {
 
         String url = urlField.getText().trim();
         String apiKey = new String(apiKeyField.getPassword());
+        String modelId = modelIdField.getText() == null ? "" : modelIdField.getText().trim();
         if (StringUtils.isEmpty(url)) {
             Messages.showErrorDialog("URL cannot be empty", "Error");
             return;
@@ -232,8 +261,16 @@ public class ModuleConfigDialog extends DialogWrapper {
             }
         }
 
+        if (Constants.OpenAI_Compatible.equals(client)) {
+            if (StringUtils.isEmpty(modelId)) {
+                Messages.showErrorDialog("Model ID cannot be empty for OpenAI Compatible provider", "Error");
+                return;
+            }
+        }
+
         moduleConfig.setApiKey(apiKey);
         moduleConfig.setUrl(url);
+        moduleConfig.setModelId(modelId);
 
         super.doOKAction();
     }
@@ -244,6 +281,7 @@ public class ModuleConfigDialog extends DialogWrapper {
         if (defaultConfig != null) {
             urlField.setText(defaultConfig.getUrl());
             apiKeyField.setText(defaultConfig.getApiKey());
+            modelIdField.setText(defaultConfig.getModelId());
         }
     }
 
@@ -263,3 +301,4 @@ public class ModuleConfigDialog extends DialogWrapper {
         passwordField.repaint();
     }
 }
+

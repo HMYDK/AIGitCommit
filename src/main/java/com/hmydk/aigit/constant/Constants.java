@@ -90,19 +90,21 @@ public class Constants {
     public static final String DeepSeek = "DeepSeek";
     public static final String Ollama = "Ollama";
     public static final String OpenAI_API = "OpenAI API";
+    public static final String OpenAI_Compatible = "OpenAI Compatible";
     public static final String 阿里云百炼 = "阿里云百炼(Model Hub)";
     public static final String SiliconFlow = "SiliconFlow(Model Hub)";
     public static final String OpenRouter = "OpenRouter";
     public static final String CloudflareWorkersAI = "Cloudflare Workers AI";
     public static final String VolcEngine = "火山引擎(VolcEngine)";
     public static final String Kimi = "Kimi(Moonshot AI)";
-    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, OpenRouter, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI, Kimi};
+    public static final String[] LLM_CLIENTS = {Gemini, DeepSeek, OpenAI_API, OpenAI_Compatible, OpenRouter, Ollama, 阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI, Kimi};
 
     public static final Map<String, String[]> CLIENT_MODULES = new HashMap<>() {
         {
             put(DeepSeek, new String[]{"deepseek-chat"});
             put(Gemini, new String[]{"gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite-preview-02-05", "gemini-2.0-flash-exp", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"});
             put(OpenAI_API, new String[]{""});
+            put(OpenAI_Compatible, new String[]{""});
             put(SiliconFlow, new String[]{"deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-Coder-32B-Instruct"});
             put(Ollama, new String[]{"qwen2.5:14b", "llama3.2:3b"});
             put(CloudflareWorkersAI,
@@ -120,6 +122,7 @@ public class Constants {
             put(DeepSeek, new ApiKeySettings.ModuleConfig("https://api.deepseek.com/chat/completions", ""));
             put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate", ""));
             put(OpenAI_API, new ApiKeySettings.ModuleConfig("https://{host}/v1/chat/completions", ""));
+            put(OpenAI_Compatible, new ApiKeySettings.ModuleConfig("https://{host}/v1/chat/completions", "", ""));
             put(阿里云百炼, new ApiKeySettings.ModuleConfig("https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", ""));
             put(SiliconFlow, new ApiKeySettings.ModuleConfig("https://api.siliconflow.cn/v1/chat/completions", ""));
             put(CloudflareWorkersAI, new ApiKeySettings.ModuleConfig(
@@ -138,6 +141,7 @@ public class Constants {
             put(Constants.阿里云百炼, "https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7");
             put(Constants.SiliconFlow, "https://cloud.siliconflow.cn/i/lszKPlCW");
             put(Constants.OpenAI_API, "https://platform.openai.com/docs/overview");
+            put(Constants.OpenAI_Compatible, "https://platform.openai.com/docs/overview");
             put(Constants.VolcEngine, "https://www.volcengine.com/docs/82379");
             put(Constants.OpenRouter, "https://openrouter.ai/settings/keys");
             put(Constants.Kimi, "https://platform.moonshot.cn/console/api-keys");
@@ -160,6 +164,10 @@ public class Constants {
                     +
                     "<li>Replace {host} with the host defined in the model.</li>" +
                     "<li>Refer to the API definition on the <a href='https://platform.openai.com/docs/overview'>OpenAI Platform</a>.</li>" +
+                    "</html>";
+            case OpenAI_Compatible -> "<html>" +
+                    "<li>Use this option for providers that support the <a href=\"https://platform.openai.com/docs/api-reference/chat\">OpenAI-compatible API</a>.</li>" +
+                    "<li>Specify the full endpoint URL, for example: https://{host}/v1/chat/completions, along with your provider’s API key.</li>" +
                     "</html>";
             case CloudflareWorkersAI -> "<html>" +
                     "<li>Please refer to the <a href='https://developers.cloudflare.com/workers-ai/get-started/rest-api'>official documentation</a> for details</li>"
