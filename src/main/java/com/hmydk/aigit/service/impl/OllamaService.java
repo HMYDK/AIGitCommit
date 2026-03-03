@@ -108,7 +108,7 @@ public class OllamaService implements AIService {
     private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent)
             throws IOException {
 
-        GenerateRequest request = new GenerateRequest(module, textContent, false);
+        GenerateRequest request = new GenerateRequest(module, textContent, false, false);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
@@ -176,9 +176,10 @@ public class OllamaService implements AIService {
     private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
+        boolean think = !settings.isDisableThinking();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
 
-        GenerateRequest request = new GenerateRequest(selectedModule, textContent, true);
+        GenerateRequest request = new GenerateRequest(selectedModule, textContent, true, think);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
