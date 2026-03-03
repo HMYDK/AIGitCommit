@@ -60,6 +60,7 @@ public class ApiKeyConfigurable implements Configurable {
         settings.setSelectedModule(selectedModule);
         settings.setCommitLanguage(commitLanguage);
 
+        saveDisableThinkingSettings();
         // 保存prompt内容
         Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
         if (Constants.CUSTOM_PROMPT.equals((String) selectedPromptType)) {
@@ -88,6 +89,7 @@ public class ApiKeyConfigurable implements Configurable {
             ui.getModuleComboBox().setSelectedItem(settings.getSelectedModule());
             ui.getLanguageComboBox().setSelectedItem(settings.getCommitLanguage());
 
+            loadDisableThinkingSettings();
             // 设置表格数据
             loadCustomPrompts();
             // 设置下拉框选中项
@@ -99,6 +101,16 @@ public class ApiKeyConfigurable implements Configurable {
             // 加载文件忽略设置
             loadFileExclusionSettings();
         }
+    }
+
+    private void saveDisableThinkingSettings() {
+        boolean disableThinking = ui.getDisableThinkingCheckBox().isSelected();
+
+        settings.setDisableThinking(disableThinking);
+    }
+
+    private void loadDisableThinkingSettings() {
+        ui.getDisableThinkingCheckBox().setSelected(settings.isDisableThinking());
     }
 
     private void loadCustomPrompts() {
