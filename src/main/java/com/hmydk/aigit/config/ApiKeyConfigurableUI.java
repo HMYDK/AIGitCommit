@@ -42,6 +42,7 @@ public class ApiKeyConfigurableUI {
     private JPanel clientPanel;
 
     // 提示词设置标签页组件
+    private JBCheckBox disableThinkingCheckBox;
     private ComboBox<String> promptTypeComboBox;
     private JBTable customPromptsTable;
     private DefaultTableModel customPromptsTableModel;
@@ -92,6 +93,8 @@ public class ApiKeyConfigurableUI {
         promptTypeComboBox = new ComboBox<>(Constants.getAllPromptTypes());
         customPromptsTableModel = new DefaultTableModel(new String[]{"Description", "Prompt"}, 0);
         customPromptsTable = new JBTable(customPromptsTableModel);
+
+        disableThinkingCheckBox = new JBCheckBox("Disable Thinking");
 
         // 设置 Description 列的首选宽度和最大宽度
         customPromptsTable.getColumnModel().getColumn(0).setPreferredWidth(150);
@@ -390,6 +393,7 @@ public class ApiKeyConfigurableUI {
 
         addComponent(panel, new JBLabel("Prompt type:"), gbc, 0, 0, 0.0);
         addComponent(panel, promptTypeComboBox, gbc, 1, 0, 1.0);
+        addComponent(panel, disableThinkingCheckBox, gbc, 0, 1, 0.0);
 
         // Create a panel to maintain consistent height
         JPanel contentPanel = new JPanel(new CardLayout());
@@ -400,7 +404,7 @@ public class ApiKeyConfigurableUI {
         gbc.gridwidth = 2;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        addComponent(panel, contentPanel, gbc, 0, 1, 1.0);
+        addComponent(panel, contentPanel, gbc, 0, 2, 1.0);
 
         promptTypeComboBox.addActionListener(e -> {
             CardLayout cardLayout = (CardLayout) contentPanel.getLayout();
@@ -452,6 +456,10 @@ public class ApiKeyConfigurableUI {
 
     public ComboBox<String> getLanguageComboBox() {
         return languageComboBox;
+    }
+
+    public JBCheckBox getDisableThinkingCheckBox() {
+        return disableThinkingCheckBox;
     }
 
     public JBTable getCustomPromptsTable() {
