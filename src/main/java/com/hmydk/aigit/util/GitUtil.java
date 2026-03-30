@@ -10,6 +10,7 @@ import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vcs.impl.PartialChangesUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -189,27 +190,18 @@ public class GitUtil {
                                      @NotNull Project project) {
         Map<String, Object> result = new HashMap<>();
         
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .collect(Collectors.toList());
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
         
         // 基本差异信息
-        String rawDiff = computeDiff(filteredChanges, filteredUnversionedFiles, project);
+        String rawDiff = buildDiff(preparedChanges, filteredUnversionedFiles, project);
         result.put("rawDiff", rawDiff);
         
         // 收集变更文件的相关信息
         List<Map<String, Object>> fileContexts = new ArrayList<>();
         
         // 处理已版本控制的变更
-        for (Change change : filteredChanges) {
+        for (Change change : preparedChanges) {
             Map<String, Object> fileContext = new HashMap<>();
             
             VirtualFile vFile;
@@ -308,22 +300,18 @@ public class GitUtil {
     public static String computeDiff(@NotNull List<Change> includedChanges,
                                      @NotNull List<FilePath> unversionedFiles,
                                      @NotNull Project project) {
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
+        return buildDiff(preparedChanges, filteredUnversionedFiles, project);
+    }
+
+    private static String buildDiff(@NotNull List<Change> preparedChanges,
+                                    @NotNull List<FilePath> filteredUnversionedFiles,
+                                    @NotNull Project project) {
         StringBuilder diffBuilder = new StringBuilder();
 
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .collect(Collectors.toList());
-
         // 处理已版本控制的变更
-        String existingDiff = computeDiff(filteredChanges, project);
+        String existingDiff = buildDiff(preparedChanges, project);
         diffBuilder.append(existingDiff);
 
         // 处理未版本控制的文件
@@ -359,19 +347,16 @@ public class GitUtil {
     }
 
     public static String computeDiff(@NotNull List<Change> includedChanges, @NotNull Project project) {
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        return buildDiff(preparedChanges, project);
+    }
+
+    private static String buildDiff(@NotNull List<Change> preparedChanges, @NotNull Project project) {
         GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
         StringBuilder diffBuilder = new StringBuilder();
 
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-
         // 按仓库分组处理变更
-        Map<GitRepository, List<Change>> changesByRepository = filteredChanges.stream()
+        Map<GitRepository, List<Change>> changesByRepository = preparedChanges.stream()
                 .map(change -> {
                     GitRepository repository = null;
                     if (change.getVirtualFile() != null) {
@@ -463,26 +448,17 @@ public class GitUtil {
     public static CommitContext buildCommitContext(@NotNull List<Change> includedChanges,
                                                   @NotNull List<FilePath> unversionedFiles,
                                                   @NotNull Project project) {
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .toList();
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .toList();
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
         //如果两个集合都为空，应该直接抛出异常
-        if (filteredChanges.isEmpty() && filteredUnversionedFiles.isEmpty()) {
+        if (preparedChanges.isEmpty() && filteredUnversionedFiles.isEmpty()) {
             //异常中要补充信息，也许是因为用户设置了排除规则，导致所有文件都被排除
             throw new IllegalArgumentException("Both includedChanges and unversionedFiles are empty after exclusion. " +
                     "Perhaps all files are excluded by the exclusion rules?");  
         }
         
         // 统一处理所有文件变更，消除特殊情况
-        List<FileChange> changes = FileChange.fromGitChanges(filteredChanges, filteredUnversionedFiles);
+        List<FileChange> changes = FileChange.fromGitChanges(preparedChanges, filteredUnversionedFiles);
         
         // 创建CommitContext - 一个数据结构包含所有信息
         return CommitContext.create(project, changes);
@@ -531,5 +507,35 @@ public class GitUtil {
         // 检查是否有Git仓库
         List<GitRepository> repositories = gitRepositoryManager.getRepositories();
         return !repositories.isEmpty();
+    }
+
+    private static List<Change> prepareIncludedChanges(@NotNull List<Change> includedChanges,
+                                                       @NotNull Project project) {
+        List<Change> filteredChanges = filterIncludedChanges(includedChanges);
+        if (filteredChanges.isEmpty()) {
+            return filteredChanges;
+        }
+
+        try {
+            return PartialChangesUtil.wrapPartialChanges(project, filteredChanges);
+        } catch (Exception e) {
+            log.warn("Failed to wrap partial changes, fallback to original revisions: {}", e.getMessage());
+            return filteredChanges;
+        }
+    }
+
+    private static List<Change> filterIncludedChanges(@NotNull List<Change> includedChanges) {
+        return includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static List<FilePath> filterUnversionedFiles(@NotNull List<FilePath> unversionedFiles) {
+        return unversionedFiles.stream()
+                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
+                .collect(Collectors.toList());
     }
 }
