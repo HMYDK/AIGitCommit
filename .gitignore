@@ -46,3 +46,6 @@ bin/
 CLAUDE.md
 .claude
 AGENTS.md
+.intellijPlatform
+.run
+.gradle-home
