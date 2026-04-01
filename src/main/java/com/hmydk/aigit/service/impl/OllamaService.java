@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
+import com.hmydk.aigit.util.CommonUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -44,7 +46,8 @@ public class OllamaService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError,
+            Runnable onComplete) throws Exception {
         getAIResponseStream(content, onNext);
     }
 
@@ -68,7 +71,8 @@ public class OllamaService implements AIService {
             if (connection.getResponseCode() != 200) {
                 // 读取错误响应
                 StringBuilder response = new StringBuilder();
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(connection.getErrorStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         response.append(line);
@@ -113,7 +117,8 @@ public class OllamaService implements AIService {
         String jsonInputString = objectMapper.writeValueAsString(request);
 
         URI uri = URI.create(url);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
@@ -173,7 +178,8 @@ public class OllamaService implements AIService {
         String jsonInputString = objectMapper.writeValueAsString(request);
 
         URI uri = URI.create(moduleConfig.getUrl());
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);

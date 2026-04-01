@@ -19,7 +19,7 @@ import java.util.Map;
 @State(name = "com.hmydk.aigit.config.ApiKeySettings", storages = { @Storage("AIGitCommitSettings.xml") })
 public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> {
     private String selectedClient = "Gemini";
-    private String selectedModule = "gemini-2.0-flash-exp";
+    private String selectedModule = "gemini-3-flash-preview";
     private String commitLanguage = "English";
 
     private String promptType = Constants.CUSTOM_PROMPT;
@@ -33,13 +33,14 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     private Map<String, ModuleConfig> moduleConfigs = new HashMap<>();
 
     // 文件忽略规则配置
-    private boolean enableFileExclusion = false;  // 是否启用文件忽略功能
-    private List<String> excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS));  // 忽略规则列表
+    private boolean enableFileExclusion = false; // 是否启用文件忽略功能
+    private List<String> excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS)); // 忽略规则列表
+
+    private boolean useSystemProxy = false; // 是否使用系统代理
 
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
     }
-
 
     @Nullable
     @Override
@@ -136,6 +137,14 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
      */
     public void resetToDefaultExcludePatterns() {
         this.excludePatterns = new ArrayList<>(Arrays.asList(Constants.DEFAULT_EXCLUDE_PATTERNS));
+    }
+
+    public boolean isUseSystemProxy() {
+        return useSystemProxy;
+    }
+
+    public void setUseSystemProxy(boolean useSystemProxy) {
+        this.useSystemProxy = useSystemProxy;
     }
 
     public static class ModuleConfig {
