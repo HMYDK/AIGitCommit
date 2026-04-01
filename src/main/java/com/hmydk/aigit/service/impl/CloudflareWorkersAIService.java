@@ -12,11 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hmydk.aigit.util.CommonUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -46,7 +48,8 @@ public class CloudflareWorkersAIService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError,
+            Runnable onComplete) throws Exception {
 
     }
 
@@ -67,9 +70,10 @@ public class CloudflareWorkersAIService implements AIService {
     public Pair<Boolean, String> validateConfig(Map<String, String> config) {
         int statusCode;
         try {
-            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
+            HttpURLConnection connection = getHttpURLConnection(config.get("url"), config.get("module"),
+                    config.get("apiKey"), "hi");
             statusCode = connection.getResponseCode();
-        }  catch (Exception e) {
+        } catch (Exception e) {
             return Pair.of(false, e.getMessage());
         }
         return Pair.of(statusCode == 200, "");
@@ -79,7 +83,8 @@ public class CloudflareWorkersAIService implements AIService {
         HttpURLConnection connection = getHttpURLConnection(url, module, apiKey, textContent);
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String responseLine;
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
@@ -97,7 +102,8 @@ public class CloudflareWorkersAIService implements AIService {
         return "sth error when request ai api";
     }
 
-    private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
+    private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
+            String textContent) throws IOException {
         OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
         openAIRequestBO.setModel(module);
         openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
@@ -106,7 +112,8 @@ public class CloudflareWorkersAIService implements AIService {
         String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
 
         URI uri = URI.create(url);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Authorization", "Bearer " + apiKey);

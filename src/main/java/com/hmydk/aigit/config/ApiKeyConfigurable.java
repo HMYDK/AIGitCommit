@@ -37,24 +37,28 @@ public class ApiKeyConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
-//        return !settings.getSelectedClient().equals(ui.getClientComboBox().getSelectedItem())
-//                || !settings.getSelectedModule().equals(ui.getModuleComboBox().getSelectedItem())
-//                || !settings.getCommitLanguage().equals(ui.getLanguageComboBox().getSelectedItem())
-//                || isCustomPromptsModified() || isCustomPromptModified() || isPromptTypeModified();
+        // return
+        // !settings.getSelectedClient().equals(ui.getClientComboBox().getSelectedItem())
+        // ||
+        // !settings.getSelectedModule().equals(ui.getModuleComboBox().getSelectedItem())
+        // ||
+        // !settings.getCommitLanguage().equals(ui.getLanguageComboBox().getSelectedItem())
+        // || isCustomPromptsModified() || isCustomPromptModified() ||
+        // isPromptTypeModified();
         return true;
     }
 
     @Override
     public void apply() {
         if (ui == null) {
-            return;  // 如果UI已经被销毁，直接返回
+            return; // 如果UI已经被销毁，直接返回
         }
-        
+
         // 保存当前设置到临时变量
         String selectedClient = (String) ui.getClientComboBox().getSelectedItem();
         String selectedModule = (String) ui.getModuleComboBox().getSelectedItem();
         String commitLanguage = (String) ui.getLanguageComboBox().getSelectedItem();
-        
+
         // 应用设置
         settings.setSelectedClient(selectedClient);
         settings.setSelectedModule(selectedModule);
@@ -67,9 +71,12 @@ public class ApiKeyConfigurable implements Configurable {
         }
         // 保存prompt类型
         settings.setPromptType((String) selectedPromptType);
-        
+
         // 保存文件忽略设置
         saveFileExclusionSettings();
+
+        // 保存网络设置
+        saveNetworkSettings();
     }
 
     @Override
@@ -95,9 +102,12 @@ public class ApiKeyConfigurable implements Configurable {
 
             // 设置提示类型
             ui.getPromptTypeComboBox().setSelectedItem(settings.getPromptType());
-            
+
             // 加载文件忽略设置
             loadFileExclusionSettings();
+
+            // 加载网络设置
+            loadNetworkSettings();
         }
     }
 
@@ -177,13 +187,13 @@ public class ApiKeyConfigurable implements Configurable {
         return !model.getValueAt(selectedRow, 0).equals(settings.getCustomPrompt().getDescription())
                 || !model.getValueAt(selectedRow, 1).equals(settings.getCustomPrompt().getDescription());
     }
-    
+
     private void saveFileExclusionSettings() {
         boolean enableFileExclusion = ui.getEnableFileExclusionCheckBox().isSelected();
         String excludePatternsText = ui.getExcludePatternsTextArea().getText();
-        
+
         settings.setEnableFileExclusion(enableFileExclusion);
-        
+
         // 解析文本区域的内容为列表
         List<String> excludePatterns = new ArrayList<>();
         if (excludePatternsText != null && !excludePatternsText.trim().isEmpty()) {
@@ -197,17 +207,29 @@ public class ApiKeyConfigurable implements Configurable {
         }
         settings.setExcludePatterns(excludePatterns);
     }
-    
+
+    private void saveNetworkSettings() {
+        if (ui != null && ui.getUseSystemProxyCheckBox() != null) {
+            settings.setUseSystemProxy(ui.getUseSystemProxyCheckBox().isSelected());
+        }
+    }
+
+    private void loadNetworkSettings() {
+        if (ui != null && ui.getUseSystemProxyCheckBox() != null) {
+            ui.getUseSystemProxyCheckBox().setSelected(settings.isUseSystemProxy());
+        }
+    }
+
     private void loadFileExclusionSettings() {
         ui.getEnableFileExclusionCheckBox().setSelected(settings.isEnableFileExclusion());
-        
+
         List<String> excludePatterns = settings.getExcludePatterns();
         if (excludePatterns != null && !excludePatterns.isEmpty()) {
             ui.getExcludePatternsTextArea().setText(String.join("\n", excludePatterns));
         } else {
             ui.getExcludePatternsTextArea().setText(String.join("\n", Constants.DEFAULT_EXCLUDE_PATTERNS));
         }
-        
+
         // 根据复选框状态设置组件启用状态
         boolean enabled = settings.isEnableFileExclusion();
         ui.getExcludePatternsTextArea().setEnabled(enabled);

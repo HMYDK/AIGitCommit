@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -33,12 +35,14 @@ public class OpenAIUtil {
         String url = moduleConfig.getUrl();
         String apiKey = moduleConfig.getApiKey();
         if (Constants.OpenAI_Compatible.equals(client)) {
-            return StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey) && StringUtils.isNotEmpty(moduleConfig.getModelId());
+            return StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey)
+                    && StringUtils.isNotEmpty(moduleConfig.getModelId());
         }
         return StringUtils.isNotEmpty(selectedModule) && StringUtils.isNotEmpty(url) && StringUtils.isNotEmpty(apiKey);
     }
 
-    public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey, String textContent) throws IOException {
+    public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
+            String textContent) throws IOException {
         OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
         openAIRequestBO.setModel(module);
         openAIRequestBO.setStream(true);
@@ -48,7 +52,8 @@ public class OpenAIUtil {
         String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
 
         URI uri = URI.create(url);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
@@ -64,7 +69,8 @@ public class OpenAIUtil {
         return connection;
     }
 
-    public static void getAIResponseStream(String client, String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
+    public static void getAIResponseStream(String client, String content, Consumer<String> onNext,
+            Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(client);
@@ -72,7 +78,8 @@ public class OpenAIUtil {
         String apiKey = moduleConfig.getApiKey();
 
         String modelToUse = selectedModule;
-        if (Constants.OpenAI_Compatible.equals(client) && moduleConfig.getModelId() != null && !moduleConfig.getModelId().trim().isEmpty()) {
+        if (Constants.OpenAI_Compatible.equals(client) && moduleConfig.getModelId() != null
+                && !moduleConfig.getModelId().trim().isEmpty()) {
             modelToUse = moduleConfig.getModelId();
         }
 
@@ -80,7 +87,8 @@ public class OpenAIUtil {
         if (connection.getResponseCode() != 200) {
             // 读取错误响应
             StringBuilder response = new StringBuilder();
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(connection.getErrorStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
@@ -94,7 +102,7 @@ public class OpenAIUtil {
 
         // 用于过滤 <think>...</think> 标签
         StringBuilder thinkBuffer = new StringBuilder();
-        boolean[] insideThinkTag = {false};
+        boolean[] insideThinkTag = { false };
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset))) {
             String line;
@@ -147,7 +155,7 @@ public class OpenAIUtil {
      * 过滤流式响应中的 <think>...</think> 标签内容
      */
     private static void processAndFilterThinkTags(String tokenContent, StringBuilder thinkBuffer,
-                                                   boolean[] insideThinkTag, Consumer<String> onNext) {
+            boolean[] insideThinkTag, Consumer<String> onNext) {
         thinkBuffer.append(tokenContent);
         String buffered = thinkBuffer.toString();
 

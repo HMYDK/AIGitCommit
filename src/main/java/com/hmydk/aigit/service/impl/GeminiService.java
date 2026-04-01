@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -49,7 +51,8 @@ public class GeminiService implements AIService {
     }
 
     @Override
-    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete)
+    public void generateCommitMessageStream(String content, Consumer<String> onNext, Consumer<Throwable> onError,
+            Runnable onComplete)
             throws Exception {
         getAIResponseStream(content, onNext, onError, onComplete);
     }
@@ -75,7 +78,8 @@ public class GeminiService implements AIService {
             if (connection.getResponseCode() != 200) {
                 // 读取错误响应
                 StringBuilder response = new StringBuilder();
-                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(connection.getErrorStream()))) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(connection.getErrorStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         response.append(line);
@@ -122,7 +126,7 @@ public class GeminiService implements AIService {
     }
 
     private static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
-                                                                   String textContent) throws IOException {
+            String textContent) throws IOException {
         // String apiUrl =
         // "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
         // + apiKey;
@@ -134,7 +138,8 @@ public class GeminiService implements AIService {
         String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
 
         URI uri = URI.create(apiUrl);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -149,19 +154,22 @@ public class GeminiService implements AIService {
     }
 
     private static @NotNull HttpURLConnection getStreamHttpURLConnection(String url, String module, String apiKey,
-                                                                         String textContent) throws IOException {
+            String textContent) throws IOException {
         // String apiUrl =
         // "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key="
         // + apiKey;
         String apiUrl = url + "/" + module + ":streamGenerateContent?alt=sse&key=" + apiKey;
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
-        geminiRequestBO.setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
-        geminiRequestBO.setGenerationConfig(new GeminiRequestBO.GenerationConfig(new GeminiRequestBO.ThinkingConfig(0)));
+        geminiRequestBO
+                .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
+        geminiRequestBO
+                .setGenerationConfig(new GeminiRequestBO.GenerationConfig(new GeminiRequestBO.ThinkingConfig(0)));
         ObjectMapper objectMapper1 = new ObjectMapper();
         String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
 
         URI uri = URI.create(apiUrl);
-        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection();
+        Proxy proxy = CommonUtil.getProxy(uri);
+        HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(proxy);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
@@ -176,7 +184,8 @@ public class GeminiService implements AIService {
         return connection;
     }
 
-    private void getAIResponseStream(String textContent, Consumer<String> onNext, Consumer<Throwable> onError, Runnable onComplete) throws Exception {
+    private void getAIResponseStream(String textContent, Consumer<String> onNext, Consumer<Throwable> onError,
+            Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Gemini);

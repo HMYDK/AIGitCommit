@@ -1,0 +1,80 @@
+name: Build Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get version
+      id: get_version
+      run: |
+        # Use sed to extract version from build.gradle
+        VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' build.gradle)
+        if [ -z "$VERSION" ]; then
+          # Try single quotes if double quotes not found
+          VERSION=$(sed -n "s/^version = '\(.*\)'/\1/p" build.gradle)
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Check Tag Exists
+      id: check_tag
+      run: |
+        TAG="v${{ steps.get_version.outputs.version }}"
+        if git ls-remote --tags origin | grep -q "refs/tags/$TAG"; then
+          echo "Tag $TAG already exists. Skipping build."
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set up JDK 17
+      if: steps.check_tag.outputs.exists != 'true'
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'corretto'
+
+    - name: Setup Gradle
+      if: steps.check_tag.outputs.exists != 'true'
+      uses: gradle/actions/setup-gradle@v3
+      
+    - name: Build with Gradle Wrapper
+      if: steps.check_tag.outputs.exists != 'true'
+      run: ./gradlew buildPlugin
+
+    - name: Upload Artifact
+      if: steps.check_tag.outputs.exists != 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: AIGitCommit-plugin
+        path: build/distributions/*.zip
+
+    - name: Create and Push Tag
+      if: steps.check_tag.outputs.exists != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      run: |
+        TAG="v${{ steps.get_version.outputs.version }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag "$TAG"
+        git push origin "$TAG"
+
+    - name: Create Release
+      if: steps.check_tag.outputs.exists != 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v${{ steps.get_version.outputs.version }}
+        files: build/distributions/*.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
