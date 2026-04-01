@@ -1,44 +1,52 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.intellij.platform") version "2.13.1"
 }
 
 group = "com.hmydk"
-version = "2.1.4"
+version = "2.1.5"
 
 repositories {
     mavenCentral()
     google()
-}
-
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set("2024.1")
-    type.set("IC") // Target IDE Platform
-    plugins = ["Git4Idea", "java"]
-}
-
-patchPluginXml.sinceBuild.set("241.0")
-patchPluginXml.untilBuild.set("253.*")
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
-    buildSearchableOptions.enabled = false
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
+    intellijPlatform {
+        intellijIdea("2026.1")
+        bundledPlugin("Git4Idea")
+    }
+
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
-
-runIde {
-    intellij {
-        autoReloadPlugins = true
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+intellijPlatform {
+    autoReload = true
+    buildSearchableOptions = false
+    sandboxContainer = layout.buildDirectory.dir("idea-sandbox")
+
+    pluginConfiguration {
+        version = project.version.toString()
+        ideaVersion {
+            sinceBuild = "261"
+            untilBuild = "261.*"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
 }
 
 tasks.named('test') {
