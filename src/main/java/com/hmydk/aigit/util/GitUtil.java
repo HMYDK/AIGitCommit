@@ -1,9 +1,8 @@
 package com.hmydk.aigit.util;
 
+import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
-import com.hmydk.aigit.config.ApiKeySettings;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
@@ -12,8 +11,6 @@ import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.Change;
 import com.intellij.openapi.vcs.impl.PartialChangesUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -22,11 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -175,112 +168,6 @@ public class GitUtil {
             log.debug("Error matching simple pattern '{}' against '{}': {}", pattern, text, e.getMessage());
             return false;
         }
-    }
-
-    /**
-     * 计算差异并收集丰富的上下文信息，用于生成更准确的commit message
-     * 
-     * @param includedChanges 包含的变更
-     * @param unversionedFiles 未版本控制的文件
-     * @param project 项目
-     * @return 包含丰富上下文的差异信息
-     */
-    public static Map<String, Object> computeEnhancedDiff(@NotNull List<Change> includedChanges,
-                                     @NotNull List<FilePath> unversionedFiles,
-                                     @NotNull Project project) {
-        Map<String, Object> result = new HashMap<>();
-        
-        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
-        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
-        
-        // 基本差异信息
-        String rawDiff = buildDiff(preparedChanges, filteredUnversionedFiles, project);
-        result.put("rawDiff", rawDiff);
-        
-        // 收集变更文件的相关信息
-        List<Map<String, Object>> fileContexts = new ArrayList<>();
-        
-        // 处理已版本控制的变更
-        for (Change change : preparedChanges) {
-            Map<String, Object> fileContext = new HashMap<>();
-            
-            VirtualFile vFile;
-            String filePath = null;
-            
-            if (change.getVirtualFile() != null) {
-                vFile = change.getVirtualFile();
-                filePath = vFile.getPath();
-            } else {
-                vFile = null;
-                if (change.getBeforeRevision() != null) {
-                    filePath = change.getBeforeRevision().getFile().getPath();
-                }
-            }
-            
-            if (filePath == null) continue;
-            
-            fileContext.put("filePath", filePath);
-            fileContext.put("changeType", change.getType().toString());
-            
-            // 收集文件类型信息
-            if (vFile != null) {
-                // 检查是否为二进制文件
-                boolean isBinary = vFile.getFileType().isBinary();
-                fileContext.put("isBinary", isBinary);
-                
-                // 在read action中执行PSI操作
-                ReadAction.run(() -> {
-                    fileContext.put("fileType", vFile.getFileType().getName());
-                    fileContext.put("fileExtension", vFile.getExtension());
-                    
-                    // 只对非二进制文件提取PSI信息
-                    if (!isBinary) {
-                        PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
-                        if (psiFile != null) {
-                            fileContext.put("language", psiFile.getLanguage().getDisplayName());
-                            fileContext.put("fileName", psiFile.getName());
-                        }
-                    }
-                });
-            }
-            
-            fileContexts.add(fileContext);
-        }
-        
-        // 处理未版本控制的文件
-        for (FilePath unversionedFile : filteredUnversionedFiles) {
-            Map<String, Object> fileContext = new HashMap<>();
-            fileContext.put("filePath", unversionedFile.getPath());
-            fileContext.put("changeType", "NEW");
-            
-            // 在read action中执行PSI操作
-            ReadAction.run(() -> {
-                if (unversionedFile.getVirtualFile() != null) {
-                    VirtualFile vFile = unversionedFile.getVirtualFile();
-                    fileContext.put("fileType", vFile.getFileType().getName());
-                    fileContext.put("fileExtension", vFile.getExtension());
-                }
-            });
-            
-            fileContexts.add(fileContext);
-        }
-        
-        result.put("fileContexts", fileContexts);
-        
-        // 添加项目级别的上下文
-        Map<String, Object> projectContext = new HashMap<>();
-        GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
-        List<GitRepository> repositories = gitRepositoryManager.getRepositories();
-        if (!repositories.isEmpty()) {
-            GitRepository mainRepo = repositories.get(0);
-            projectContext.put("currentBranch", mainRepo.getCurrentBranch() != null ? 
-                    mainRepo.getCurrentBranch().getName() : "unknown");
-        }
-        projectContext.put("projectName", project.getName());
-        
-        result.put("projectContext", projectContext);
-        
-        return result;
     }
     
     /**
