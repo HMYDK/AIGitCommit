@@ -48,13 +48,12 @@ public class CommitContext {
      * 集成分析结果的结构化数据
      */
     public String toAIPrompt() {
-        // 使用智能分析器
+        return new AIPromptBuilder(analyze()).buildIntelligent(this);
+    }
+
+    public ContextAnalyzer.AnalysisResult analyze() {
         ContextAnalyzer analyzer = new ContextAnalyzer(ideaProject);
-        ContextAnalyzer.AnalysisResult analysis = analyzer.analyze(this);
-        
-        // 使用智能提示构建器
-        AIPromptBuilder builder = new AIPromptBuilder(analysis);
-        return builder.buildIntelligent(this);
+        return analyzer.analyze(this);
     }
     
     /**

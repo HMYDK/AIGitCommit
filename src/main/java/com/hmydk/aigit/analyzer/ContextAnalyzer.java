@@ -44,7 +44,7 @@ public class ContextAnalyzer {
     
     private final Project project;
     
-    public ContextAnalyzer(@NotNull Project project) {
+    public ContextAnalyzer(@Nullable Project project) {
         this.project = project;
     }
     

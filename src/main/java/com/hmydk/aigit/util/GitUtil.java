@@ -1,18 +1,16 @@
 package com.hmydk.aigit.util;
 
+import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
-import com.hmydk.aigit.config.ApiKeySettings;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diff.impl.patch.FilePatch;
 import com.intellij.openapi.diff.impl.patch.IdeaTextPatchBuilder;
 import com.intellij.openapi.diff.impl.patch.UnifiedDiffWriter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.FilePath;
 import com.intellij.openapi.vcs.changes.Change;
+import com.intellij.openapi.vcs.impl.PartialChangesUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryManager;
 import org.jetbrains.annotations.NotNull;
@@ -21,11 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -175,121 +169,6 @@ public class GitUtil {
             return false;
         }
     }
-
-    /**
-     * 计算差异并收集丰富的上下文信息，用于生成更准确的commit message
-     * 
-     * @param includedChanges 包含的变更
-     * @param unversionedFiles 未版本控制的文件
-     * @param project 项目
-     * @return 包含丰富上下文的差异信息
-     */
-    public static Map<String, Object> computeEnhancedDiff(@NotNull List<Change> includedChanges,
-                                     @NotNull List<FilePath> unversionedFiles,
-                                     @NotNull Project project) {
-        Map<String, Object> result = new HashMap<>();
-        
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .collect(Collectors.toList());
-        
-        // 基本差异信息
-        String rawDiff = computeDiff(filteredChanges, filteredUnversionedFiles, project);
-        result.put("rawDiff", rawDiff);
-        
-        // 收集变更文件的相关信息
-        List<Map<String, Object>> fileContexts = new ArrayList<>();
-        
-        // 处理已版本控制的变更
-        for (Change change : filteredChanges) {
-            Map<String, Object> fileContext = new HashMap<>();
-            
-            VirtualFile vFile;
-            String filePath = null;
-            
-            if (change.getVirtualFile() != null) {
-                vFile = change.getVirtualFile();
-                filePath = vFile.getPath();
-            } else {
-                vFile = null;
-                if (change.getBeforeRevision() != null) {
-                    filePath = change.getBeforeRevision().getFile().getPath();
-                }
-            }
-            
-            if (filePath == null) continue;
-            
-            fileContext.put("filePath", filePath);
-            fileContext.put("changeType", change.getType().toString());
-            
-            // 收集文件类型信息
-            if (vFile != null) {
-                // 检查是否为二进制文件
-                boolean isBinary = vFile.getFileType().isBinary();
-                fileContext.put("isBinary", isBinary);
-                
-                // 在read action中执行PSI操作
-                ReadAction.run(() -> {
-                    fileContext.put("fileType", vFile.getFileType().getName());
-                    fileContext.put("fileExtension", vFile.getExtension());
-                    
-                    // 只对非二进制文件提取PSI信息
-                    if (!isBinary) {
-                        PsiFile psiFile = PsiManager.getInstance(project).findFile(vFile);
-                        if (psiFile != null) {
-                            fileContext.put("language", psiFile.getLanguage().getDisplayName());
-                            fileContext.put("fileName", psiFile.getName());
-                        }
-                    }
-                });
-            }
-            
-            fileContexts.add(fileContext);
-        }
-        
-        // 处理未版本控制的文件
-        for (FilePath unversionedFile : filteredUnversionedFiles) {
-            Map<String, Object> fileContext = new HashMap<>();
-            fileContext.put("filePath", unversionedFile.getPath());
-            fileContext.put("changeType", "NEW");
-            
-            // 在read action中执行PSI操作
-            ReadAction.run(() -> {
-                if (unversionedFile.getVirtualFile() != null) {
-                    VirtualFile vFile = unversionedFile.getVirtualFile();
-                    fileContext.put("fileType", vFile.getFileType().getName());
-                    fileContext.put("fileExtension", vFile.getExtension());
-                }
-            });
-            
-            fileContexts.add(fileContext);
-        }
-        
-        result.put("fileContexts", fileContexts);
-        
-        // 添加项目级别的上下文
-        Map<String, Object> projectContext = new HashMap<>();
-        GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
-        List<GitRepository> repositories = gitRepositoryManager.getRepositories();
-        if (!repositories.isEmpty()) {
-            GitRepository mainRepo = repositories.get(0);
-            projectContext.put("currentBranch", mainRepo.getCurrentBranch() != null ? 
-                    mainRepo.getCurrentBranch().getName() : "unknown");
-        }
-        projectContext.put("projectName", project.getName());
-        
-        result.put("projectContext", projectContext);
-        
-        return result;
-    }
     
     /**
      * 从Change对象中提取文件路径
@@ -308,22 +187,18 @@ public class GitUtil {
     public static String computeDiff(@NotNull List<Change> includedChanges,
                                      @NotNull List<FilePath> unversionedFiles,
                                      @NotNull Project project) {
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
+        return buildDiff(preparedChanges, filteredUnversionedFiles, project);
+    }
+
+    private static String buildDiff(@NotNull List<Change> preparedChanges,
+                                    @NotNull List<FilePath> filteredUnversionedFiles,
+                                    @NotNull Project project) {
         StringBuilder diffBuilder = new StringBuilder();
 
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .collect(Collectors.toList());
-
         // 处理已版本控制的变更
-        String existingDiff = computeDiff(filteredChanges, project);
+        String existingDiff = buildDiff(preparedChanges, project);
         diffBuilder.append(existingDiff);
 
         // 处理未版本控制的文件
@@ -359,19 +234,16 @@ public class GitUtil {
     }
 
     public static String computeDiff(@NotNull List<Change> includedChanges, @NotNull Project project) {
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        return buildDiff(preparedChanges, project);
+    }
+
+    private static String buildDiff(@NotNull List<Change> preparedChanges, @NotNull Project project) {
         GitRepositoryManager gitRepositoryManager = GitRepositoryManager.getInstance(project);
         StringBuilder diffBuilder = new StringBuilder();
 
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .collect(Collectors.toList());
-
         // 按仓库分组处理变更
-        Map<GitRepository, List<Change>> changesByRepository = filteredChanges.stream()
+        Map<GitRepository, List<Change>> changesByRepository = preparedChanges.stream()
                 .map(change -> {
                     GitRepository repository = null;
                     if (change.getVirtualFile() != null) {
@@ -463,26 +335,17 @@ public class GitUtil {
     public static CommitContext buildCommitContext(@NotNull List<Change> includedChanges,
                                                   @NotNull List<FilePath> unversionedFiles,
                                                   @NotNull Project project) {
-        // 过滤需要排除的文件
-        List<Change> filteredChanges = includedChanges.stream()
-                .filter(change -> {
-                    String filePath = getFilePathFromChange(change);
-                    return filePath == null || !shouldExcludeFile(filePath);
-                })
-                .toList();
-        
-        List<FilePath> filteredUnversionedFiles = unversionedFiles.stream()
-                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
-                .toList();
+        List<Change> preparedChanges = prepareIncludedChanges(includedChanges, project);
+        List<FilePath> filteredUnversionedFiles = filterUnversionedFiles(unversionedFiles);
         //如果两个集合都为空，应该直接抛出异常
-        if (filteredChanges.isEmpty() && filteredUnversionedFiles.isEmpty()) {
+        if (preparedChanges.isEmpty() && filteredUnversionedFiles.isEmpty()) {
             //异常中要补充信息，也许是因为用户设置了排除规则，导致所有文件都被排除
             throw new IllegalArgumentException("Both includedChanges and unversionedFiles are empty after exclusion. " +
                     "Perhaps all files are excluded by the exclusion rules?");  
         }
         
         // 统一处理所有文件变更，消除特殊情况
-        List<FileChange> changes = FileChange.fromGitChanges(filteredChanges, filteredUnversionedFiles);
+        List<FileChange> changes = FileChange.fromGitChanges(preparedChanges, filteredUnversionedFiles);
         
         // 创建CommitContext - 一个数据结构包含所有信息
         return CommitContext.create(project, changes);
@@ -531,5 +394,35 @@ public class GitUtil {
         // 检查是否有Git仓库
         List<GitRepository> repositories = gitRepositoryManager.getRepositories();
         return !repositories.isEmpty();
+    }
+
+    private static List<Change> prepareIncludedChanges(@NotNull List<Change> includedChanges,
+                                                       @NotNull Project project) {
+        List<Change> filteredChanges = filterIncludedChanges(includedChanges);
+        if (filteredChanges.isEmpty()) {
+            return filteredChanges;
+        }
+
+        try {
+            return PartialChangesUtil.wrapPartialChanges(project, filteredChanges);
+        } catch (Exception e) {
+            log.warn("Failed to wrap partial changes, fallback to original revisions: {}", e.getMessage());
+            return filteredChanges;
+        }
+    }
+
+    private static List<Change> filterIncludedChanges(@NotNull List<Change> includedChanges) {
+        return includedChanges.stream()
+                .filter(change -> {
+                    String filePath = getFilePathFromChange(change);
+                    return filePath == null || !shouldExcludeFile(filePath);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static List<FilePath> filterUnversionedFiles(@NotNull List<FilePath> unversionedFiles) {
+        return unversionedFiles.stream()
+                .filter(filePath -> !shouldExcludeFile(filePath.getPath()))
+                .collect(Collectors.toList());
     }
 }

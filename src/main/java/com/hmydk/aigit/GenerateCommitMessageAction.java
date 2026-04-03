@@ -1,6 +1,7 @@
 package com.hmydk.aigit;
 
 import com.hmydk.aigit.constant.Constants;
+import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.service.CommitMessageService;
 import com.hmydk.aigit.util.DialogUtil;
 import com.hmydk.aigit.util.GitUtil;
@@ -124,13 +125,12 @@ public class GenerateCommitMessageAction extends AnAction {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    String diff = GitUtil.getOptimizedAIInput(includedChanges, includedUnversionedFiles, project);
-//                    System.out.println(diff);
+                    CommitContext context = GitUtil.buildCommitContext(includedChanges, includedUnversionedFiles, project);
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
                         commitMessageService.generateCommitMessageStream(
                                 project,
-                                diff,
+                                context,
                                 // onNext 处理每个token
                                 token -> ApplicationManager.getApplication().invokeLater(() -> {
                                     if (messageBuilder.isEmpty()) {
@@ -151,7 +151,7 @@ public class GenerateCommitMessageAction extends AnAction {
                                 })
                         );
                     } else {
-                        String commitMessageFromAi = commitMessageService.generateCommitMessage(project, diff).trim();
+                        String commitMessageFromAi = commitMessageService.generateCommitMessage(project, context).trim();
                         ApplicationManager.getApplication().invokeLater(() -> {
                             commitMessage.setCommitMessage(commitMessageFromAi);
                             stopIconAnimation(e);
