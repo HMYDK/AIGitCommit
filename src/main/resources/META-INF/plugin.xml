@@ -85,6 +85,7 @@
         <![CDATA[
         <h3>Details:</h3>
         <ul>
+            <li>feat: Add compatibility for IntelliJ 2026.1</li>
             <li>fix: Respect partial commit selection inside the same file, so unchecked hunks no longer affect generated commit messages (<a href="https://github.com/HMYDK/AIGitCommit/issues/85">#85</a>)</li>
             <li>fix: Trim oversized AI inputs for large commits to avoid prompt/context overflow (<a href="https://github.com/HMYDK/AIGitCommit/issues/88">#88</a>)</li>
         </ul>
