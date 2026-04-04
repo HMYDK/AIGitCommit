@@ -23,6 +23,7 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     private String commitLanguage = "English";
 
     private String promptType = Constants.CUSTOM_PROMPT;
+    private boolean disableThinking = true;
 
     // prompt from table
     private List<PromptInfo> customPrompts = new ArrayList<>();
@@ -67,6 +68,14 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     public void setCommitLanguage(String commitLanguage) {
         this.commitLanguage = commitLanguage;
+    }
+
+    public boolean isDisableThinking() {
+        return disableThinking;
+    }
+
+    public void setDisableThinking(boolean disableThinking) {
+        this.disableThinking = disableThinking;
     }
 
     public List<PromptInfo> getCustomPrompts() {
