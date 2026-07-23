@@ -83,15 +83,14 @@
 
     <change-notes>
         <![CDATA[
-        <h3>Details:</h3>
+        <h3>2.2.0</h3>
         <ul>
-            <li>fix: Keep the plugin installable on future IDE builds instead of blocking every new release by metadata (<a href="https://github.com/HMYDK/AIGitCommit/issues/99">#99</a>)</li>
-            <li>refactor: Use public commit workflow APIs and isolate version-sensitive VCS integration</li>
-            <li>chore: Verify the minimum IDE, latest stable WebStorm, and latest WebStorm EAP in CI</li>
-            <li>feat: Add compatibility for IntelliJ 2026.1</li>
-            <li>feat: Update Gemini model list and support system proxy</li>
-            <li>fix: Respect partial commit selection inside the same file, so unchecked hunks no longer affect generated commit messages (<a href="https://github.com/HMYDK/AIGitCommit/issues/85">#85</a>)</li>
-            <li>fix: Trim oversized AI inputs for large commits to avoid prompt/context overflow (<a href="https://github.com/HMYDK/AIGitCommit/issues/88">#88</a>)</li>
+            <li>fix: Support WebStorm and IntelliJ Platform 2026.2 by using public commit workflow APIs (<a href="https://github.com/HMYDK/AIGitCommit/issues/99">#99</a>)</li>
+            <li>fix: Remove the fixed upper IDE build limit so compatible future IDE versions are not blocked by metadata</li>
+            <li>fix: Stop safely when selected commit hunks cannot be read instead of including unchecked code</li>
+            <li>refactor: Isolate version-sensitive VCS integration behind a compatibility adapter</li>
+            <li>chore: Add automated compatibility checks for IntelliJ IDEA 2024.1, latest stable WebStorm, and latest WebStorm EAP</li>
+            <li>chore: Upgrade to IntelliJ Platform Gradle Plugin 2.x and Gradle 9.2.1</li>
         </ul>
         ]]>
     </change-notes>
