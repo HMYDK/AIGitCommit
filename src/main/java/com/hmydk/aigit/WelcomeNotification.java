@@ -1,16 +1,18 @@
 package com.hmydk.aigit;
 
-import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.ProjectActivity;
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * WelcomeNotification 类实现了 ProjectActivity 接口，
@@ -29,6 +31,7 @@ public class WelcomeNotification implements ProjectActivity {
     private static final String WELCOME_CONTENT_UPDATE = "AI Git Commit has been updated to a new version. " +
             "Check out the latest features and improvements in the settings.";
     private static final String PLUGIN_VERSION_PROPERTY = "com.hmydk.aigit.version";
+    private static final String PLUGIN_VERSION_RESOURCE = "/META-INF/aigit-version.properties";
 
     /**
      * 当项目启动时，IntelliJ Platform 会调用此方法。
@@ -93,12 +96,23 @@ public class WelcomeNotification implements ProjectActivity {
     /**
      * 获取当前插件的版本号。
      *
-     * <p>此方法从插件的描述符（plugin.xml）中检索版本号。</p>
+     * <p>版本号在构建时从 Gradle 项目版本写入插件自己的资源文件，
+     * 这里不依赖 IntelliJ 的内部插件管理 API。</p>
      *
      * @return 当前插件的版本字符串
      */
-    private String getCurrentPluginVersion() {
-        return PluginManagerCore.getPlugin(PluginId.getId("com.hmydk.aigit")).getVersion();
+    static String getCurrentPluginVersion() {
+        try (InputStream input = WelcomeNotification.class.getResourceAsStream(PLUGIN_VERSION_RESOURCE)) {
+            if (input == null) {
+                return "unknown";
+            }
+
+            Properties properties = new Properties();
+            properties.load(input);
+            return properties.getProperty("version", "unknown");
+        } catch (IOException ignored) {
+            return "unknown";
+        }
     }
 
     /**

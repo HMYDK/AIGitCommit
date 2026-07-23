@@ -16,16 +16,10 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.vcs.FilePath;
-import com.intellij.openapi.vcs.VcsDataKeys;
-import com.intellij.openapi.vcs.changes.Change;
-import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.wm.WindowManager;
-import com.intellij.vcs.commit.AbstractCommitWorkflowHandler;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,13 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 继承自 AnAction 以集成到 IDEA 的操作系统中
  */
 public class GenerateCommitMessageAction extends AnAction {
-
-    /**
-     * 获取CommitMessage对象
-     */
-    private CommitMessage getCommitMessage(AnActionEvent e) {
-        return (CommitMessage) e.getData(VcsDataKeys.COMMIT_MESSAGE_CONTROL);
-    }
 
     private final StringBuilder messageBuilder = new StringBuilder();
     private Timer iconAnimationTimer;
@@ -99,33 +86,31 @@ public class GenerateCommitMessageAction extends AnAction {
             return;
         }
 
-        AbstractCommitWorkflowHandler<?, ?> commitWorkflowHandler = (AbstractCommitWorkflowHandler<?, ?>) e.getData(
-                VcsDataKeys.COMMIT_WORKFLOW_HANDLER);
-        if (commitWorkflowHandler == null) {
+        CommitSelection selection = CommitSelection.from(e);
+        if (selection == null) {
             stopIconAnimation(e);
             IdeaDialogUtil.handleNoChangesSelected(project);
             return;
         }
 
-        CommitMessage commitMessage = getCommitMessage(e);
-
-        List<Change> includedChanges = commitWorkflowHandler.getUi().getIncludedChanges();
-        List<FilePath> includedUnversionedFiles = commitWorkflowHandler.getUi().getIncludedUnversionedFiles();
-
-        if (includedChanges.isEmpty() && includedUnversionedFiles.isEmpty()) {
+        if (selection.isEmpty()) {
             stopIconAnimation(e);
-            commitMessage.setCommitMessage(Constants.NO_FILE_SELECTED);
+            selection.commitMessage().setCommitMessage(Constants.NO_FILE_SELECTED);
             return;
         }
 
-        commitMessage.setCommitMessage(Constants.GENERATING_COMMIT_MESSAGE);
+        selection.commitMessage().setCommitMessage(Constants.GENERATING_COMMIT_MESSAGE);
 
         // Run the time-consuming operations in a background task
         ProgressManager.getInstance().run(new Task.Backgroundable(project, Constants.TASK_TITLE, true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 try {
-                    CommitContext context = GitUtil.buildCommitContext(includedChanges, includedUnversionedFiles, project);
+                    CommitContext context = GitUtil.buildCommitContext(
+                            selection.includedChanges(),
+                            selection.includedUnversionedFiles(),
+                            project
+                    );
                     if (commitMessageService.generateByStream()) {
                         messageBuilder.setLength(0);
                         commitMessageService.generateCommitMessageStream(
@@ -135,10 +120,10 @@ public class GenerateCommitMessageAction extends AnAction {
                                 token -> ApplicationManager.getApplication().invokeLater(() -> {
                                     if (messageBuilder.isEmpty()) {
                                         messageBuilder.append(token);
-                                        commitMessage.setCommitMessage(token);
+                                        selection.commitMessage().setCommitMessage(token);
                                     } else {
                                         messageBuilder.append(token);
-                                        commitMessage.setCommitMessage(messageBuilder.toString());
+                                        selection.commitMessage().setCommitMessage(messageBuilder.toString());
                                     }
                                 }),
                                 // onError 处理错误
@@ -153,7 +138,7 @@ public class GenerateCommitMessageAction extends AnAction {
                     } else {
                         String commitMessageFromAi = commitMessageService.generateCommitMessage(project, context).trim();
                         ApplicationManager.getApplication().invokeLater(() -> {
-                            commitMessage.setCommitMessage(commitMessageFromAi);
+                            selection.commitMessage().setCommitMessage(commitMessageFromAi);
                             stopIconAnimation(e);
                         });
                     }

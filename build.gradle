@@ -1,46 +1,153 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.17.3"
+    id("org.jetbrains.intellij.platform") version "2.18.1"
 }
 
 group = "com.hmydk"
-version = "2.1.5"
+version = "2.2.0"
 
 repositories {
     mavenCentral()
     google()
-}
-
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-intellij {
-    version.set("2024.1")
-    type.set("IC") // Target IDE Platform
-    plugins = ["Git4Idea", "java"]
-}
-
-patchPluginXml.sinceBuild.set("241.0")
-patchPluginXml.untilBuild.set("261.*")
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
-    buildSearchableOptions.enabled = false
-}
-
-dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-}
-
-
-runIde {
-    intellij {
-        autoReloadPlugins = true
+    intellijPlatform {
+        defaultRepositories()
     }
 }
 
-tasks.named('test') {
+dependencies {
+    intellijPlatform {
+        // Compile against the oldest supported IDE so newer APIs cannot leak into the artifact.
+        intellijIdeaCommunity("2024.1")
+        bundledPlugin("Git4Idea")
+    }
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+intellijPlatform {
+    autoReload = true
+    buildSearchableOptions = false
+    // The project contains no IntelliJ GUI Designer forms; disabling instrumentation also keeps
+    // builds independent from machine-specific JDK extension directories on macOS.
+    instrumentCode = false
+
+    pluginConfiguration {
+        version = project.version.toString()
+        ideaVersion {
+            sinceBuild = "241"
+            // Open-ended compatibility. CI verifies the minimum, latest stable, and latest EAP.
+            untilBuild = provider { null }
+        }
+    }
+
+    pluginVerification {
+        verificationReportsDirectory = layout.buildDirectory.dir("reports/pluginVerifier")
+        ides {
+            def profile = providers.gradleProperty("compatibilityProfile").getOrElse("minimum")
+            switch (profile) {
+                case "minimum":
+                    current()
+                    break
+                case "stable":
+                    latest {
+                        it.types = [org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.WebStorm]
+                        it.channels = [org.jetbrains.intellij.platform.gradle.models.ProductRelease.Channel.RELEASE]
+                    }
+                    break
+                case "eap":
+                    latest {
+                        it.types = [org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.WebStorm]
+                        it.channels = [org.jetbrains.intellij.platform.gradle.models.ProductRelease.Channel.EAP]
+                    }
+                    break
+                default:
+                    throw new GradleException("Unknown compatibilityProfile: ${profile}")
+            }
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 17
+}
+
+tasks.named("processResources") {
+    def pluginVersion = project.version.toString()
+    inputs.property("pluginVersion", pluginVersion)
+    filesMatching("META-INF/aigit-version.properties") {
+        expand(pluginVersion: pluginVersion)
+    }
+}
+
+def publicApiBoundarySources = fileTree("src/main/java") {
+    include("**/*.java")
+}
+def publicApiBoundaryAllowedFile =
+        layout.projectDirectory.file("src/main/java/com/hmydk/aigit/compat/DefaultIdeVcsAdapter.java").asFile.canonicalFile
+def publicApiBoundaryForbiddenImports = [
+        "com.intellij.vcs.commit.AbstractCommitWorkflowHandler",
+        "com.intellij.openapi.diff.impl.patch.",
+        "com.intellij.openapi.vcs.impl.PartialChangesUtil"
+]
+
+tasks.register("verifyPublicApiBoundary") {
+    def allowedFile = publicApiBoundaryAllowedFile
+    def forbiddenImports = List.copyOf(publicApiBoundaryForbiddenImports)
+
+    group = "verification"
+    description = "Prevents IntelliJ implementation APIs from leaking outside the compatibility adapter."
+    inputs.files(publicApiBoundarySources)
+
+    doLast {
+        def violations = []
+
+        inputs.files.files.each { sourceFile ->
+            if (sourceFile.canonicalFile != allowedFile) {
+                sourceFile.readLines("UTF-8").eachWithIndex { line, index ->
+                    if (forbiddenImports.any { line.contains(it) }) {
+                        violations << "${sourceFile}:${index + 1}: ${line.trim()}"
+                    }
+                }
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "IntelliJ implementation APIs must stay inside DefaultIdeVcsAdapter:\n" +
+                            violations.join("\n")
+            )
+        }
+    }
+}
+
+tasks.named("test") {
     useJUnitPlatform()
+}
+
+tasks.named("check") {
+    dependsOn(tasks.named("verifyPublicApiBoundary"))
+}
+
+tasks.named("publishPlugin") {
+    onlyIf {
+        def allowed = providers.gradleProperty("allowMarketplacePublish")
+                .map(Boolean::parseBoolean)
+                .getOrElse(false)
+        if (!allowed) {
+            logger.lifecycle(
+                    "Skipping Marketplace publication. " +
+                            "Pass -PallowMarketplacePublish=true only during an approved release."
+            )
+        }
+        return allowed
+    }
 }

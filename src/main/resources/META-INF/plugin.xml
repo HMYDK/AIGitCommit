@@ -85,6 +85,9 @@
         <![CDATA[
         <h3>Details:</h3>
         <ul>
+            <li>fix: Keep the plugin installable on future IDE builds instead of blocking every new release by metadata (<a href="https://github.com/HMYDK/AIGitCommit/issues/99">#99</a>)</li>
+            <li>refactor: Use public commit workflow APIs and isolate version-sensitive VCS integration</li>
+            <li>chore: Verify the minimum IDE, latest stable WebStorm, and latest WebStorm EAP in CI</li>
             <li>feat: Add compatibility for IntelliJ 2026.1</li>
             <li>feat: Update Gemini model list and support system proxy</li>
             <li>fix: Respect partial commit selection inside the same file, so unchecked hunks no longer affect generated commit messages (<a href="https://github.com/HMYDK/AIGitCommit/issues/85">#85</a>)</li>
