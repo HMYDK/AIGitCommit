@@ -1,99 +1,72 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<!-- https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin url="https://github.com/HMYDK/AIGitCommit">
     <id>com.hmydk.aigit</id>
-
     <name>AI Git Commit</name>
+    <vendor email="paranoia_zk@yeah.net" url="https://github.com/HMYDK">HMYDK</vendor>
 
-    <vendor email="paranoia_zk@yeah.net">HMYDK</vendor>
-
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
-    <![CDATA[
-    <h3>This plugin uses AI to automatically generate commit messages based on the changes in your code.</h3>
-    
+        <![CDATA[
+        <p>Generate AI-powered Git commit messages directly from the Commit tool window.</p>
+        <p>AI Git Commit builds focused context from the files and partial changes you select, then sends it to the AI service and model you configure.</p>
 
-    <h3>Supported Models:</h3>
-    <ul>
-        <li>Support for DeepSeek.</li>
-        <li>Support for Gemini.</li>
-        <li>Support for SiliconFlow(Model Hub).</li>
-        <li>Support for Ollama.</li>
-        <li>Support for OpenAI API.</li>
-        <li>Support for Cloudflare Workers AI.</li>
-        <li>Support for 阿里云百炼(Model Hub).</li>
-        <li>Support for 阿里云百炼(Model Hub).</li>
-        <li>Support for 火山引擎(VolcEngine) by <a href="https://github.com/callMeExiao">Exiao</a></li>
-        <li>Support for OpenRouter.</li>
-    </ul>
+        <h3>Highlights</h3>
+        <ul>
+            <li>Generate messages from selected changes, partial commit hunks, and unversioned files.</li>
+            <li>Choose the output language and use editable model IDs.</li>
+            <li>Create reusable custom prompts or load <code>commit-prompt.txt</code> from the project root.</li>
+            <li>Compact large change sets and exclude generated files, lock files, or custom wildcard patterns.</li>
+            <li>Use the IDE system proxy, inspect the latest prompt, and stream responses where supported.</li>
+        </ul>
 
-    <h3>Usage:</h3>
-    <ul>
-        <li>Select the code you want to commit.</li>
-        <li>Click the "Generate AI Commit Message" button.</li>
-        <li>The generated commit message will be displayed in the commit message editor.</li>
-    </ul>
+        <h3>Supported AI Services</h3>
+        <p>OrcaRouter, Google Gemini, DeepSeek, OpenAI API, OpenAI-compatible providers, OpenRouter, Ollama, Alibaba Cloud Model Studio, SiliconFlow, VolcEngine, Cloudflare Workers AI, and Kimi.</p>
 
-    <h3>Custom Prompts:</h3>
-    <ul>
-        <li>You can add, edit, and delete custom prompts in the settings.</li>
-        <li>Custom prompts will be used when generating commit messages.</li>
-        <li>You can share and find more information about custom prompts in the <a href="https://github.com/HMYDK/AIGitCommit/discussions/23">Discussion</a>.</li>
-    </ul>
-    ]]>
+        <h3>Getting Started</h3>
+        <ol>
+            <li>Open <b>Settings/Preferences &gt; Tools &gt; AI Git Commit</b>.</li>
+            <li>Select a provider, model, and output language, then configure the endpoint and API key if required.</li>
+            <li>Select changes in the Commit tool window and choose <b>Generate AI Commit Message</b>.</li>
+        </ol>
+
+        <p><b>Privacy:</b> Generating a message sends the selected change context and prompt to the AI service you configured. Review that provider's privacy and data-retention policies before sending sensitive source code.</p>
+        <p><a href="https://github.com/HMYDK/AIGitCommit">Documentation and source code</a> | <a href="https://github.com/HMYDK/AIGitCommit/issues">Issue tracker</a> | <a href="https://github.com/HMYDK/AIGitCommit/discussions/23">Prompt templates</a></p>
+        ]]>
     </description>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.vcs</depends>
-    <depends>Git4Idea</depends>
     <depends>com.intellij.modules.json</depends>
+    <depends>Git4Idea</depends>
 
-
-
-    <!-- Extension points defined by the plugin.
-     Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <!-- 注册欢迎通知活动 -->
-        <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
-        <!-- 声明通知组 -->
-        <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
-        <!--        <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"-->
-        <!--            displayName="AI Git Commit"/>-->
+        <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
         <applicationConfigurable instance="com.hmydk.aigit.config.ApiKeyConfigurable"
                                  id="aigit.settings"
                                  displayName="AI Git Commit"
                                  groupId="Tools"/>
-        <applicationService serviceImplementation="com.hmydk.aigit.config.ApiKeySettings"/>
+        <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
+        <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
     </extensions>
 
     <actions>
-        <!-- Declare the action for manual commit message generation -->
         <action id="com.hmydk.aigit.GenerateCommitMessageAction"
                 class="com.hmydk.aigit.GenerateCommitMessageAction"
                 text="Generate AI Commit Message"
                 icon="/icons/git-commit-logo.svg"
-                description="Generate a commit message using AI">
+                description="Generate a Git commit message from the selected changes using AI">
             <add-to-group group-id="Vcs.MessageActionGroup" anchor="first"/>
         </action>
     </actions>
-
-
     <change-notes>
         <![CDATA[
-        <h3>2.2.0</h3>
+        <h3>2.2.1</h3>
         <ul>
-            <li>fix: Support WebStorm and IntelliJ Platform 2026.2 by using public commit workflow APIs (<a href="https://github.com/HMYDK/AIGitCommit/issues/99">#99</a>)</li>
-            <li>fix: Remove the fixed upper IDE build limit so compatible future IDE versions are not blocked by metadata</li>
-            <li>fix: Stop safely when selected commit hunks cannot be read instead of including unchecked code</li>
-            <li>refactor: Isolate version-sensitive VCS integration behind a compatibility adapter</li>
-            <li>chore: Add automated compatibility checks for IntelliJ IDEA 2024.1, latest stable WebStorm, and latest WebStorm EAP</li>
-            <li>chore: Upgrade to IntelliJ Platform Gradle Plugin 2.x and Gradle 9.2.1</li>
+            <li>Add OrcaRouter as a dedicated OpenAI-compatible provider.</li>
+            <li>Add free-model presets for Qwen, OrcaRouter, Tencent HY3, and DeepSeek V4 Flash.</li>
+            <li>Add <code>orcarouter/auto</code> as an editable automatic-routing option.</li>
+            <li>Refresh the plugin metadata and documentation to match the current feature set and supported providers.</li>
         </ul>
         ]]>
     </change-notes>
-
-
 </idea-plugin>

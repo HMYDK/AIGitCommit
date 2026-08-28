@@ -13,6 +13,7 @@ import com.hmydk.aigit.service.impl.OllamaService;
 import com.hmydk.aigit.service.impl.OpenAIAPIService;
 import com.hmydk.aigit.service.impl.OpenAICompatibleService;
 import com.hmydk.aigit.service.impl.OpenRouterService;
+import com.hmydk.aigit.service.impl.OrcaRouterService;
 import com.hmydk.aigit.service.impl.SiliconFlowService;
 import com.hmydk.aigit.service.impl.VolcEngineService;
 import com.hmydk.aigit.util.PromptUtil;
@@ -128,6 +129,7 @@ public class CommitMessageService {
             case Constants.SiliconFlow -> new SiliconFlowService();
             case Constants.VolcEngine -> new VolcEngineService();
             case Constants.OpenRouter -> new OpenRouterService();
+            case Constants.OrcaRouter -> new OrcaRouterService();
             case Constants.Kimi -> new KimiService();
             default -> throw new IllegalArgumentException("Invalid LLM client: " + selectedClient);
         };

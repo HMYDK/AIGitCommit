@@ -45,6 +45,7 @@ bin/
 
 CLAUDE.md
 .claude
+.mcp.json
 AGENTS.md
 .intellijPlatform
 .run
