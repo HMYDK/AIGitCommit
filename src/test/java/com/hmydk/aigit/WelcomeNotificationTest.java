@@ -8,6 +8,6 @@ class WelcomeNotificationTest {
 
     @Test
     void readsVersionGeneratedFromGradleProjectVersion() {
-        assertEquals("2.2.0", WelcomeNotification.getCurrentPluginVersion());
+        assertEquals("2.2.1", WelcomeNotification.getCurrentPluginVersion());
     }
 }

@@ -2,18 +2,22 @@ package com.hmydk.aigit.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.context.AIPromptBuilder;
+import com.hmydk.aigit.context.ChangeStatistics;
 import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
 import com.hmydk.aigit.context.FileChangeType;
 import com.hmydk.aigit.context.ProjectInfo;
-import com.hmydk.aigit.context.ChangeStatistics;
+import com.hmydk.aigit.service.impl.OrcaRouterService;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,6 +26,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommitMessageServiceTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @Test
+    void resolvesOrcaRouterService() {
+        assertTrue(CommitMessageService.getAIService(Constants.OrcaRouter) instanceof OrcaRouterService);
+    }
+
+    @Test
+    void providesOrcaRouterDefaults() {
+        assertTrue(List.of(Constants.LLM_CLIENTS).contains(Constants.OrcaRouter));
+        assertArrayEquals(
+                new String[]{
+                        "qwen/qwen3.8-27b-free", "orcarouter/free", "tencent/hy3-free",
+                        "deepseek/deepseek-v4-flash-free"
+                },
+                Arrays.copyOf(Constants.CLIENT_MODULES.get(Constants.OrcaRouter), 4)
+        );
+        assertEquals("https://api.orcarouter.ai/v1/chat/completions",
+                Constants.moduleConfigs.get(Constants.OrcaRouter).getUrl());
+    }
 
     @Test
     void keepsFullModeForSmallChanges() throws Exception {
