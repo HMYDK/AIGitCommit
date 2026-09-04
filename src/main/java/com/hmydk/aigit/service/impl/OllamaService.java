@@ -112,7 +112,7 @@ public class OllamaService implements AIService {
     private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent)
             throws IOException {
 
-        GenerateRequest request = new GenerateRequest(module, textContent, false);
+        GenerateRequest request = new GenerateRequest(module, textContent, false, false);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
@@ -136,11 +136,13 @@ public class OllamaService implements AIService {
         private String model;
         private String prompt;
         private boolean stream;
+        private boolean think;
 
-        public GenerateRequest(String model, String prompt, boolean stream) {
+        public GenerateRequest(String model, String prompt, boolean stream, boolean think) {
             this.model = model;
             this.prompt = prompt;
             this.stream = stream;
+            this.think = think;
         }
 
         public String getModel() {
@@ -166,14 +168,23 @@ public class OllamaService implements AIService {
         public void setStream(boolean stream) {
             this.stream = stream;
         }
+
+        public boolean isThink() {
+            return think;
+        }
+
+        public void setThink(boolean think) {
+            this.think = think;
+        }
     }
 
     private void getAIResponseStream(String textContent, Consumer<String> onNext) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
         String selectedModule = settings.getSelectedModule();
+        boolean think = !settings.isDisableThinking();
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
 
-        GenerateRequest request = new GenerateRequest(selectedModule, textContent, true);
+        GenerateRequest request = new GenerateRequest(selectedModule, textContent, true, think);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonInputString = objectMapper.writeValueAsString(request);
 
