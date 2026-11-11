@@ -46,3 +46,11 @@ jobs:
           name: minimum-compatibility-report
           path: build/reports/pluginVerifier/
           if-no-files-found: warn
+
+      - name: Upload UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots
+          path: build/ui-screenshots/*.png
+          if-no-files-found: warn

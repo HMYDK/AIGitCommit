@@ -138,6 +138,9 @@ tasks.named("test") {
     useJUnitPlatform()
     // IntelliJ Platform tests must not require a display on CI or in unattended runs.
     systemProperty("java.awt.headless", "true")
+    // Settings UI screenshot evidence (build/ui-screenshots/*.png) is uploaded by CI.
+    systemProperty("aigit.ui.screenshots.dir",
+            layout.buildDirectory.dir("ui-screenshots").get().asFile.absolutePath)
 }
 
 tasks.named("check") {
