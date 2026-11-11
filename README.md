@@ -80,6 +80,8 @@ The project targets Java 17 and IntelliJ Platform 2024.1.
 
 `./gradlew check` also runs headless IntelliJ Platform integration tests (`BasePlatformTestCase`): the real IDE application services and HTTP stack are exercised against local mock endpoints, so provider behavior can be verified without API keys or a GUI.
 
+`SettingsUiScreenshotTest` renders the plugin settings panel to `build/ui-screenshots/settings-anthropic.png` in headless mode; GitHub Actions uploads it as the `ui-screenshots` artifact so pull requests can link visual evidence without requiring a GUI session.
+
 See [IDE compatibility](docs/compatibility.md) for supported IDE profiles and release verification steps.
 
 ## Support
