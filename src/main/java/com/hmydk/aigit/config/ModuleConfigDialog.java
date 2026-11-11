@@ -254,7 +254,8 @@ public class ModuleConfigDialog extends DialogWrapper {
             return;
         }
 
-        if (client.equals(Constants.Gemini) || client.equals(Constants.CloudflareWorkersAI)) {
+        if (client.equals(Constants.Gemini) || client.equals(Constants.CloudflareWorkersAI)
+                || client.equals(Constants.Anthropic)) {
             if (StringUtils.isEmpty(apiKey)) {
                 Messages.showErrorDialog("API Key cannot be empty", "Error");
                 return;

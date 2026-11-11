@@ -19,7 +19,7 @@
         </ul>
 
         <h3>Supported AI Services</h3>
-        <p>OrcaRouter, Google Gemini, DeepSeek, OpenAI API, OpenAI-compatible providers, OpenRouter, Ollama, Alibaba Cloud Model Studio, SiliconFlow, VolcEngine, Cloudflare Workers AI, and Kimi.</p>
+        <p>OrcaRouter, Google Gemini, Claude (Anthropic), DeepSeek, OpenAI API, OpenAI-compatible providers, OpenRouter, Ollama, Alibaba Cloud Model Studio, SiliconFlow, VolcEngine, Cloudflare Workers AI, and Kimi.</p>
 
         <h3>Getting Started</h3>
         <ol>

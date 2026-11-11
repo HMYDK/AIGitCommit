@@ -9,6 +9,7 @@ import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
 import com.hmydk.aigit.context.FileChangeType;
 import com.hmydk.aigit.context.ProjectInfo;
+import com.hmydk.aigit.service.impl.AnthropicService;
 import com.hmydk.aigit.service.impl.OrcaRouterService;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,22 @@ class CommitMessageServiceTest {
     @Test
     void resolvesOrcaRouterService() {
         assertTrue(CommitMessageService.getAIService(Constants.OrcaRouter) instanceof OrcaRouterService);
+    }
+
+    @Test
+    void providesAnthropicDefaults() {
+        assertTrue(List.of(Constants.LLM_CLIENTS).contains(Constants.Anthropic));
+        assertArrayEquals(
+                new String[]{"claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5", "claude-fable-5-2"},
+                Constants.CLIENT_MODULES.get(Constants.Anthropic)
+        );
+        assertEquals("https://api.anthropic.com/v1/messages",
+                Constants.moduleConfigs.get(Constants.Anthropic).getUrl());
+    }
+
+    @Test
+    void resolvesAnthropicService() {
+        assertTrue(CommitMessageService.getAIService(Constants.Anthropic) instanceof AnthropicService);
     }
 
     @Test
