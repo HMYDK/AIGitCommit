@@ -3,9 +3,9 @@ name: Build Plugin
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "dev-auto" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "dev-auto" ]
 
 permissions:
   contents: read
