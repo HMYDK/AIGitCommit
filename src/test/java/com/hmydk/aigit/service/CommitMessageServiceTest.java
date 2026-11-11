@@ -9,6 +9,7 @@ import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.context.FileChange;
 import com.hmydk.aigit.context.FileChangeType;
 import com.hmydk.aigit.context.ProjectInfo;
+import com.hmydk.aigit.service.impl.AnthropicService;
 import com.hmydk.aigit.service.impl.OrcaRouterService;
 import org.junit.jupiter.api.Test;
 
@@ -33,18 +34,19 @@ class CommitMessageServiceTest {
     }
 
     @Test
-    void registersAnthropicProvider() {
-        assertTrue(Arrays.stream(Constants.LLM_CLIENTS).anyMatch(client -> client.contains("Anthropic")));
-        assertTrue(Constants.moduleConfigs.values().stream()
-                .anyMatch(config -> "https://api.anthropic.com/v1/messages".equals(config.getUrl())));
-        assertTrue(Constants.CLIENT_MODULES.values().stream()
-                .anyMatch(models -> Arrays.asList(models).contains("claude-sonnet-5-5")));
+    void providesAnthropicDefaults() {
+        assertTrue(List.of(Constants.LLM_CLIENTS).contains(Constants.Anthropic));
+        assertArrayEquals(
+                new String[]{"claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5", "claude-fable-5-2"},
+                Constants.CLIENT_MODULES.get(Constants.Anthropic)
+        );
+        assertEquals("https://api.anthropic.com/v1/messages",
+                Constants.moduleConfigs.get(Constants.Anthropic).getUrl());
     }
 
     @Test
-    void resolvesAnthropicServiceByClientName() {
-        Object service = CommitMessageService.getAIService("Claude (Anthropic)");
-        assertEquals("AnthropicService", service.getClass().getSimpleName());
+    void resolvesAnthropicService() {
+        assertTrue(CommitMessageService.getAIService(Constants.Anthropic) instanceof AnthropicService);
     }
 
     @Test

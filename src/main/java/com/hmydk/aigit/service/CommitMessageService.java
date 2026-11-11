@@ -5,6 +5,7 @@ import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.context.AIPromptBuilder;
 import com.hmydk.aigit.context.CommitContext;
 import com.hmydk.aigit.service.impl.AliYunBaiLianService;
+import com.hmydk.aigit.service.impl.AnthropicService;
 import com.hmydk.aigit.service.impl.CloudflareWorkersAIService;
 import com.hmydk.aigit.service.impl.DeepSeekAPIService;
 import com.hmydk.aigit.service.impl.GeminiService;
@@ -121,6 +122,7 @@ public class CommitMessageService {
         return switch (selectedClient) {
             case Constants.Ollama -> new OllamaService();
             case Constants.Gemini -> new GeminiService();
+            case Constants.Anthropic -> new AnthropicService();
             case Constants.DeepSeek -> new DeepSeekAPIService();
             case Constants.OpenAI_API -> new OpenAIAPIService();
             case Constants.OpenAI_Compatible -> new OpenAICompatibleService();

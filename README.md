@@ -33,6 +33,7 @@ Project prompt files must contain the `{diff}` placeholder and may use `{languag
 
 - [OrcaRouter](https://www.orcarouter.ai/ref/ref_e708d0dd88ba83cbccde) (free models available)
 - [Google Gemini](https://aistudio.google.com/app/apikey)
+- [Claude (Anthropic)](https://console.anthropic.com/settings/keys) (official Messages API)
 - [DeepSeek](https://platform.deepseek.com/api_keys)
 - [OpenAI API](https://developers.openai.com/api/docs)
 - OpenAI-compatible providers with a custom endpoint, API key, and model ID

@@ -87,6 +87,7 @@ public class Constants {
     }
 
     public static final String Gemini = "Gemini";
+    public static final String Anthropic = "Claude (Anthropic)";
     public static final String DeepSeek = "DeepSeek";
     public static final String Ollama = "Ollama";
     public static final String OpenAI_API = "OpenAI API";
@@ -99,7 +100,7 @@ public class Constants {
     public static final String VolcEngine = "火山引擎(VolcEngine)";
     public static final String Kimi = "Kimi(Moonshot AI)";
     public static final String[] LLM_CLIENTS = {
-            Gemini, DeepSeek, OpenAI_API, OpenAI_Compatible, OpenRouter, OrcaRouter, Ollama,
+            Gemini, Anthropic, DeepSeek, OpenAI_API, OpenAI_Compatible, OpenRouter, OrcaRouter, Ollama,
             阿里云百炼, SiliconFlow, VolcEngine, CloudflareWorkersAI, Kimi
     };
 
@@ -107,6 +108,7 @@ public class Constants {
         {
             put(DeepSeek, new String[]{"deepseek-chat"});
             put(Gemini, new String[]{"gemini-3.1-pro-preview", "gemini-3-flash-preview", "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-flash-latest"});
+            put(Anthropic, new String[]{"claude-sonnet-5-5", "claude-haiku-5-5", "claude-opus-5-5", "claude-fable-5-2"});
             put(OpenAI_API, new String[]{""});
             put(OpenAI_Compatible, new String[]{""});
             put(SiliconFlow, new String[]{"deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-V2.5", "Qwen/Qwen2.5-Coder-32B-Instruct"});
@@ -129,6 +131,7 @@ public class Constants {
     public static Map<String, ApiKeySettings.ModuleConfig> moduleConfigs = new HashMap<>() {
         {
             put(Gemini, new ApiKeySettings.ModuleConfig("https://generativelanguage.googleapis.com/v1beta/models", ""));
+            put(Anthropic, new ApiKeySettings.ModuleConfig("https://api.anthropic.com/v1/messages", ""));
             put(DeepSeek, new ApiKeySettings.ModuleConfig("https://api.deepseek.com/chat/completions", ""));
             put(Ollama, new ApiKeySettings.ModuleConfig("http://localhost:11434/api/generate", ""));
             put(OpenAI_API, new ApiKeySettings.ModuleConfig("https://{host}/v1/chat/completions", ""));
@@ -147,6 +150,7 @@ public class Constants {
     public static final Map<String, String> CLIENT_HELP_URLS = new HashMap<>() {
         {
             put(Constants.Gemini, "https://aistudio.google.com/app/apikey");
+            put(Constants.Anthropic, "https://platform.claude.com/docs/en/about-claude/models/overview");
             put(Constants.DeepSeek, "https://platform.deepseek.com/api_keys");
             put(Constants.CloudflareWorkersAI, "https://developers.cloudflare.com/workers-ai/get-started/rest-api");
             put(Constants.阿里云百炼, "https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key?spm=0.0.0.i7");
@@ -164,6 +168,11 @@ public class Constants {
         return switch (client) {
             case Gemini ->
                     "<html>Get your API key from <a href='https://aistudio.google.com/app/apikey'>Google AI Studio</a></html>";
+            case Anthropic -> "<html>" +
+                    "<li>Get your API key from the <a href='https://console.anthropic.com/settings/keys'>Anthropic Console</a>.</li>" +
+                    "<li>Uses the official Anthropic Messages API (api.anthropic.com), not an OpenAI-compatible endpoint.</li>" +
+                    "<li>Current models include: claude-sonnet-5-5, claude-haiku-5-5, claude-opus-5-5, claude-fable-5-2.</li>" +
+                    "</html>";
             case DeepSeek -> "<html>" +
                     "<li>Get your API key from <a href='https://platform.deepseek.com/api_keys'>platform.deepseek.com</a></li>" +
                     "<li>Current model is deepseek-v3.</li>" +
