@@ -78,6 +78,8 @@ The project targets Java 17 and IntelliJ Platform 2024.1.
 ./gradlew buildPlugin
 ```
 
+`./gradlew check` also runs headless IntelliJ Platform integration tests (`BasePlatformTestCase`): the real IDE application services and HTTP stack are exercised against local mock endpoints, so provider behavior can be verified without API keys or a GUI.
+
 See [IDE compatibility](docs/compatibility.md) for supported IDE profiles and release verification steps.
 
 ## Support
