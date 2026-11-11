@@ -33,6 +33,21 @@ class CommitMessageServiceTest {
     }
 
     @Test
+    void registersAnthropicProvider() {
+        assertTrue(Arrays.stream(Constants.LLM_CLIENTS).anyMatch(client -> client.contains("Anthropic")));
+        assertTrue(Constants.moduleConfigs.values().stream()
+                .anyMatch(config -> "https://api.anthropic.com/v1/messages".equals(config.getUrl())));
+        assertTrue(Constants.CLIENT_MODULES.values().stream()
+                .anyMatch(models -> Arrays.asList(models).contains("claude-sonnet-5-5")));
+    }
+
+    @Test
+    void resolvesAnthropicServiceByClientName() {
+        Object service = CommitMessageService.getAIService("Claude (Anthropic)");
+        assertEquals("AnthropicService", service.getClass().getSimpleName());
+    }
+
+    @Test
     void providesOrcaRouterDefaults() {
         assertTrue(List.of(Constants.LLM_CLIENTS).contains(Constants.OrcaRouter));
         assertArrayEquals(
