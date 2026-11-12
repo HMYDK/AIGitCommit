@@ -19,6 +19,7 @@ AI Git Commit is a JetBrains IDE plugin that analyzes the changes selected in th
 
 - Generate commit messages from selected files, unversioned files, and selected commit hunks.
 - Compact large change sets automatically to stay within model context limits.
+- Send only the lines that actually changed: the prompt contains a minimal unified diff, so a one-line edit in a large file is not expanded into a whole-file diff.
 - Choose the output language and use editable model IDs.
 - Create, edit, and reuse multiple custom prompt templates.
 - Load a project-specific prompt from `commit-prompt.txt` in the project root.
