@@ -27,8 +27,11 @@ class FileChangeLineDiffTest {
         List<String> inserted = new ArrayList<>(original);
         inserted.add(10, "inserted line");
 
-        String diff = diffFor(String.join("\n", original), String.join("\n", inserted));
+        FileChange change = fileChangeFor(String.join("\n", original), String.join("\n", inserted));
+        String diff = change.getDiffContent();
 
+        assertEquals(1, change.getLinesAdded(), "inserted line count");
+        assertEquals(0, change.getLinesDeleted(), "deleted line count");
         assertTrue(diff.contains("+inserted line"), () -> "missing inserted line in:\n" + diff);
         assertFalse(diff.contains("-line-150"), () -> "unchanged line reported as deleted in:\n" + diff);
         assertFalse(diff.contains("+line-150"), () -> "unchanged line reported as added in:\n" + diff);
@@ -42,8 +45,11 @@ class FileChangeLineDiffTest {
         List<String> modified = new ArrayList<>(original);
         modified.set(149, "line-150 changed");
 
-        String diff = diffFor(String.join("\n", original), String.join("\n", modified));
+        FileChange change = fileChangeFor(String.join("\n", original), String.join("\n", modified));
+        String diff = change.getDiffContent();
 
+        assertEquals(1, change.getLinesAdded(), "added line count");
+        assertEquals(1, change.getLinesDeleted(), "deleted line count");
         assertTrue(diff.contains("-line-150"), () -> "missing deleted line in:\n" + diff);
         assertTrue(diff.contains("+line-150 changed"), () -> "missing added line in:\n" + diff);
         assertEquals(2, countChangedLines(diff),
@@ -56,8 +62,11 @@ class FileChangeLineDiffTest {
         List<String> removed = new ArrayList<>(original);
         removed.remove(149);
 
-        String diff = diffFor(String.join("\n", original), String.join("\n", removed));
+        FileChange change = fileChangeFor(String.join("\n", original), String.join("\n", removed));
+        String diff = change.getDiffContent();
 
+        assertEquals(0, change.getLinesAdded(), "added line count");
+        assertEquals(1, change.getLinesDeleted(), "deleted line count");
         assertTrue(diff.contains("-line-150"), () -> "missing deleted line in:\n" + diff);
         assertEquals(1, countChangedLines(diff),
                 "a one-line deletion must produce exactly one changed diff line, but got:\n" + diff);
@@ -69,22 +78,25 @@ class FileChangeLineDiffTest {
         List<String> modified = new ArrayList<>(original);
         modified.set(49, "line-050 changed");
 
-        String diff = diffFor(String.join("\r\n", original), String.join("\n", modified));
+        FileChange change = fileChangeFor(String.join("\r\n", original), String.join("\n", modified));
+        String diff = change.getDiffContent();
 
+        assertEquals(1, change.getLinesAdded(), "added line count");
+        assertEquals(1, change.getLinesDeleted(), "deleted line count");
         assertTrue(diff.contains("-line-050"), () -> "missing deleted line in:\n" + diff);
         assertTrue(diff.contains("+line-050 changed"), () -> "missing added line in:\n" + diff);
         assertEquals(2, countChangedLines(diff),
                 "CRLF/LF normalization must not report every line as changed, but got:\n" + diff);
     }
 
-    private String diffFor(String beforeContent, String afterContent) {
+    private FileChange fileChangeFor(String beforeContent, String afterContent) {
         FilePath path = filePath("/repo/src/Example.java");
         Change change = new Change(revision(path, beforeContent), revision(path, afterContent));
 
         List<FileChange> changes = FileChange.fromGitChanges(List.of(change), List.of());
 
         assertEquals(1, changes.size());
-        return changes.get(0).getDiffContent();
+        return changes.get(0);
     }
 
     private static List<String> numberedLines(int fromInclusive, int toInclusive) {

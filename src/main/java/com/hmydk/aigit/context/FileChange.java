@@ -75,13 +75,13 @@ public class FileChange {
             String extension = extractExtension(path);
             String language = determineLanguage(path, extension);
             
-            // 计算行数变更
-            int[] lineChanges = calculateLineChanges(change);
-            int linesAdded = lineChanges[0];
-            int linesDeleted = lineChanges[1];
-            
             // 生成diff内容
             String diffContent = generateDiffContent(change, type);
+
+            // 行数统计直接来自真实 diff，避免 summary/statistics 与 full_diff_content 自相矛盾
+            int[] lineChanges = countDiffLines(diffContent);
+            int linesAdded = lineChanges[0];
+            int linesDeleted = lineChanges[1];
             
             // 生成摘要
             String summary = generateSummary(path, type, linesAdded, linesDeleted);
@@ -184,54 +184,34 @@ public class FileChange {
         }
     }
     
-    private static int[] calculateLineChanges(Change change) {
-        // 简化的行数计算，实际项目中可以使用更精确的diff算法
-        try {
-            ContentRevision before = change.getBeforeRevision();
-            ContentRevision after = change.getAfterRevision();
-            
-            if (before == null && after != null) {
-                // 新增文件
-                String content = after.getContent();
-                int lines = content != null ? content.split("\n").length : 0;
-                return new int[]{lines, 0};
+    private static int[] countDiffLines(String diffContent) {
+        int added = 0;
+        int deleted = 0;
+        boolean sawBeforeHeader = false;
+        boolean sawAfterHeader = false;
+        for (String line : diffContent.split("\n")) {
+            if (line.startsWith("@@")) {
+                continue;
             }
-            
-            if (before != null && after == null) {
-                // 删除文件
-                String content = before.getContent();
-                int lines = content != null ? content.split("\n").length : 0;
-                return new int[]{0, lines};
+            // The first "--- "/"+++ " line is the file header; content lines that happen to start
+            // with the same characters (e.g. "++ x") are real additions and must still be counted.
+            if (!sawBeforeHeader && line.startsWith("--- ")) {
+                sawBeforeHeader = true;
+                continue;
             }
-            
-            if (before != null && after != null) {
-                // 修改文件 - 简化计算
-                String beforeContent = before.getContent();
-                String afterContent = after.getContent();
-                
-                if (beforeContent == null || afterContent == null) {
-                    return new int[]{0, 0};
-                }
-                
-                int beforeLines = beforeContent.split("\n").length;
-                int afterLines = afterContent.split("\n").length;
-                
-                if (afterLines > beforeLines) {
-                    return new int[]{afterLines - beforeLines, 0};
-                } else if (beforeLines > afterLines) {
-                    return new int[]{0, beforeLines - afterLines};
-                } else {
-                    // 行数相同，假设有修改
-                    return new int[]{1, 1};
-                }
+            if (!sawAfterHeader && line.startsWith("+++ ")) {
+                sawAfterHeader = true;
+                continue;
             }
-        } catch (Exception e) {
-            // 异常时返回默认值
+            if (line.startsWith("+")) {
+                added++;
+            } else if (line.startsWith("-")) {
+                deleted++;
+            }
         }
-        
-        return new int[]{0, 0};
+        return new int[]{added, deleted};
     }
-    
+
     private static String generateDiffContent(Change change, FileChangeType type) {
         String path = getChangePath(change);
         if (path == null) return "";
@@ -281,7 +261,7 @@ public class FileChange {
                         String beforeContent = before.getContent();
                         String afterContent = after.getContent();
                         if (beforeContent != null && afterContent != null && !beforeContent.equals(afterContent)) {
-                            diffBuilder.append(generateSimpleDiff(beforeContent, afterContent, path));
+                            diffBuilder.append(LineDiff.unified(path, beforeContent, afterContent));
                         }
                     }
                     break;
@@ -293,7 +273,7 @@ public class FileChange {
                         String beforeContent = before.getContent();
                         String afterContent = after.getContent();
                         if (beforeContent != null && afterContent != null) {
-                            diffBuilder.append(generateSimpleDiff(beforeContent, afterContent, path));
+                            diffBuilder.append(LineDiff.unified(path, beforeContent, afterContent));
                         }
                     }
                     break;
@@ -306,40 +286,6 @@ public class FileChange {
             return String.format("[%s]: %s\n(Error generating diff content: %s)\n", 
                                type.name(), path, e.getMessage());
         }
-    }
-    
-    /**
-     * 生成简单的diff内容
-     * Linus式实现：简单、直接、有效
-     */
-    private static String generateSimpleDiff(String beforeContent, String afterContent, String path) {
-        StringBuilder diff = new StringBuilder();
-        diff.append("--- a/").append(path).append("\n");
-        diff.append("+++ b/").append(path).append("\n");
-        
-        String[] beforeLines = beforeContent.split("\n");
-        String[] afterLines = afterContent.split("\n");
-        
-        // 简化的diff算法：显示所有变更
-        int maxLines = Math.max(beforeLines.length, afterLines.length);
-        
-        for (int i = 0; i < maxLines; i++) {
-            String beforeLine = i < beforeLines.length ? beforeLines[i] : null;
-            String afterLine = i < afterLines.length ? afterLines[i] : null;
-            
-            if (beforeLine != null && afterLine != null) {
-                if (!beforeLine.equals(afterLine)) {
-                    diff.append("-").append(beforeLine).append("\n");
-                    diff.append("+").append(afterLine).append("\n");
-                }
-            } else if (beforeLine != null) {
-                diff.append("-").append(beforeLine).append("\n");
-            } else if (afterLine != null) {
-                diff.append("+").append(afterLine).append("\n");
-            }
-        }
-        
-        return diff.toString();
     }
     
     private static String generateSummary(String path, FileChangeType type, int added, int deleted) {
