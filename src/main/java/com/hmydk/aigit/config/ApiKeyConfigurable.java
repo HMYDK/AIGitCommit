@@ -63,6 +63,8 @@ public class ApiKeyConfigurable implements Configurable {
         settings.setSelectedClient(selectedClient);
         settings.setSelectedModule(selectedModule);
         settings.setCommitLanguage(commitLanguage);
+        settings.setReasoningEffort(Constants.fromReasoningEffortOption(
+                (String) ui.getReasoningEffortComboBox().getSelectedItem()));
 
         // 保存prompt内容
         Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
@@ -94,6 +96,9 @@ public class ApiKeyConfigurable implements Configurable {
             ui.getClientComboBox().setSelectedItem(settings.getSelectedClient());
             ui.getModuleComboBox().setSelectedItem(settings.getSelectedModule());
             ui.getLanguageComboBox().setSelectedItem(settings.getCommitLanguage());
+            ui.getReasoningEffortComboBox().setSelectedItem(
+                    Constants.toReasoningEffortOption(settings.getReasoningEffort()));
+            ui.updateReasoningEffortState(settings.getSelectedClient());
 
             // 设置表格数据
             loadCustomPrompts();

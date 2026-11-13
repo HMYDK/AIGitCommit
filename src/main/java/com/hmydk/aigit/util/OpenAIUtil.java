@@ -43,13 +43,12 @@ public class OpenAIUtil {
 
     public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
             String textContent) throws IOException {
-        OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
-        openAIRequestBO.setModel(module);
-        openAIRequestBO.setStream(true);
-        openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
+        return getHttpURLConnection(url, module, apiKey, textContent, null);
+    }
 
-        ObjectMapper objectMapper1 = new ObjectMapper();
-        String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
+    public static @NotNull HttpURLConnection getHttpURLConnection(String url, String module, String apiKey,
+            String textContent, String reasoningEffort) throws IOException {
+        String jsonInputString = buildRequestBody(module, textContent, true, reasoningEffort);
 
         URI uri = URI.create(url);
         Proxy proxy = CommonUtil.getProxy(uri);
@@ -69,6 +68,24 @@ public class OpenAIUtil {
         return connection;
     }
 
+    /**
+     * Builds the OpenAI chat-completions request payload.
+     *
+     * <p>{@code reasoningEffort} is optional: null or blank leaves the field out entirely, so
+     * existing configurations keep the exact request shape they had before.</p>
+     */
+    static String buildRequestBody(String model, String textContent, boolean stream, String reasoningEffort)
+            throws IOException {
+        OpenAIRequestBO openAIRequestBO = new OpenAIRequestBO();
+        openAIRequestBO.setModel(model);
+        openAIRequestBO.setStream(stream);
+        openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
+        openAIRequestBO.setReasoningEffort(StringUtils.defaultIfBlank(reasoningEffort, null));
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(openAIRequestBO);
+    }
+
     public static void getAIResponseStream(String client, String content, Consumer<String> onNext,
             Consumer<Throwable> onError, Runnable onComplete) throws Exception {
         ApiKeySettings settings = ApiKeySettings.getInstance();
@@ -83,7 +100,8 @@ public class OpenAIUtil {
             modelToUse = moduleConfig.getModelId();
         }
 
-        HttpURLConnection connection = getHttpURLConnection(url, modelToUse, apiKey, content);
+        String reasoningEffort = settings.getReasoningEffort();
+        HttpURLConnection connection = getHttpURLConnection(url, modelToUse, apiKey, content, reasoningEffort);
         if (connection.getResponseCode() != 200) {
             // 读取错误响应
             StringBuilder response = new StringBuilder();

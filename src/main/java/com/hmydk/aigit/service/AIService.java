@@ -1,5 +1,6 @@
 package com.hmydk.aigit.service;
 
+import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.util.OpenAIUtil;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -26,7 +27,10 @@ public interface AIService {
     default Pair<Boolean, String> validateConfig(Map<String, String> config) {
         HttpURLConnection connection = null;
         try {
-            connection = OpenAIUtil.getHttpURLConnection(config.get("url"), config.get("module"), config.get("apiKey"), "hi");
+            ApiKeySettings settings = ApiKeySettings.getInstance();
+            String reasoningEffort = settings == null ? null : settings.getReasoningEffort();
+            connection = OpenAIUtil.getHttpURLConnection(config.get("url"), config.get("module"),
+                    config.get("apiKey"), "hi", reasoningEffort);
             if (connection.getResponseCode() != 200) {
                 // 读取错误响应
                 StringBuilder response = new StringBuilder();

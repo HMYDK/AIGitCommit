@@ -11,6 +11,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * Renders the plugin settings panel off-screen inside the real IntelliJ Platform test application
@@ -18,7 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * <p>The screenshot is produced without a GUI session: Swing components are laid out and painted
  * into a {@link BufferedImage} in headless mode. It gives reviewers a visual check of the settings
- * UI (for example, that a new provider appears in the client/module selectors) next to the test,
+ * UI (for example, that a new provider or request option appears in the settings) next to the test,
  * build, and CI evidence attached to a pull request.</p>
  */
 public class SettingsUiScreenshotTest extends BasePlatformTestCase {
@@ -27,6 +28,26 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
     private static final int SCREENSHOT_HEIGHT = 560;
 
     public void testRendersAnthropicProviderSettingsScreenshot() throws Exception {
+        writeScreenshot("settings-anthropic.png", configurableUI -> {
+            configurableUI.getClientComboBox().setSelectedItem(Constants.Anthropic);
+            configurableUI.getLanguageComboBox().setSelectedItem("Chinese");
+            assertFalse("the Anthropic Messages API does not use reasoning_effort",
+                    configurableUI.getReasoningEffortComboBox().isEnabled());
+        });
+    }
+
+    public void testRendersReasoningEffortSettingsScreenshot() throws Exception {
+        writeScreenshot("settings-reasoning-effort.png", configurableUI -> {
+            configurableUI.getClientComboBox().setSelectedItem(Constants.OpenAI_Compatible);
+            configurableUI.getLanguageComboBox().setSelectedItem("English");
+            configurableUI.getReasoningEffortComboBox().setSelectedItem("high");
+            assertTrue("OpenAI-format providers must expose the reasoning effort control",
+                    configurableUI.getReasoningEffortComboBox().isEnabled());
+            assertEquals("high", configurableUI.getReasoningEffortComboBox().getSelectedItem());
+        });
+    }
+
+    private void writeScreenshot(String fileName, Consumer<ApiKeyConfigurableUI> customizer) throws Exception {
         File outputDir = screenshotDirectory();
         AtomicReference<BufferedImage> imageRef = new AtomicReference<>();
         AtomicReference<Throwable> errorRef = new AtomicReference<>();
@@ -34,8 +55,7 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
         ApplicationManager.getApplication().invokeAndWait(() -> {
             try {
                 ApiKeyConfigurableUI configurableUI = new ApiKeyConfigurableUI();
-                configurableUI.getClientComboBox().setSelectedItem(Constants.Anthropic);
-                configurableUI.getLanguageComboBox().setSelectedItem("Chinese");
+                customizer.accept(configurableUI);
 
                 JPanel panel = configurableUI.getMainPanel();
                 panel.setSize(SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT);
@@ -67,7 +87,7 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
         BufferedImage image = imageRef.get();
         assertNotNull("settings panel was not rendered", image);
 
-        File output = new File(outputDir, "settings-anthropic.png");
+        File output = new File(outputDir, fileName);
         ImageIO.write(image, "png", output);
         assertTrue("screenshot file was not written: " + output.getAbsolutePath(), output.isFile());
         assertTrue("screenshot file is empty: " + output.getAbsolutePath(), output.length() > 0);
