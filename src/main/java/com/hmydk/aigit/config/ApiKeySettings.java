@@ -38,6 +38,9 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     private boolean useSystemProxy = false; // 是否使用系统代理
 
+    // 可选的 OpenAI reasoning_effort（low/medium/high）；空值表示不发送该字段
+    private String reasoningEffort = "";
+
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
     }
@@ -145,6 +148,14 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     public void setUseSystemProxy(boolean useSystemProxy) {
         this.useSystemProxy = useSystemProxy;
+    }
+
+    public String getReasoningEffort() {
+        return reasoningEffort;
+    }
+
+    public void setReasoningEffort(String reasoningEffort) {
+        this.reasoningEffort = reasoningEffort;
     }
 
     public static class ModuleConfig {

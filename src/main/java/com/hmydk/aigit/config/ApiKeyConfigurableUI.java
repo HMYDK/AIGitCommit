@@ -35,6 +35,7 @@ public class ApiKeyConfigurableUI {
     private ComboBox<String> clientComboBox;
     private ComboBox<String> moduleComboBox;
     private ComboBox<String> languageComboBox;
+    private ComboBox<String> reasoningEffortComboBox;
     private JBCheckBox useSystemProxyCheckBox;
     private JButton configButton;
     private JPanel clientPanel;
@@ -85,6 +86,9 @@ public class ApiKeyConfigurableUI {
         languageComboBox = new ComboBox<>(Constants.languages);
         languageComboBox.setEditable(true);
         languageComboBox.setSelectedItem("English");
+
+        reasoningEffortComboBox = new ComboBox<>(Constants.REASONING_EFFORT_OPTIONS);
+        reasoningEffortComboBox.setToolTipText(Constants.REASONING_EFFORT_HELP_TEXT);
 
         useSystemProxyCheckBox = new JBCheckBox("Use System Proxy (Default Off)");
 
@@ -290,6 +294,7 @@ public class ApiKeyConfigurableUI {
         clientComboBox.addActionListener(e -> {
             String selectedClient = (String) clientComboBox.getSelectedItem();
             updateModuleComboBox(selectedClient);
+            updateReasoningEffortState(selectedClient);
         });
         configButton.addActionListener(e -> showModuleConfigDialog());
 
@@ -370,14 +375,24 @@ public class ApiKeyConfigurableUI {
         addComponent(panel, languagePanel, gbc, 0, 3, 0.0);
         addComponent(panel, languageComboBox, gbc, 1, 3, 1.0);
 
-        addComponent(panel, new JBLabel("Network: "), gbc, 0, 4, 0.0);
-        addComponent(panel, useSystemProxyCheckBox, gbc, 1, 4, 1.0);
+        JPanel reasoningPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel reasoningLabel = new JBLabel("Reasoning effort: ");
+        JBLabel reasoningHelpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        reasoningHelpIcon.setToolTipText(Constants.REASONING_EFFORT_HELP_TEXT);
+        reasoningPanel.add(reasoningLabel);
+        reasoningPanel.add(reasoningHelpIcon);
+
+        addComponent(panel, reasoningPanel, gbc, 0, 4, 0.0);
+        addComponent(panel, reasoningEffortComboBox, gbc, 1, 4, 1.0);
+
+        addComponent(panel, new JBLabel("Network: "), gbc, 0, 5, 0.0);
+        addComponent(panel, useSystemProxyCheckBox, gbc, 1, 5, 1.0);
 
         // 添加一个空的面板来填充剩余空间
         gbc.gridwidth = 2;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        addComponent(panel, new JPanel(), gbc, 0, 5, 1.0);
+        addComponent(panel, new JPanel(), gbc, 0, 6, 1.0);
 
         return panel;
     }
@@ -424,6 +439,14 @@ public class ApiKeyConfigurableUI {
         gbc.gridy = gridy;
         gbc.weightx = weightx;
         parent.add(component, gbc);
+    }
+
+    void updateReasoningEffortState(String selectedClient) {
+        boolean supported = Constants.supportsReasoningEffort(selectedClient);
+        reasoningEffortComboBox.setEnabled(supported);
+        reasoningEffortComboBox.setToolTipText(supported
+                ? Constants.REASONING_EFFORT_HELP_TEXT
+                : "<html>This provider does not use the OpenAI <code>reasoning_effort</code> field.</html>");
     }
 
     private void updateModuleComboBox(String selectedClient) {
@@ -489,6 +512,10 @@ public class ApiKeyConfigurableUI {
 
     public JBCheckBox getUseSystemProxyCheckBox() {
         return useSystemProxyCheckBox;
+    }
+
+    public ComboBox<String> getReasoningEffortComboBox() {
+        return reasoningEffortComboBox;
     }
 
     // 文件忽略功能的getter方法

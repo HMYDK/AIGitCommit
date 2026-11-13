@@ -19,6 +19,17 @@ public class Constants {
     public static final String[] languages = {"English", "Chinese", "Japanese", "Korean", "French", "Spanish",
             "German", "Russian", "Arabic", "Portuguese"};
 
+    // 可选的 OpenAI reasoning_effort 设置（issue #92）
+    public static final String REASONING_EFFORT_DEFAULT_LABEL = "Default (not sent)";
+    public static final String[] REASONING_EFFORT_LEVELS = {"low", "medium", "high"};
+    public static final String[] REASONING_EFFORT_OPTIONS = {
+            REASONING_EFFORT_DEFAULT_LABEL, "low", "medium", "high"
+    };
+    public static final String REASONING_EFFORT_HELP_TEXT =
+            "<html>Optional OpenAI <code>reasoning_effort</code> request field (low / medium / high).<br/>" +
+            "Default (not sent) keeps the previous request unchanged.<br/>" +
+            "Only OpenAI-format providers send it; enable it only for models that support it.</html>";
+
     public static final String PROJECT_PROMPT_FILE_NAME = "commit-prompt.txt";
     public static final String PROJECT_PROMPT = "Project Prompt";
     public static final String CUSTOM_PROMPT = "Custom Prompt";
@@ -216,5 +227,42 @@ public class Constants {
                     "</html>";
             default -> "";
         };
+    }
+
+    /**
+     * Whether the configured {@code reasoning_effort} value is sent for this client. Only clients
+     * that talk to an OpenAI chat-completions endpoint use the field; Gemini, Claude (Messages API),
+     * Ollama, and Cloudflare Workers AI use different request formats.
+     */
+    public static boolean supportsReasoningEffort(String client) {
+        return !(Gemini.equals(client)
+                || Anthropic.equals(client)
+                || Ollama.equals(client)
+                || CloudflareWorkersAI.equals(client));
+    }
+
+    /**
+     * Maps a persisted reasoning effort value to the matching settings option label.
+     */
+    public static String toReasoningEffortOption(String value) {
+        if (value != null) {
+            String trimmed = value.trim();
+            for (String level : REASONING_EFFORT_LEVELS) {
+                if (level.equals(trimmed)) {
+                    return trimmed;
+                }
+            }
+        }
+        return REASONING_EFFORT_DEFAULT_LABEL;
+    }
+
+    /**
+     * Maps a settings option label back to the persisted value; an empty string means "not sent".
+     */
+    public static String fromReasoningEffortOption(String option) {
+        if (option == null || REASONING_EFFORT_DEFAULT_LABEL.equals(option)) {
+            return "";
+        }
+        return option.trim();
     }
 }

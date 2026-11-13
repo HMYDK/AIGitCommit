@@ -31,6 +31,8 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
         writeScreenshot("settings-anthropic.png", configurableUI -> {
             configurableUI.getClientComboBox().setSelectedItem(Constants.Anthropic);
             configurableUI.getLanguageComboBox().setSelectedItem("Chinese");
+            assertFalse("the Anthropic Messages API does not use reasoning_effort",
+                    configurableUI.getReasoningEffortComboBox().isEnabled());
         });
     }
 
@@ -39,6 +41,9 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
             configurableUI.getClientComboBox().setSelectedItem(Constants.OpenAI_Compatible);
             configurableUI.getLanguageComboBox().setSelectedItem("English");
             configurableUI.getReasoningEffortComboBox().setSelectedItem("high");
+            assertTrue("OpenAI-format providers must expose the reasoning effort control",
+                    configurableUI.getReasoningEffortComboBox().isEnabled());
+            assertEquals("high", configurableUI.getReasoningEffortComboBox().getSelectedItem());
         });
     }
 
