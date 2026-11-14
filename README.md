@@ -22,6 +22,7 @@ AI Git Commit is a JetBrains IDE plugin that analyzes the changes selected in th
 - Send only the lines that actually changed: the prompt contains a minimal unified diff, so a one-line edit in a large file is not expanded into a whole-file diff.
 - Choose the output language and use editable model IDs.
 - Optionally send OpenAI's `reasoning_effort` (`low`, `medium`, or `high`) for OpenAI-format providers.
+- Tune the request timeout (1–600 seconds) and the maximum prompt size (1,000–200,000 characters) to match your provider and change-set size.
 - Create, edit, and reuse multiple custom prompt templates.
 - Load a project-specific prompt from `commit-prompt.txt` in the project root.
 - Exclude generated files, lock files, build output, or custom wildcard patterns.
@@ -64,7 +65,7 @@ Install it from the [JetBrains Marketplace](https://plugins.jetbrains.com/plugin
 1. Open **Settings/Preferences > Tools > AI Git Commit**.
 2. Select an AI provider, model, and commit-message language.
 3. Open the provider settings, then enter the endpoint and API key if required.
-4. Optionally configure the reasoning effort, custom prompts, file filtering, and the system proxy.
+4. Optionally configure the reasoning effort, request timeout, prompt size, custom prompts, file filtering, and the system proxy.
 5. In the Commit tool window, select the changes to include and choose **Generate AI Commit Message**.
 
 ## Reasoning effort
@@ -72,6 +73,15 @@ Install it from the [JetBrains Marketplace](https://plugins.jetbrains.com/plugin
 Providers that use the OpenAI chat-completions format accept an optional `reasoning_effort` field, which trades response quality against latency and cost on reasoning models. Select `low`, `medium`, or `high` under **Settings/Preferences > Tools > AI Git Commit > Reasoning effort**; the value is forwarded verbatim in the request body.
 
 **Default (not sent)** keeps the previous request shape unchanged. Only enable a level for models that support the field — unsupported models answer with the provider's own error message (for example, an unsupported-parameter 400). Gemini, Claude (Anthropic Messages API), Ollama, and Cloudflare Workers AI use different request formats, so the control is disabled for them.
+
+## Request timeout and prompt size
+
+Large change sets and slow reasoning models can take longer than the built-in HTTP timeout, which previously was a fixed value in the plugin. Under **Settings/Preferences > Tools > AI Git Commit** you can now set:
+
+- **Request timeout (s)** — 1 to 600 seconds (default 60). It applies to both the connection and the response read of every provider, so a slow model can finish instead of failing with `Read timed out`.
+- **Max prompt size (chars)** — 1,000 to 200,000 characters (default 20,000). The commit action uses this budget to decide when to compact a change set: it keeps the full diff while the prompt fits, then falls back to compact and summary modes. Raising the limit sends more detail to the model; lowering it reduces latency and token usage.
+
+Both values are stored in the plugin settings and are applied on the next generation request; no IDE restart is required.
 
 ## Privacy
 

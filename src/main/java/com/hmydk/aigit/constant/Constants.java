@@ -30,6 +30,25 @@ public class Constants {
             "Default (not sent) keeps the previous request unchanged.<br/>" +
             "Only OpenAI-format providers send it; enable it only for models that support it.</html>";
 
+    // 可调的请求超时与 prompt 体积上限（issue #96）
+    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 60;
+    public static final int MIN_REQUEST_TIMEOUT_SECONDS = 1;
+    public static final int MAX_REQUEST_TIMEOUT_SECONDS = 600;
+    public static final int REQUEST_TIMEOUT_STEP_SECONDS = 5;
+    public static final String REQUEST_TIMEOUT_HELP_TEXT =
+            "<html>Maximum time to wait for the AI provider, in seconds (1-600).<br/>" +
+            "It is applied to both the connection and the response read.<br/>" +
+            "Raise it when a slow model reports a read timeout; lower it to fail fast.</html>";
+
+    public static final int DEFAULT_MAX_PROMPT_CHARACTERS = 20_000;
+    public static final int MIN_MAX_PROMPT_CHARACTERS = 1_000;
+    public static final int MAX_MAX_PROMPT_CHARACTERS = 200_000;
+    public static final int MAX_PROMPT_CHARACTERS_STEP = 1_000;
+    public static final String MAX_PROMPT_HELP_TEXT =
+            "<html>Maximum size of the prompt sent to the model, in characters (1,000-200,000).<br/>" +
+            "The plugin still compacts large change sets automatically;<br/>" +
+            "a larger budget keeps more diff detail, a smaller one reduces latency and token usage.</html>";
+
     public static final String PROJECT_PROMPT_FILE_NAME = "commit-prompt.txt";
     public static final String PROJECT_PROMPT = "Project Prompt";
     public static final String CUSTOM_PROMPT = "Custom Prompt";

@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class CommitMessageService {
-    static final int MAX_PROMPT_LENGTH = 20_000;
+    static final int MAX_PROMPT_LENGTH = Constants.DEFAULT_MAX_PROMPT_CHARACTERS;
     static final int SUMMARY_FILE_LIMIT = 60;
 
     private final AIService aiService;
@@ -83,7 +83,9 @@ public class CommitMessageService {
     }
 
     ResolvedPrompt resolvePrompt(Project project, CommitContext context) {
-        return resolvePrompt(context, aiInput -> PromptUtil.constructPrompt(project, aiInput), MAX_PROMPT_LENGTH);
+        // 用户可在设置中调整 prompt 体积上限（issue #96）；默认值保持 20000。
+        return resolvePrompt(context, aiInput -> PromptUtil.constructPrompt(project, aiInput),
+                settings.getMaxPromptCharacters());
     }
 
     static ResolvedPrompt resolvePrompt(CommitContext context,

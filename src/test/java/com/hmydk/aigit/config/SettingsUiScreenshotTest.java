@@ -47,6 +47,19 @@ public class SettingsUiScreenshotTest extends BasePlatformTestCase {
         });
     }
 
+    public void testRendersRequestLimitsSettingsScreenshot() throws Exception {
+        writeScreenshot("settings-request-limits.png", configurableUI -> {
+            configurableUI.getClientComboBox().setSelectedItem(Constants.OpenAI_Compatible);
+            configurableUI.getLanguageComboBox().setSelectedItem("English");
+            configurableUI.getRequestTimeoutSpinner().setValue(120);
+            configurableUI.getMaxPromptCharactersSpinner().setValue(40_000);
+            assertEquals("the timeout spinner must accept a value in its supported range",
+                    120, ((Number) configurableUI.getRequestTimeoutSpinner().getValue()).intValue());
+            assertEquals("the prompt size spinner must accept a value in its supported range",
+                    40_000, ((Number) configurableUI.getMaxPromptCharactersSpinner().getValue()).intValue());
+        });
+    }
+
     private void writeScreenshot(String fileName, Consumer<ApiKeyConfigurableUI> customizer) throws Exception {
         File outputDir = screenshotDirectory();
         AtomicReference<BufferedImage> imageRef = new AtomicReference<>();

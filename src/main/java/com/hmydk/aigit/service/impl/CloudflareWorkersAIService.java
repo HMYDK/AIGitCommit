@@ -118,8 +118,7 @@ public class CloudflareWorkersAIService implements AIService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Authorization", "Bearer " + apiKey);
         connection.setDoOutput(true);
-        connection.setConnectTimeout(20000);
-        connection.setReadTimeout(20000);
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);

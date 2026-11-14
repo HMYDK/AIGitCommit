@@ -39,8 +39,6 @@ public class AnthropicService implements AIService {
     static final String ANTHROPIC_VERSION = "2023-06-01";
     static final int DEFAULT_MAX_TOKENS = 1024;
     static final int VALIDATION_MAX_TOKENS = 1;
-    static final int CONNECT_TIMEOUT_MS = 30_000;
-    static final int READ_TIMEOUT_MS = 60_000;
 
     private static final String SSE_DATA_PREFIX = "data: ";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -247,8 +245,7 @@ public class AnthropicService implements AIService {
         connection.setRequestProperty("x-api-key", StringUtils.defaultString(request.apiKey()));
         connection.setRequestProperty("anthropic-version", ANTHROPIC_VERSION);
         connection.setDoOutput(true);
-        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-        connection.setReadTimeout(READ_TIMEOUT_MS);
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
