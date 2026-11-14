@@ -143,8 +143,7 @@ public class GeminiService implements AIService {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
-        connection.setConnectTimeout(10000); // 连接超时：10秒
-        connection.setReadTimeout(10000); // 读取超时：10秒
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
@@ -174,8 +173,7 @@ public class GeminiService implements AIService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
-        connection.setConnectTimeout(30000); // 连接超时：30秒
-        connection.setReadTimeout(30000); // 读取超时：30秒
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);

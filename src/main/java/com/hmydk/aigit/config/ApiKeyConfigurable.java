@@ -65,6 +65,8 @@ public class ApiKeyConfigurable implements Configurable {
         settings.setCommitLanguage(commitLanguage);
         settings.setReasoningEffort(Constants.fromReasoningEffortOption(
                 (String) ui.getReasoningEffortComboBox().getSelectedItem()));
+        settings.setRequestTimeoutSeconds(((Number) ui.getRequestTimeoutSpinner().getValue()).intValue());
+        settings.setMaxPromptCharacters(((Number) ui.getMaxPromptCharactersSpinner().getValue()).intValue());
 
         // 保存prompt内容
         Object selectedPromptType = ui.getPromptTypeComboBox().getSelectedItem();
@@ -98,6 +100,8 @@ public class ApiKeyConfigurable implements Configurable {
             ui.getLanguageComboBox().setSelectedItem(settings.getCommitLanguage());
             ui.getReasoningEffortComboBox().setSelectedItem(
                     Constants.toReasoningEffortOption(settings.getReasoningEffort()));
+            ui.getRequestTimeoutSpinner().setValue(settings.getRequestTimeoutSeconds());
+            ui.getMaxPromptCharactersSpinner().setValue(settings.getMaxPromptCharacters());
             ui.updateReasoningEffortState(settings.getSelectedClient());
 
             // 设置表格数据

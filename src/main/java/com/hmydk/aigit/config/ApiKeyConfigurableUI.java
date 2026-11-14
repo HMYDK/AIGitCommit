@@ -36,6 +36,8 @@ public class ApiKeyConfigurableUI {
     private ComboBox<String> moduleComboBox;
     private ComboBox<String> languageComboBox;
     private ComboBox<String> reasoningEffortComboBox;
+    private JSpinner requestTimeoutSpinner;
+    private JSpinner maxPromptCharactersSpinner;
     private JBCheckBox useSystemProxyCheckBox;
     private JButton configButton;
     private JPanel clientPanel;
@@ -89,6 +91,22 @@ public class ApiKeyConfigurableUI {
 
         reasoningEffortComboBox = new ComboBox<>(Constants.REASONING_EFFORT_OPTIONS);
         reasoningEffortComboBox.setToolTipText(Constants.REASONING_EFFORT_HELP_TEXT);
+
+        requestTimeoutSpinner = new JSpinner(new SpinnerNumberModel(
+                Constants.DEFAULT_REQUEST_TIMEOUT_SECONDS,
+                Constants.MIN_REQUEST_TIMEOUT_SECONDS,
+                Constants.MAX_REQUEST_TIMEOUT_SECONDS,
+                Constants.REQUEST_TIMEOUT_STEP_SECONDS));
+        requestTimeoutSpinner.setToolTipText(Constants.REQUEST_TIMEOUT_HELP_TEXT);
+        ((JSpinner.DefaultEditor) requestTimeoutSpinner.getEditor()).getTextField().setColumns(6);
+
+        maxPromptCharactersSpinner = new JSpinner(new SpinnerNumberModel(
+                Constants.DEFAULT_MAX_PROMPT_CHARACTERS,
+                Constants.MIN_MAX_PROMPT_CHARACTERS,
+                Constants.MAX_MAX_PROMPT_CHARACTERS,
+                Constants.MAX_PROMPT_CHARACTERS_STEP));
+        maxPromptCharactersSpinner.setToolTipText(Constants.MAX_PROMPT_HELP_TEXT);
+        ((JSpinner.DefaultEditor) maxPromptCharactersSpinner.getEditor()).getTextField().setColumns(8);
 
         useSystemProxyCheckBox = new JBCheckBox("Use System Proxy (Default Off)");
 
@@ -385,14 +403,38 @@ public class ApiKeyConfigurableUI {
         addComponent(panel, reasoningPanel, gbc, 0, 4, 0.0);
         addComponent(panel, reasoningEffortComboBox, gbc, 1, 4, 1.0);
 
-        addComponent(panel, new JBLabel("Network: "), gbc, 0, 5, 0.0);
-        addComponent(panel, useSystemProxyCheckBox, gbc, 1, 5, 1.0);
+        JPanel requestTimeoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel requestTimeoutLabel = new JBLabel("Request timeout (s): ");
+        JBLabel requestTimeoutHelpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        requestTimeoutHelpIcon.setToolTipText(Constants.REQUEST_TIMEOUT_HELP_TEXT);
+        requestTimeoutPanel.add(requestTimeoutLabel);
+        requestTimeoutPanel.add(requestTimeoutHelpIcon);
+        JPanel requestTimeoutFieldPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        requestTimeoutFieldPanel.add(requestTimeoutSpinner);
+
+        addComponent(panel, requestTimeoutPanel, gbc, 0, 5, 0.0);
+        addComponent(panel, requestTimeoutFieldPanel, gbc, 1, 5, 1.0);
+
+        JPanel maxPromptPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JBLabel maxPromptLabel = new JBLabel("Max prompt size (chars): ");
+        JBLabel maxPromptHelpIcon = new JBLabel(AllIcons.General.ContextHelp);
+        maxPromptHelpIcon.setToolTipText(Constants.MAX_PROMPT_HELP_TEXT);
+        maxPromptPanel.add(maxPromptLabel);
+        maxPromptPanel.add(maxPromptHelpIcon);
+        JPanel maxPromptFieldPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        maxPromptFieldPanel.add(maxPromptCharactersSpinner);
+
+        addComponent(panel, maxPromptPanel, gbc, 0, 6, 0.0);
+        addComponent(panel, maxPromptFieldPanel, gbc, 1, 6, 1.0);
+
+        addComponent(panel, new JBLabel("Network: "), gbc, 0, 7, 0.0);
+        addComponent(panel, useSystemProxyCheckBox, gbc, 1, 7, 1.0);
 
         // 添加一个空的面板来填充剩余空间
         gbc.gridwidth = 2;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
-        addComponent(panel, new JPanel(), gbc, 0, 6, 1.0);
+        addComponent(panel, new JPanel(), gbc, 0, 8, 1.0);
 
         return panel;
     }
@@ -516,6 +558,14 @@ public class ApiKeyConfigurableUI {
 
     public ComboBox<String> getReasoningEffortComboBox() {
         return reasoningEffortComboBox;
+    }
+
+    public JSpinner getRequestTimeoutSpinner() {
+        return requestTimeoutSpinner;
+    }
+
+    public JSpinner getMaxPromptCharactersSpinner() {
+        return maxPromptCharactersSpinner;
     }
 
     // 文件忽略功能的getter方法

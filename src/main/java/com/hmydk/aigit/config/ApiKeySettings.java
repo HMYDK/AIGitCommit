@@ -41,6 +41,10 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
     // 可选的 OpenAI reasoning_effort（low/medium/high）；空值表示不发送该字段
     private String reasoningEffort = "";
 
+    // 手动可调的请求超时与 prompt 体积上限（issue #96）
+    private int requestTimeoutSeconds = Constants.DEFAULT_REQUEST_TIMEOUT_SECONDS;
+    private int maxPromptCharacters = Constants.DEFAULT_MAX_PROMPT_CHARACTERS;
+
     public static ApiKeySettings getInstance() {
         return ApplicationManager.getApplication().getService(ApiKeySettings.class);
     }
@@ -156,6 +160,39 @@ public class ApiKeySettings implements PersistentStateComponent<ApiKeySettings> 
 
     public void setReasoningEffort(String reasoningEffort) {
         this.reasoningEffort = reasoningEffort;
+    }
+
+    /**
+     * 请求超时（秒）。旧版本没有该字段时保持原先的宽松默认值；越界值会被夹到支持范围。
+     */
+    public int getRequestTimeoutSeconds() {
+        if (requestTimeoutSeconds <= 0) {
+            return Constants.DEFAULT_REQUEST_TIMEOUT_SECONDS;
+        }
+        return Math.min(requestTimeoutSeconds, Constants.MAX_REQUEST_TIMEOUT_SECONDS);
+    }
+
+    public void setRequestTimeoutSeconds(int requestTimeoutSeconds) {
+        this.requestTimeoutSeconds = requestTimeoutSeconds;
+    }
+
+    public int getRequestTimeoutMillis() {
+        return getRequestTimeoutSeconds() * 1000;
+    }
+
+    /**
+     * 单次请求允许的最大 prompt 字符数；默认 20000，保持 2.1.5+ 的自适应裁剪行为。
+     */
+    public int getMaxPromptCharacters() {
+        if (maxPromptCharacters <= 0) {
+            return Constants.DEFAULT_MAX_PROMPT_CHARACTERS;
+        }
+        return Math.min(Math.max(maxPromptCharacters, Constants.MIN_MAX_PROMPT_CHARACTERS),
+                Constants.MAX_MAX_PROMPT_CHARACTERS);
+    }
+
+    public void setMaxPromptCharacters(int maxPromptCharacters) {
+        this.maxPromptCharacters = maxPromptCharacters;
     }
 
     public static class ModuleConfig {

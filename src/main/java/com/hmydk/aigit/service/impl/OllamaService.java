@@ -123,6 +123,7 @@ public class OllamaService implements AIService {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept-Charset", "UTF-8");
         connection.setDoOutput(true);
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
@@ -183,6 +184,7 @@ public class OllamaService implements AIService {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
+        CommonUtil.applyRequestTimeout(connection);
 
         try (OutputStream os = connection.getOutputStream()) {
             byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
