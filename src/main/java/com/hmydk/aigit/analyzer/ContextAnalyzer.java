@@ -42,6 +42,9 @@ public class ContextAnalyzer {
         "md", "txt", "rst", "adoc", "doc", "docx"
     );
     
+    // 重构判定的最小改动量：更小的改动无法仅凭行数形状与普通修改区分
+    private static final int MIN_REFACTOR_LINES = 20;
+    
     private final Project project;
     
     public ContextAnalyzer(@Nullable Project project) {
@@ -223,12 +226,25 @@ public class ContextAnalyzer {
                path.contains("Makefile");
     }
     
+    /**
+     * 重构意味着「调整结构但不改变行为」。这一层能拿到的证据只有改动的形状：
+     * 没有新增/删除文件，且增删行数大致相等（重写而不是新增功能）。
+     * 「文件被修改过」本身不是重构的证据——把它当成重构会让几乎所有提交都被标记为
+     * REFACTORING，模型再把这个标记抄进 commit type（issue #98）。
+     */
     private boolean isRefactoring(@NotNull List<FileChange> changes) {
-        // 简单启发式：多个文件，主要是修改
-        long modifiedCount = changes.stream()
-            .filter(c -> c.getChangeType() == FileChangeType.MODIFIED)
-            .count();
-        return modifiedCount > changes.size() * 0.7;
+        if (changes.stream().anyMatch(c -> c.getChangeType() != FileChangeType.MODIFIED)) {
+            return false;
+        }
+
+        int added = changes.stream().mapToInt(FileChange::getLinesAdded).sum();
+        int deleted = changes.stream().mapToInt(FileChange::getLinesDeleted).sum();
+
+        if (added + deleted < MIN_REFACTOR_LINES) {
+            return false;
+        }
+
+        return Math.min(added, deleted) >= Math.max(added, deleted) / 2;
     }
     
     private boolean isFeatureDevelopment(@NotNull List<FileChange> changes) {

@@ -414,7 +414,7 @@ public class AIPromptBuilder {
                             "%s\n\n" +
                             "Enhanced Requirements:\n" +
                             "1. Use conventional commit format: type(scope): description\n" +
-                            "2. Leverage analysis.pattern and complexity_level for better type selection\n" +
+                            "2. analysis.pattern, statistics.change_type and statistics.scope are heuristics derived from file names and line counts; verify them against full_diff_content and choose the type and scope that match the real change\n" +
                             "3. Use categorized_changes to understand the change structure\n" +
                             "4. Consider key_insights for important context\n" +
                             "5. Use full_diff_content to see actual code changes and understand developer intent\n" +
@@ -428,7 +428,7 @@ public class AIPromptBuilder {
                             "%s\n\n" +
                             "Enhanced Requirements:\n" +
                             "1. Use conventional commit format: type(scope): description\n" +
-                            "2. Prioritize statistics, categorized_changes, and analysis to decide type and scope\n" +
+                            "2. analysis, statistics and categorized_changes are heuristics derived from file names and line counts; verify them against focused_changes when choosing type and scope\n" +
                             "3. Use focused_changes as the main code detail reference\n" +
                             "4. The input is intentionally truncated, so do not expect a full diff\n" +
                             "5. Write clear, concise description focusing on what changed\n" +
@@ -441,7 +441,7 @@ public class AIPromptBuilder {
                             "%s\n\n" +
                             "Enhanced Requirements:\n" +
                             "1. Use conventional commit format: type(scope): description\n" +
-                            "2. Prioritize statistics, categorized_changes, and analysis to decide type and scope\n" +
+                            "2. analysis, statistics and categorized_changes are heuristics derived from file names and line counts; use them as hints for type and scope, not as a substitute for the real change\n" +
                             "3. The input is intentionally truncated, so do not expect raw diff details\n" +
                             "4. Write clear, concise description focusing on what changed\n" +
                             "5. Keep description under 50 characters if possible\n" +
