@@ -73,6 +73,38 @@ public class PromptResolutionIntegrationTest extends BasePlatformTestCase {
                 resolved.prompt().contains("line-350"));
     }
 
+    /**
+     * Issue #98 was reported as "the generated message does not describe the real change": the
+     * answer was {@code refactor(core)} for a small functional edit. The type came from
+     * {@code analysis.pattern}, which used to label every change set whose files were mostly
+     * modified as {@code REFACTORING}. This test runs the same prompt resolution the action uses
+     * and checks that a small two-file edit is not presented to the model as a refactoring.
+     */
+    public void testSmallFunctionalEditIsNotPresentedAsRefactoring() throws Exception {
+        FilePath controller = filePath("/repo/app/api/v1/controller/AccountController.php");
+        FilePath service = filePath("/repo/app/api/v1/service/rental/AccountSearchService.php");
+
+        List<FileChange> changes = FileChange.fromGitChanges(List.of(
+                new Change(revision(controller, "before controller"),
+                        revision(controller, "before controller\nadded query filter")),
+                new Change(revision(service, "before service\nremoved line"),
+                        revision(service, "before service\nadded line 1\nadded line 2"))
+        ), List.of());
+        CommitContext context = CommitContext.create(getProject(), changes);
+
+        CommitMessageService.ResolvedPrompt resolved =
+                CommitMessageService.resolvePrompt(context, aiInput -> aiInput, PROMPT_LIMIT);
+        JsonNode json = extractJson(resolved.aiInput());
+
+        assertEquals("full", json.path("input_mode").asText());
+        assertFalse("a 5-line functional edit must not be reported as a refactoring: " + resolved.aiInput(),
+                "pattern".equals(json.path("analysis").path("pattern").asText()));
+        assertFalse("the prompt must not tell the model to trust the heuristic blindly:\n" + resolved.prompt(),
+                resolved.prompt().contains("Leverage analysis.pattern"));
+        assertTrue("the prompt must tell the model to verify the heuristics against the diff",
+                resolved.prompt().contains("verify"));
+    }
+
     private CommitContext contextFor(String path, String beforeContent, String afterContent) {
         FilePath filePath = filePath(path);
         Change change = new Change(revision(filePath, beforeContent), revision(filePath, afterContent));
