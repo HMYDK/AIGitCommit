@@ -1,7 +1,10 @@
 package com.hmydk.aigit.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.AnthropicRequestBO;
@@ -41,7 +44,7 @@ public class AnthropicService implements AIService {
     static final int VALIDATION_MAX_TOKENS = 1;
 
     private static final String SSE_DATA_PREFIX = "data: ";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Gson GSON = new Gson();
     private static final Logger log = LoggerFactory.getLogger(AnthropicService.class);
 
     @Override
@@ -83,8 +86,8 @@ public class AnthropicService implements AIService {
                     if (data.isEmpty()) {
                         continue;
                     }
-                    JsonNode event = OBJECT_MAPPER.readTree(data);
-                    String eventType = event.path("type").asText();
+                    JsonObject event = JsonParser.parseString(data).getAsJsonObject();
+                    String eventType = stringMember(event, "type");
                     if ("content_block_delta".equals(eventType)) {
                         String text = extractTextDelta(event);
                         if (text != null && !text.isEmpty()) {
@@ -160,7 +163,7 @@ public class AnthropicService implements AIService {
     @NotNull
     static String buildRequestBody(String model, String prompt, boolean stream) throws IOException {
         AnthropicRequestBO requestBO = new AnthropicRequestBO(model, DEFAULT_MAX_TOKENS, prompt, stream);
-        return OBJECT_MAPPER.writeValueAsString(requestBO);
+        return GSON.toJson(requestBO);
     }
 
     /**
@@ -168,15 +171,15 @@ public class AnthropicService implements AIService {
      */
     @NotNull
     static String extractResponseText(@NotNull String responseBody) throws IOException {
-        JsonNode root = OBJECT_MAPPER.readTree(responseBody);
-        JsonNode content = root.path("content");
-        if (!content.isArray()) {
+        JsonObject root = JsonParser.parseString(responseBody).getAsJsonObject();
+        JsonArray content = root.getAsJsonArray("content");
+        if (content == null) {
             return "";
         }
         StringBuilder text = new StringBuilder();
-        for (JsonNode block : content) {
-            if ("text".equals(block.path("type").asText())) {
-                text.append(block.path("text").asText());
+        for (JsonElement block : content) {
+            if (block.isJsonObject() && "text".equals(stringMember(block.getAsJsonObject(), "type"))) {
+                text.append(stringMember(block.getAsJsonObject(), "text"));
             }
         }
         return text.toString();
@@ -187,15 +190,15 @@ public class AnthropicService implements AIService {
      * other event type (message start/ping/stop, thinking deltas, ...).
      */
     @Nullable
-    static String extractTextDelta(@Nullable JsonNode event) {
-        if (event == null || !"content_block_delta".equals(event.path("type").asText())) {
+    static String extractTextDelta(@Nullable JsonObject event) {
+        if (event == null || !"content_block_delta".equals(stringMember(event, "type"))) {
             return null;
         }
-        JsonNode delta = event.path("delta");
-        if (!"text_delta".equals(delta.path("type").asText())) {
+        JsonObject delta = objectMember(event, "delta");
+        if (delta == null || !"text_delta".equals(stringMember(delta, "type"))) {
             return null;
         }
-        return delta.path("text").asText("");
+        return stringMember(delta, "text");
     }
 
     @NotNull
@@ -235,7 +238,7 @@ public class AnthropicService implements AIService {
                 ? request.url()
                 : Constants.moduleConfigs.get(Constants.Anthropic).getUrl();
         AnthropicRequestBO requestBO = new AnthropicRequestBO(request.model(), maxTokens, prompt, stream);
-        String jsonInputString = OBJECT_MAPPER.writeValueAsString(requestBO);
+        String jsonInputString = GSON.toJson(requestBO);
 
         URI uri = URI.create(url);
         HttpURLConnection connection = (HttpURLConnection) uri.toURL().openConnection(CommonUtil.getProxy(uri));
@@ -294,10 +297,30 @@ public class AnthropicService implements AIService {
     }
 
     @NotNull
-    private static String describeError(@NotNull JsonNode event) {
-        JsonNode error = event.path("error");
-        String message = error.path("message").asText("");
+    private static String describeError(@NotNull JsonObject event) {
+        JsonObject error = objectMember(event, "error");
+        String message = error == null ? "" : stringMember(error, "message");
         return message.isEmpty() ? event.toString() : message;
+    }
+
+    /**
+     * Returns a string member of the given JSON object, or an empty string when it is missing or
+     * not a JSON primitive.
+     */
+    @NotNull
+    private static String stringMember(@NotNull JsonObject object, @NotNull String member) {
+        JsonElement element = object.get(member);
+        return element != null && element.isJsonPrimitive() ? element.getAsString() : "";
+    }
+
+    /**
+     * Returns an object member of the given JSON object, or {@code null} when it is missing or not
+     * a JSON object.
+     */
+    @Nullable
+    private static JsonObject objectMember(@NotNull JsonObject object, @NotNull String member) {
+        JsonElement element = object.get(member);
+        return element != null && element.isJsonObject() ? element.getAsJsonObject() : null;
     }
 
     private record AnthropicRequest(String url, String apiKey, String model) {

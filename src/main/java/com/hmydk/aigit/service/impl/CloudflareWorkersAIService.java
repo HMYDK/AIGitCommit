@@ -1,7 +1,10 @@
 package com.hmydk.aigit.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
@@ -33,6 +36,7 @@ import java.util.function.Consumer;
 public class CloudflareWorkersAIService implements AIService {
 
     private static final Logger log = LoggerFactory.getLogger(CloudflareWorkersAIService.class);
+    private static final Gson GSON = new Gson();
 
     @Override
     public boolean generateByStream() {
@@ -90,14 +94,14 @@ public class CloudflareWorkersAIService implements AIService {
                 response.append(responseLine.trim());
             }
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonResponse = objectMapper.readTree(response.toString());
-        JsonNode choices = jsonResponse.path("choices");
-        if (choices.isArray() && !choices.isEmpty()) {
-            JsonNode firstChoices = choices.get(0);
-            JsonNode message = firstChoices.path("message");
-            JsonNode content = message.path("content");
-            return content.asText();
+        JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
+        JsonArray choices = jsonResponse.getAsJsonArray("choices");
+        if (choices != null && !choices.isEmpty()) {
+            JsonObject message = choices.get(0).getAsJsonObject().getAsJsonObject("message");
+            JsonElement content = message == null ? null : message.get("content");
+            if (content != null && !content.isJsonNull()) {
+                return content.getAsString();
+            }
         }
         return "sth error when request ai api";
     }
@@ -108,8 +112,7 @@ public class CloudflareWorkersAIService implements AIService {
         openAIRequestBO.setModel(module);
         openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
 
-        ObjectMapper objectMapper1 = new ObjectMapper();
-        String jsonInputString = objectMapper1.writeValueAsString(openAIRequestBO);
+        String jsonInputString = GSON.toJson(openAIRequestBO);
 
         URI uri = URI.create(url);
         Proxy proxy = CommonUtil.getProxy(uri);

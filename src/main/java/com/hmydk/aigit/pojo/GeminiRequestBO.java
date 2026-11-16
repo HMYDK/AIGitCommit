@@ -1,7 +1,5 @@
 package com.hmydk.aigit.pojo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 /**
@@ -10,10 +8,8 @@ import java.util.List;
  * @author hmydk
  */
 public class GeminiRequestBO {
-    @JsonProperty("contents")
     private List<Content> contents;
 
-    @JsonProperty("generationConfig")
     private GenerationConfig generationConfig;
 
 
@@ -35,7 +31,6 @@ public class GeminiRequestBO {
     }
 
     public static class Content {
-        @JsonProperty("parts")
         private List<Part> parts;
 
         public Content(List<Part> parts) {
@@ -52,7 +47,6 @@ public class GeminiRequestBO {
     }
 
     public static class Part {
-        @JsonProperty("text")
         private String text;
 
         public Part(String text) {
@@ -70,7 +64,6 @@ public class GeminiRequestBO {
 
 
     public static class GenerationConfig {
-        @JsonProperty("thinkingConfig")
         private ThinkingConfig thinkingConfig;
 
         public GenerationConfig(ThinkingConfig thinkingConfig) {

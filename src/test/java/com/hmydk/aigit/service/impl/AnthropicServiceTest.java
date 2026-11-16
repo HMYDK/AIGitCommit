@@ -2,6 +2,8 @@ package com.hmydk.aigit.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,17 +50,17 @@ class AnthropicServiceTest {
 
     @Test
     void extractsStreamingTextDeltaOnly() throws Exception {
-        JsonNode textDelta = OBJECT_MAPPER.readTree("""
+        JsonObject textDelta = JsonParser.parseString("""
                 {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"feat: add "}}
-                """);
+                """).getAsJsonObject();
         assertEquals("feat: add ", AnthropicService.extractTextDelta(textDelta));
 
-        assertNull(AnthropicService.extractTextDelta(OBJECT_MAPPER.readTree("""
+        assertNull(AnthropicService.extractTextDelta(JsonParser.parseString("""
                 {"type":"message_start","message":{"id":"msg_1"}}
-                """)));
-        assertNull(AnthropicService.extractTextDelta(OBJECT_MAPPER.readTree("""
+                """).getAsJsonObject()));
+        assertNull(AnthropicService.extractTextDelta(JsonParser.parseString("""
                 {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"hmm"}}
-                """)));
+                """).getAsJsonObject()));
         assertNull(AnthropicService.extractTextDelta(null));
     }
 }

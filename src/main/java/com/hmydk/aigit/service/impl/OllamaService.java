@@ -1,7 +1,9 @@
 package com.hmydk.aigit.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.service.AIService;
@@ -27,6 +29,8 @@ import java.util.function.Consumer;
  * @author hmydk
  */
 public class OllamaService implements AIService {
+    private static final Gson GSON = new Gson();
+
     @Override
     public boolean generateByStream() {
         return true;
@@ -104,17 +108,16 @@ public class OllamaService implements AIService {
             }
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonResponse = objectMapper.readTree(response.toString());
-        return jsonResponse.path("response").asText();
+        JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
+        JsonElement responseElement = jsonResponse.get("response");
+        return responseElement == null || responseElement.isJsonNull() ? "" : responseElement.getAsString();
     }
 
     private static @NotNull HttpURLConnection getHttpURLConnection(String module, String url, String textContent)
             throws IOException {
 
         GenerateRequest request = new GenerateRequest(module, textContent, false);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonInputString = objectMapper.writeValueAsString(request);
+        String jsonInputString = GSON.toJson(request);
 
         URI uri = URI.create(url);
         Proxy proxy = CommonUtil.getProxy(uri);
@@ -175,8 +178,7 @@ public class OllamaService implements AIService {
         ApiKeySettings.ModuleConfig moduleConfig = settings.getModuleConfigs().get(Constants.Ollama);
 
         GenerateRequest request = new GenerateRequest(selectedModule, textContent, true);
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonInputString = objectMapper.writeValueAsString(request);
+        String jsonInputString = GSON.toJson(request);
 
         URI uri = URI.create(moduleConfig.getUrl());
         Proxy proxy = CommonUtil.getProxy(uri);
@@ -195,8 +197,11 @@ public class OllamaService implements AIService {
                 new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null) {
-                JsonNode jsonResponse = objectMapper.readTree(line);
-                String response = jsonResponse.path("response").asText();
+                JsonObject jsonResponse = JsonParser.parseString(line).getAsJsonObject();
+                JsonElement responseElement = jsonResponse.get("response");
+                String response = responseElement == null || responseElement.isJsonNull()
+                        ? ""
+                        : responseElement.getAsString();
                 if (!response.isEmpty()) {
                     onNext.accept(response);
                 }

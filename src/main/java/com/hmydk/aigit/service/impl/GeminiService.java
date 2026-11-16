@@ -1,7 +1,10 @@
 package com.hmydk.aigit.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.GeminiRequestBO;
@@ -34,6 +37,7 @@ import java.util.function.Consumer;
 public class GeminiService implements AIService {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
+    private static final Gson GSON = new Gson();
 
     @Override
     public boolean generateByStream() {
@@ -110,16 +114,16 @@ public class GeminiService implements AIService {
             }
         }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonResponse = objectMapper.readTree(response.toString());
-        JsonNode candidates = jsonResponse.path("candidates");
-        if (candidates.isArray() && !candidates.isEmpty()) {
-            JsonNode firstCandidate = candidates.get(0);
-            JsonNode content = firstCandidate.path("content");
-            JsonNode parts = content.path("parts");
-            if (parts.isArray() && !parts.isEmpty()) {
-                JsonNode firstPart = parts.get(0);
-                return firstPart.path("text").asText();
+        JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
+        JsonArray candidates = jsonResponse.getAsJsonArray("candidates");
+        if (candidates != null && !candidates.isEmpty()) {
+            JsonObject content = candidates.get(0).getAsJsonObject().getAsJsonObject("content");
+            JsonArray parts = content == null ? null : content.getAsJsonArray("parts");
+            if (parts != null && !parts.isEmpty()) {
+                JsonElement text = parts.get(0).getAsJsonObject().get("text");
+                if (text != null && !text.isJsonNull()) {
+                    return text.getAsString();
+                }
             }
         }
         return "sth error when request ai api";
@@ -134,8 +138,7 @@ public class GeminiService implements AIService {
         GeminiRequestBO geminiRequestBO = new GeminiRequestBO();
         geminiRequestBO
                 .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
-        ObjectMapper objectMapper1 = new ObjectMapper();
-        String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
+        String jsonInputString = GSON.toJson(geminiRequestBO);
 
         URI uri = URI.create(apiUrl);
         Proxy proxy = CommonUtil.getProxy(uri);
@@ -163,8 +166,7 @@ public class GeminiService implements AIService {
                 .setContents(List.of(new GeminiRequestBO.Content(List.of(new GeminiRequestBO.Part(textContent)))));
         geminiRequestBO
                 .setGenerationConfig(new GeminiRequestBO.GenerationConfig(new GeminiRequestBO.ThinkingConfig(0)));
-        ObjectMapper objectMapper1 = new ObjectMapper();
-        String jsonInputString = objectMapper1.writeValueAsString(geminiRequestBO);
+        String jsonInputString = GSON.toJson(geminiRequestBO);
 
         URI uri = URI.create(apiUrl);
         Proxy proxy = CommonUtil.getProxy(uri);
@@ -200,13 +202,17 @@ public class GeminiService implements AIService {
                 if (line.startsWith("data: ")) {
                     String jsonData = line.substring(6);
                     if (!"[DONE]".equals(jsonData)) {
-                        ObjectMapper mapper = new ObjectMapper();
-                        JsonNode root = mapper.readTree(jsonData);
-                        JsonNode candidates = root.path("candidates");
-                        if (candidates.isArray() && !candidates.isEmpty()) {
-                            String text = candidates.get(0).path("content").path("parts").get(0).path("text")
-                                    .asText();
-                            onNext.accept(text);
+                        JsonObject root = JsonParser.parseString(jsonData).getAsJsonObject();
+                        JsonArray candidates = root.getAsJsonArray("candidates");
+                        if (candidates != null && !candidates.isEmpty()) {
+                            JsonObject content = candidates.get(0).getAsJsonObject().getAsJsonObject("content");
+                            JsonArray parts = content == null ? null : content.getAsJsonArray("parts");
+                            if (parts != null && !parts.isEmpty()) {
+                                JsonElement text = parts.get(0).getAsJsonObject().get("text");
+                                if (text != null && !text.isJsonNull()) {
+                                    onNext.accept(text.getAsString());
+                                }
+                            }
                         }
                     } else {
                         if (onComplete != null) {

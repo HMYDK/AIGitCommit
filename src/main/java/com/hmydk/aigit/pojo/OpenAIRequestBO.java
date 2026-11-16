@@ -1,7 +1,6 @@
 package com.hmydk.aigit.pojo;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
@@ -17,8 +16,7 @@ public class OpenAIRequestBO {
      * Optional OpenAI reasoning effort ({@code low}/{@code medium}/{@code high}). Omitted from the
      * JSON payload when unset so the default request shape is unchanged.
      */
-    @JsonProperty("reasoning_effort")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @SerializedName("reasoning_effort")
     private String reasoningEffort;
 
     public static class OpenAIRequestMessage {
