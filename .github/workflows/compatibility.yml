@@ -3,7 +3,9 @@ name: IDE Compatibility
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main", "master" ]
+    # dev-auto is the automation delivery branch; every PR there must pass the
+    # EAP Plugin Verifier before it can be squash-merged (see the daily audit task).
+    branches: [ "main", "master", "dev-auto" ]
   push:
     branches: [ "main", "master" ]
   schedule:
