@@ -24,7 +24,10 @@ dependencies {
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform.INSTANCE)
     }
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    // Test-only: production code uses the Gson that the IntelliJ Platform bundles, so the
+    // published single-jar plugin needs no third-party jars (issue #103). Tests keep an
+    // independent JSON parser for assertions.
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")

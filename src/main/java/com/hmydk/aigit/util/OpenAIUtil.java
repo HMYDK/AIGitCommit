@@ -1,7 +1,10 @@
 package com.hmydk.aigit.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.hmydk.aigit.config.ApiKeySettings;
 import com.hmydk.aigit.constant.Constants;
 import com.hmydk.aigit.pojo.OpenAIRequestBO;
@@ -24,6 +27,7 @@ public class OpenAIUtil {
 
     private static final String THINK_START_TAG = "<think>";
     private static final String THINK_END_TAG = "</think>";
+    private static final Gson GSON = new Gson();
 
     public static boolean checkNecessaryModuleConfigIsRight(String client) {
         ApiKeySettings settings = ApiKeySettings.getInstance();
@@ -81,8 +85,7 @@ public class OpenAIUtil {
         openAIRequestBO.setMessages(List.of(new OpenAIRequestBO.OpenAIRequestMessage("user", textContent)));
         openAIRequestBO.setReasoningEffort(StringUtils.defaultIfBlank(reasoningEffort, null));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(openAIRequestBO);
+        return GSON.toJson(openAIRequestBO);
     }
 
     public static void getAIResponseStream(String client, String content, Consumer<String> onNext,
@@ -137,18 +140,14 @@ public class OpenAIUtil {
                         break;
                     }
                     try {
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        JsonNode rootNode = objectMapper.readTree(jsonData);
-                        JsonNode choices = rootNode.get("choices");
-                        if (choices != null && choices.isArray() && choices.size() > 0) {
-                            JsonNode delta = choices.get(0).get("delta");
-                            if (delta != null && delta.has("content")) {
-                                JsonNode contentNode = delta.get("content");
-                                if (contentNode != null && !contentNode.isNull()) {
-                                    String tokenContent = contentNode.asText();
-                                    // 过滤 <think>...</think> 标签内容
-                                    processAndFilterThinkTags(tokenContent, thinkBuffer, insideThinkTag, onNext);
-                                }
+                        JsonObject root = JsonParser.parseString(jsonData).getAsJsonObject();
+                        JsonArray choices = root.getAsJsonArray("choices");
+                        if (choices != null && !choices.isEmpty()) {
+                            JsonObject delta = choices.get(0).getAsJsonObject().getAsJsonObject("delta");
+                            JsonElement contentElement = delta == null ? null : delta.get("content");
+                            if (contentElement != null && !contentElement.isJsonNull()) {
+                                // 过滤 <think>...</think> 标签内容
+                                processAndFilterThinkTags(contentElement.getAsString(), thinkBuffer, insideThinkTag, onNext);
                             }
                         }
                     } catch (Exception e) {

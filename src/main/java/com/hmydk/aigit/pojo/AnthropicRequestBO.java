@@ -1,6 +1,6 @@
 package com.hmydk.aigit.pojo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
@@ -11,16 +11,13 @@ import java.util.List;
  */
 public class AnthropicRequestBO {
 
-    @JsonProperty("model")
     private String model;
 
-    @JsonProperty("max_tokens")
+    @SerializedName("max_tokens")
     private int maxTokens;
 
-    @JsonProperty("messages")
     private List<Message> messages;
 
-    @JsonProperty("stream")
     private boolean stream;
 
     public AnthropicRequestBO() {
@@ -66,10 +63,8 @@ public class AnthropicRequestBO {
     }
 
     public static class Message {
-        @JsonProperty("role")
         private String role;
 
-        @JsonProperty("content")
         private String content;
 
         public Message() {
