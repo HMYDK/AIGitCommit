@@ -87,6 +87,8 @@ Both values are stored in the plugin settings and are applied on the next genera
 
 Generating a commit message sends the selected change context and prompt to the AI service you configured. Review that provider's privacy and data-retention policies before sending sensitive source code. Use Ollama if you prefer a locally hosted model.
 
+The plugin also registers JetBrains Marketplace's error handler. If the IDE reports an uncaught exception or a UI freeze attributed to AI Git Commit, the diagnostic report — stack trace or thread dump, IDE and plugin versions, and OS details — is sent to JetBrains Marketplace and shown to the plugin author. Reports are submitted only when you choose **Report to third-party plugin** in the IDE dialog, or automatically if you enabled **Send error reports to JetBrains automatically** in the IDE settings.
+
 ## Development
 
 The project targets Java 17 and IntelliJ Platform 2024.1.
