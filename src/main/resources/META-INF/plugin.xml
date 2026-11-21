@@ -13,6 +13,7 @@
         <ul>
             <li>Generate messages from selected changes, partial commit hunks, and unversioned files.</li>
             <li>Choose the output language and use editable model IDs.</li>
+            <li>Tune the reasoning effort, request timeout, and prompt size to match your model and change set.</li>
             <li>Create reusable custom prompts or load <code>commit-prompt.txt</code> from the project root.</li>
             <li>Compact large change sets and exclude generated files, lock files, or custom wildcard patterns.</li>
             <li>Use the IDE system proxy, inspect the latest prompt, and stream responses where supported.</li>
@@ -60,6 +61,16 @@
     </actions>
     <change-notes>
         <![CDATA[
+        <h3>2.2.2</h3>
+        <ul>
+            <li>Add Claude (Anthropic) as an official provider using the Messages API (<a href="https://github.com/HMYDK/AIGitCommit/issues/82">#82</a>).</li>
+            <li>Add an optional <code>reasoning_effort</code> setting for OpenAI-format providers (<a href="https://github.com/HMYDK/AIGitCommit/issues/92">#92</a>).</li>
+            <li>Make the request timeout and the maximum prompt size configurable (<a href="https://github.com/HMYDK/AIGitCommit/issues/96">#96</a>).</li>
+            <li>Build the prompt diff from real line changes so a one-line edit no longer expands into a whole-file diff (<a href="https://github.com/HMYDK/AIGitCommit/issues/84">#84</a>, <a href="https://github.com/HMYDK/AIGitCommit/issues/101">#101</a>).</li>
+            <li>Stop classifying ordinary edits as refactorings and verify the heuristics against the diff (<a href="https://github.com/HMYDK/AIGitCommit/issues/98">#98</a>).</li>
+            <li>Remove the bundled Jackson dependency so the plugin loads on recent IDEs (<a href="https://github.com/HMYDK/AIGitCommit/issues/103">#103</a>).</li>
+            <li>Add headless IntelliJ Platform integration tests and CI checks for minimum, stable, and EAP IDE versions.</li>
+        </ul>
         <h3>2.2.1</h3>
         <ul>
             <li>Add OrcaRouter as a dedicated OpenAI-compatible provider.</li>
