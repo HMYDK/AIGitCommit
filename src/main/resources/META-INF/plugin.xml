@@ -29,7 +29,7 @@
             <li>Select changes in the Commit tool window and choose <b>Generate AI Commit Message</b>.</li>
         </ol>
 
-        <p><b>Privacy:</b> Generating a message sends the selected change context and prompt to the AI service you configured. Review that provider's privacy and data-retention policies before sending sensitive source code.</p>
+        <p><b>Privacy:</b> Generating a message sends the selected change context and prompt to the AI service you configured. Review that provider's privacy and data-retention policies before sending sensitive source code. If you submit an IDE error or freeze report for this plugin, its diagnostics (stack trace or thread dump) are shared with the plugin author through JetBrains Marketplace.</p>
         <p><a href="https://github.com/HMYDK/AIGitCommit">Documentation and source code</a> | <a href="https://github.com/HMYDK/AIGitCommit/issues">Issue tracker</a> | <a href="https://github.com/HMYDK/AIGitCommit/discussions/23">Prompt templates</a></p>
         ]]>
     </description>
@@ -48,6 +48,8 @@
                                  groupId="Tools"/>
         <postStartupActivity implementation="com.hmydk.aigit.WelcomeNotification"/>
         <notificationGroup id="AI Git Commit Notifications" displayType="BALLOON"/>
+        <!-- Opt in to JetBrains Marketplace error/freeze reports; users still decide whether to submit them. -->
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
 
     <actions>
